@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}">
+<body>
+    <div class="content">
+        <h2 class="mb-4">Salon Appointments</h2>
+        <div class="card p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer Name</th>
+                            <th>Mobile</th>
+                            <th>Service</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Booked At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="appointment : ${appointments}">
+                            <td th:text="${appointment.id}">1</td>
+                            <td th:text="${appointment.userName}">John Doe</td>
+                            <td th:text="${appointment.userMobile}">9876543210</td>
+                            <td th:text="${appointment.serviceName}">Haircut</td>
+                            <td th:text="${appointment.appointmentDate}">2026-06-01</td>
+                            <td th:text="${appointment.timeSlot}">10:00 AM</td>
+                            <td>
+                                <span class="badge bg-warning text-dark" th:if="${appointment.status == 'PENDING'}" th:text="${appointment.status}">PENDING</span>
+                                <span class="badge bg-success" th:if="${appointment.status == 'COMPLETED'}" th:text="${appointment.status}">COMPLETED</span>
+                                <span class="badge bg-danger" th:if="${appointment.status == 'CANCELLED'}" th:text="${appointment.status}">CANCELLED</span>
+                            </td>
+                            <td th:text="${#temporals.format(appointment.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(appointments)}">
+                            <td colspan="8" class="text-center py-4 text-muted">No appointments found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

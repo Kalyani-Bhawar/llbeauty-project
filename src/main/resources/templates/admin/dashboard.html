@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}">
+<body>
+    <div class="content">
+        <h2 class="mb-4">Dashboard Overview</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card bg-dark text-white text-center p-4">
+                    <h1 class="display-4 text-warning" th:text="${totalAppointments}">0</h1>
+                    <p class="mb-0" style="color: #c9a84c;">Total Salon Appointments</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-dark text-white text-center p-4">
+                    <h1 class="display-4 text-warning" th:text="${totalLeads}">0</h1>
+                    <p class="mb-0" style="color: #c9a84c;">Franchise Leads</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-dark text-white text-center p-4">
+                    <h1 class="display-4 text-warning" th:text="${totalUsers}">0</h1>
+                    <p class="mb-0" style="color: #c9a84c;">Registered Users</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-5 text-center">
+            <p class="text-muted">Welcome to the L.L. Beauty Admin Control Panel. Select an option from the sidebar to manage records.</p>
+        </div>
+    </div>
+</body>
+</html>

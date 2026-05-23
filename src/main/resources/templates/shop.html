@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Shop luxury skincare, fragrances, haircare, and spa kits from L.L. Beauty.">
+    <title>Shop – L.L. BEAUTY</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .shop-header {
+            background: var(--beige);
+            padding: 60px 0;
+            text-align: center;
+            border-bottom: 1px solid rgba(201,168,76,0.15);
+        }
+        .filter-btn {
+            background: var(--white);
+            color: var(--dark);
+            border: 1px solid var(--beige-dark);
+            padding: 8px 24px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--gold);
+            color: var(--white);
+            border-color: var(--gold);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <!-- SHOP HEADER -->
+    <section class="shop-header">
+        <div class="container animate-fade-up">
+            <h1 class="brand-font fs-2">Luxury Beauty Boutique</h1>
+            <p class="text-muted mb-0">Handpicked organic, certified formulas for skin, hair, and essence.</p>
+        </div>
+    </section>
+
+    <!-- SHOP CONTENT -->
+    <section class="section-pad bg-white">
+        <div class="container">
+            
+            <!-- Category Filters -->
+            <div class="d-flex flex-wrap justify-content-center gap-3 mb-5 animate-fade-up delay-1">
+                <a href="/shop" class="filter-btn" th:classappend="${selectedCategory == null} ? 'active'">All Products</a>
+                <a href="/shop?category=Skincare" class="filter-btn" th:classappend="${selectedCategory == 'Skincare'} ? 'active'">Skincare</a>
+                <a href="/shop?category=Perfumes" class="filter-btn" th:classappend="${selectedCategory == 'Perfumes'} ? 'active'">Perfumes</a>
+                <a href="/shop?category=Haircare" class="filter-btn" th:classappend="${selectedCategory == 'Haircare'} ? 'active'">Haircare</a>
+                <a href="/shop?category=Spa / Detox" class="filter-btn" th:classappend="${selectedCategory == 'Spa / Detox'} ? 'active'">Spa / Detox</a>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="row g-4 animate-fade-up delay-2">
+                <div class="col-lg-3 col-md-6" th:each="product, iter : ${products}">
+                    <div class="product-card">
+                        <div class="product-img-wrap">
+                            <img th:src="${product.imageUrl}" th:alt="${product.name}">
+                            <div class="product-badge" th:if="${iter.index == 0}">Bestseller</div>
+                            <div class="product-badge" th:if="${iter.index == 1}">New</div>
+                            <div class="product-badge" th:if="${iter.index == 3}" style="background:#111;">Limited</div>
+                            <div class="product-overlay">
+                                <a href="#" class="btn-gold text-decoration-none" onclick="return handleAddToCart(event)">Add to Cart</a>
+                            </div>
+                        </div>
+                        <div class="product-body">
+                            <div class="product-category" th:text="${product.category}">Category</div>
+                            <div class="product-name" th:text="${product.name}">Product Name</div>
+                            <div class="product-desc" th:text="${product.description}">Description</div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <span class="product-price">₹<span th:text="${#numbers.formatDecimal(product.price, 1, 0)}">0</span></span>
+                                </div>
+                                <a href="#" class="btn-outline-gold text-decoration-none"
+                                   style="padding:6px 16px;font-size:0.75rem;"
+                                   onclick="return handleAddToCart(event)">Add +</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 text-center py-5" th:if="${products.isEmpty()}">
+                    <p class="text-muted">No products found in this category.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AUTH GUARD MODAL -->
+    <div class="auth-guard-overlay" id="authGuardOverlay">
+        <div class="auth-guard-box">
+            <div class="auth-guard-icon">🔐</div>
+            <h4 class="brand-font mb-2">Sign In Required</h4>
+            <p style="font-size:0.9rem;color:#7a7a7a;margin-bottom:28px;">
+                Please sign in to add products to your cart and make purchases.
+            </p>
+            <div class="d-flex flex-column gap-3">
+                <a id="authGuardLoginBtn" href="/auth/login" class="btn-gold text-decoration-none text-center"
+                   style="padding:13px 20px;">Sign In to Continue</a>
+                <a href="/auth/register" class="btn-dark-outline text-decoration-none text-center"
+                   style="padding:11px 20px;">Create New Account</a>
+                <button onclick="closeAuthGuard()"
+                        style="background:none;border:none;color:#7a7a7a;font-size:0.85rem;cursor:pointer;padding:8px;">
+                    Maybe Later
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        let pendingRedirect = null;
+
+        function handleAddToCart(event) {
+            event.preventDefault();
+            const isLoggedIn = [[${currentUser != null}]];
+            if (!isLoggedIn) {
+                pendingRedirect = "/shop";
+                document.getElementById('authGuardLoginBtn').href = '/auth/login?redirect=' + encodeURIComponent(pendingRedirect);
+                document.getElementById('authGuardOverlay').classList.add('active');
+                return false;
+            }
+            // If logged in: mock add to cart message
+            alert("Product added to cart! Complete your purchase on Day 5 Sprint.");
+            return true;
+        }
+
+        function closeAuthGuard() {
+            document.getElementById('authGuardOverlay').classList.remove('active');
+            pendingRedirect = null;
+        }
+    </script>
+</body>
+</html>

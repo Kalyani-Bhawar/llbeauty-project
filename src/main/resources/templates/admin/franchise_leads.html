@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}">
+<body>
+    <div class="content">
+        <h2 class="mb-4">Franchise Leads</h2>
+        <div class="card p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Mobile</th>
+                            <th>Email</th>
+                            <th>City</th>
+                            <th>Location</th>
+                            <th>Type</th>
+                            <th>Budget</th>
+                            <th>Applied At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="lead : ${leads}">
+                            <td th:text="${lead.id}">1</td>
+                            <td th:text="${lead.name}">Jane Doe</td>
+                            <td th:text="${lead.mobile}">9876543210</td>
+                            <td th:text="${lead.email}">jane@example.com</td>
+                            <td th:text="${lead.city}">Mumbai</td>
+                            <td th:text="${lead.preferredLocation}">Bandra West</td>
+                            <td><span class="badge bg-info text-dark" th:text="${lead.franchiseType}">Studio</span></td>
+                            <td th:text="${lead.budget}">15-20 Lakhs</td>
+                            <td th:text="${#temporals.format(lead.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(leads)}">
+                            <td colspan="9" class="text-center py-4 text-muted">No franchise leads found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

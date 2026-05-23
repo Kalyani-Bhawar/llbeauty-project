@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="L.L. Beauty – Your premium destination for luxury beauty products, professional salon services and franchise opportunities.">
+    <title>L.L. BEAUTY – Premium Beauty Ecosystem</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- ========== NAVBAR ========== -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <!-- ========== HERO SECTION ========== -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <!-- Left Content -->
+                <div class="col-lg-6">
+                    <div class="animate-fade-up">
+                        <div class="hero-tag">✦ Since 2024 · Premium Beauty</div>
+                    </div>
+                    <h1 class="hero-title animate-fade-up delay-1">
+                        Redefine Your<br>
+                        <span class="gold-text">Beauty &amp; Elegance</span>
+                    </h1>
+                    <p class="hero-subtitle animate-fade-up delay-2">
+                        Experience luxury salon services, premium beauty products, and an exclusive franchise ecosystem — all under one roof.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3 animate-fade-up delay-3">
+                        <a href="/salon" class="btn-gold" onclick="return checkAuth(event, '/salon')">Book Salon</a>
+                        <a href="/shop" class="btn-dark-outline text-decoration-none" onclick="return checkAuth(event, '/shop')">Shop Now</a>
+                    </div>
+                    <div class="hero-stats animate-fade-up delay-4">
+                        <div class="stat-item">
+                            <div class="stat-number">500+</div>
+                            <div class="stat-label">Happy Clients</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">50+</div>
+                            <div class="stat-label">Products</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">10+</div>
+                            <div class="stat-label">Services</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right Image -->
+                <div class="col-lg-6 animate-fade-up delay-2">
+                    <div class="hero-image-wrap">
+                        <img src="/images/salon_hero.png" alt="L.L. Beauty Salon Interior">
+                        <div class="hero-badge">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width:44px;height:44px;background:linear-gradient(135deg,#c9a84c,#a8872a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">💎</div>
+                                <div>
+                                    <div style="font-weight:700;font-size:0.9rem;color:#111;">Premium Quality</div>
+                                    <div style="font-size:0.75rem;color:#7a7a7a;">Certified Beauty Brand</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== QUOTE TICKER ========== -->
+    <div class="quote-ticker">
+        <div class="ticker-inner">
+            <span>✦ Luxury Beauty</span>
+            <span class="dot">◆</span>
+            <span>Premium Skincare</span>
+            <span class="dot">◆</span>
+            <span>Professional Salon Services</span>
+            <span class="dot">◆</span>
+            <span>Franchise Opportunities</span>
+            <span class="dot">◆</span>
+            <span>Your Glow, Our Passion</span>
+            <span class="dot">◆</span>
+            <span>Redefine Elegance</span>
+            <span class="dot">◆</span>
+            <span>Beauty That Speaks</span>
+            <span class="dot">◆</span>
+            <!-- Duplicate for seamless loop -->
+            <span>✦ Luxury Beauty</span>
+            <span class="dot">◆</span>
+            <span>Premium Skincare</span>
+            <span class="dot">◆</span>
+            <span>Professional Salon Services</span>
+            <span class="dot">◆</span>
+            <span>Franchise Opportunities</span>
+            <span class="dot">◆</span>
+            <span>Your Glow, Our Passion</span>
+            <span class="dot">◆</span>
+            <span>Redefine Elegance</span>
+            <span class="dot">◆</span>
+            <span>Beauty That Speaks</span>
+            <span class="dot">◆</span>
+        </div>
+    </div>
+
+    <!-- ========== SALON INFO SECTION ========== -->
+    <section class="salon-section" id="salon">
+        <div class="container">
+            <div class="text-center mb-5 reveal">
+                <div class="section-label">✦ Our Salon</div>
+                <h2 class="section-title">Experience True Luxury</h2>
+                <p class="section-sub">Step into a world of beauty and relaxation at our main salon.</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Quote / Inspiration Card -->
+                <div class="col-lg-5 reveal">
+                    <div class="quote-card h-100">
+                        <p class="quote-text">
+                            "Beauty is not in the face; beauty is a light in the heart. We bring that light out in you."
+                        </p>
+                        <div class="quote-author">— L.L. Beauty Philosophy</div>
+                        <div class="mt-4 pt-4" style="border-top:1px solid rgba(255,255,255,0.1);">
+                            <p class="quote-text" style="font-size:1.2rem;">
+                                "Every woman deserves to feel like royalty — every single day."
+                            </p>
+                            <div class="quote-author">— Our Promise to You</div>
+                        </div>
+                        <div class="mt-5">
+                            <a href="/salon" class="btn-outline-gold text-decoration-none"
+                               onclick="return checkAuth(event, '/salon')">
+                                Book Appointment →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Salon Info Card -->
+                <div class="col-lg-4 reveal">
+                    <div class="salon-info-card">
+                        <h3 class="brand-font mb-4" style="font-size:1.4rem;">
+                            📍 L.L. Beauty Salon
+                            <span style="display:block;font-size:0.9rem;color:#7a7a7a;font-family:'Inter',sans-serif;font-weight:400;margin-top:4px;">Main Branch</span>
+                        </h3>
+
+                        <div class="salon-service-item">
+                            <div class="salon-service-icon">📍</div>
+                            <div>
+                                <div style="font-weight:600;font-size:0.9rem;">Address</div>
+                                <div style="font-size:0.82rem;color:#7a7a7a;">123, Beauty Lane, Near City Mall<br>Pune, Maharashtra – 411001</div>
+                            </div>
+                        </div>
+                        <div class="salon-service-item">
+                            <div class="salon-service-icon">📞</div>
+                            <div>
+                                <div style="font-weight:600;font-size:0.9rem;">Contact</div>
+                                <div style="font-size:0.82rem;color:#7a7a7a;">+91 98765 43210</div>
+                            </div>
+                        </div>
+                        <div class="salon-service-item">
+                            <div class="salon-service-icon">🕐</div>
+                            <div>
+                                <div style="font-weight:600;font-size:0.9rem;">Timings</div>
+                                <div style="font-size:0.82rem;color:#7a7a7a;">Mon – Sat: 10:00 AM – 7:00 PM<br>Sunday: Closed</div>
+                            </div>
+                        </div>
+                        <div class="salon-service-item">
+                            <div class="salon-service-icon">🅿️</div>
+                            <div>
+                                <div style="font-weight:600;font-size:0.9rem;">Facilities</div>
+                                <div style="font-size:0.82rem;color:#7a7a7a;">Free Parking · AC Interior · WiFi</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex gap-2 flex-wrap">
+                            <span class="salon-timing-badge">⭐ 4.9 Rating</span>
+                            <span class="salon-timing-badge">✅ Pay at Salon</span>
+                        </div>
+
+                        <a href="https://maps.google.com" target="_blank"
+                           class="btn-dark-outline text-decoration-none d-block text-center mt-4"
+                           style="padding:10px 20px;border-radius:50px;font-size:0.82rem;">
+                            🗺️ View on Google Maps
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Salon Services List -->
+                <div class="col-lg-3 reveal">
+                    <div class="salon-info-card">
+                        <h4 class="brand-font mb-4" style="font-size:1.15rem;">Our Services</h4>
+
+                        <div class="salon-service-item">
+                            <div class="salon-service-icon">💇</div>
+                            <div>
+                                <div style="font-weight:600;font-size:0.85rem;">Hair Services</div>
+                                <div style="font-size:0.75rem;color:#7a7a7a;">Cut, Color, Keratin</div>
+                            </div>
+                        </div>
+                        <div class="salon-service-item">
+                            <div class="salon-service-icon">✨</div>
+                            <div>
+                                <div style="font-weight:600;font-size:0.85rem;">Facial & Skin</div>
+                                <div style="font-size:0.75rem;color:#7a7a7a;">Glow, Anti-aging, Cleanup</div>
+                            </div>
+                        </div>
+                        <div class="salon-service-item">
+                            <div class="salon-service-icon">🧖</div>
+                            <div>
+                                <div style="font-weight:600;font-size:0.85rem;">Spa & Detox</div>
+                                <div style="font-size:0.75rem;color:#7a7a7a;">Body Massage, Detox Wrap</div>
+                            </div>
+                        </div>
+                        <div class="salon-service-item">
+                            <div class="salon-service-icon">💅</div>
+                            <div>
+                                <div style="font-weight:600;font-size:0.85rem;">Nail Art</div>
+                                <div style="font-size:0.75rem;color:#7a7a7a;">Manicure, Pedicure, Gel</div>
+                            </div>
+                        </div>
+                        <div class="salon-service-item">
+                            <div class="salon-service-icon">👰</div>
+                            <div>
+                                <div style="font-weight:600;font-size:0.85rem;">Bridal Package</div>
+                                <div style="font-size:0.75rem;color:#7a7a7a;">Full Bridal Makeover</div>
+                            </div>
+                        </div>
+                        <div class="salon-service-item">
+                            <div class="salon-service-icon">🌿</div>
+                            <div>
+                                <div style="font-weight:600;font-size:0.85rem;">Eyebrow & Wax</div>
+                                <div style="font-size:0.75rem;color:#7a7a7a;">Threading, Waxing</div>
+                            </div>
+                        </div>
+
+                        <a href="/salon" class="btn-gold text-decoration-none d-block text-center mt-4"
+                           onclick="return checkAuth(event, '/salon')">
+                            Book Now – Free
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== BEAUTY PRODUCTS SECTION ========== -->
+    <section class="products-section" id="products">
+        <div class="container">
+            <div class="text-center reveal">
+                <div class="section-label">✦ Our Products</div>
+                <h2 class="section-title">Featured Elegance</h2>
+                <p class="section-sub">Handpicked luxury beauty products for your skin, hair and soul.</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Dynamic Product Loop -->
+                <div class="col-lg-3 col-md-6 reveal" th:each="product, iter : ${products}">
+                    <div class="product-card">
+                        <div class="product-img-wrap">
+                            <img th:src="${product.imageUrl}" th:alt="${product.name}">
+                            <div class="product-badge" th:if="${iter.index == 0}">Bestseller</div>
+                            <div class="product-badge" th:if="${iter.index == 1}">New</div>
+                            <div class="product-badge" th:if="${iter.index == 3}" style="background:#111;">Limited</div>
+                            <div class="product-overlay">
+                                <a href="/shop" class="btn-gold text-decoration-none"
+                                   onclick="return checkAuth(event, '/shop')">View Product</a>
+                            </div>
+                        </div>
+                        <div class="product-body">
+                            <div class="product-category" th:text="${product.category}">Category</div>
+                            <div class="product-name" th:text="${product.name}">Product Name</div>
+                            <div class="product-desc" th:text="${product.description}">Description</div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <span class="product-price">₹<span th:text="${#numbers.formatDecimal(product.price, 1, 0)}">0</span></span>
+                                </div>
+                                <a href="/shop" class="btn-outline-gold text-decoration-none"
+                                   style="padding:6px 16px;font-size:0.75rem;"
+                                   onclick="return checkAuth(event, '/shop')">Add →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5 reveal">
+                <a href="/shop" class="btn-gold text-decoration-none"
+                   style="padding:14px 40px;"
+                   onclick="return checkAuth(event, '/shop')">
+                    View All Products &nbsp;→
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== FRANCHISE SECTION ========== -->
+    <section class="franchise-section" id="franchise">
+        <div class="container">
+            <div class="text-center mb-5 reveal">
+                <div class="section-label" style="background:rgba(201,168,76,0.15);color:#e8c97a;">✦ Franchise</div>
+                <h2 class="section-title text-white">Join the L.L. BEAUTY Family</h2>
+                <p class="section-sub" style="color:rgba(255,255,255,0.6);">Start your own luxury salon business with our proven ecosystem and brand support.</p>
+            </div>
+
+            <div class="row g-4 justify-content-center mb-5">
+                <div class="col-md-4 col-sm-6 reveal delay-1">
+                    <div class="franchise-card">
+                        <span class="franchise-card-icon">🏪</span>
+                        <h5 class="brand-font text-white mb-2">Kiosk Model</h5>
+                        <p style="font-size:0.83rem;color:rgba(255,255,255,0.55);">Small investment, quick setup. Ideal for malls and high-footfall areas.</p>
+                        <div style="color:#c9a84c;font-weight:700;font-size:1.1rem;margin-top:14px;">₹5L – ₹10L</div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 reveal delay-2">
+                    <div class="franchise-card" style="border-color:var(--gold);background:rgba(201,168,76,0.08);">
+                        <span class="franchise-card-icon">💼</span>
+                        <h5 class="brand-font text-white mb-2">Studio Model</h5>
+                        <p style="font-size:0.83rem;color:rgba(255,255,255,0.55);">Mid-size premium salon with full service menu and trained staff support.</p>
+                        <div style="color:#c9a84c;font-weight:700;font-size:1.1rem;margin-top:14px;">₹15L – ₹25L</div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 reveal delay-3">
+                    <div class="franchise-card">
+                        <span class="franchise-card-icon">🏢</span>
+                        <h5 class="brand-font text-white mb-2">Lounge Model</h5>
+                        <p style="font-size:0.83rem;color:rgba(255,255,255,0.55);">Full luxury experience with VIP lounge, café corner and all premium services.</p>
+                        <div style="color:#c9a84c;font-weight:700;font-size:1.1rem;margin-top:14px;">₹30L – ₹50L</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center reveal">
+                <a href="/franchise" class="btn-outline-gold text-decoration-none"
+                   style="padding:14px 40px;"
+                   onclick="return checkAuth(event, '/franchise')">
+                    Apply for Franchise &nbsp;→
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== TESTIMONIALS ========== -->
+    <section class="testimonial-section">
+        <div class="container">
+            <div class="text-center mb-5 reveal">
+                <div class="section-label">✦ Testimonials</div>
+                <h2 class="section-title">What Our Clients Say</h2>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4 reveal delay-1">
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">★★★★★</div>
+                        <p class="testimonial-text">"The bridal package was absolutely magical! The team made me feel like a queen. Every detail was perfect."</p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">S</div>
+                            <div>
+                                <div class="author-name">Sneha Patil</div>
+                                <div class="author-city">Pune, Maharashtra</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 reveal delay-2">
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">★★★★★</div>
+                        <p class="testimonial-text">"Rose Gold Elixir changed my skin in just 3 weeks. Premium quality products that actually deliver results!"</p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">P</div>
+                            <div>
+                                <div class="author-name">Priya Sharma</div>
+                                <div class="author-city">Mumbai, Maharashtra</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 reveal delay-3">
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">★★★★★</div>
+                        <p class="testimonial-text">"Joined the franchise last year. The brand support, training, and ecosystem are incredible. Great ROI!"</p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">R</div>
+                            <div>
+                                <div class="author-name">Rahul Deshpande</div>
+                                <div class="author-city">Nashik, Maharashtra</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== FOOTER ========== -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- ========== AUTH GUARD MODAL ========== -->
+    <div class="auth-guard-overlay" id="authGuardOverlay">
+        <div class="auth-guard-box">
+            <div class="auth-guard-icon">🔐</div>
+            <h4 class="brand-font mb-2">Sign In Required</h4>
+            <p style="font-size:0.9rem;color:#7a7a7a;margin-bottom:28px;">
+                Please sign in to access this section. It's quick and free!
+            </p>
+            <div class="d-flex flex-column gap-3">
+                <a id="authGuardLoginBtn" href="/auth/login" class="btn-gold text-decoration-none text-center"
+                   style="padding:13px 20px;">Sign In to Continue</a>
+                <a href="/auth/register" class="btn-dark-outline text-decoration-none text-center"
+                   style="padding:11px 20px;">Create New Account</a>
+                <button onclick="closeAuthGuard()"
+                        style="background:none;border:none;color:#7a7a7a;font-size:0.85rem;cursor:pointer;padding:8px;">
+                    Maybe Later
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ---- Auth Guard ----
+        let pendingRedirect = null;
+
+        function checkAuth(event, targetUrl) {
+            // Check if user is logged in
+            const isLoggedIn = [[${currentUser != null}]];
+
+            if (!isLoggedIn) {
+                event.preventDefault();
+                pendingRedirect = targetUrl;
+                document.getElementById('authGuardLoginBtn').href = '/auth/login?redirect=' + encodeURIComponent(targetUrl);
+                document.getElementById('authGuardOverlay').classList.add('active');
+                return false;
+            }
+            return true;
+        }
+
+        function closeAuthGuard() {
+            document.getElementById('authGuardOverlay').classList.remove('active');
+            pendingRedirect = null;
+        }
+
+        // Close modal on backdrop click
+        document.getElementById('authGuardOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeAuthGuard();
+        });
+
+        // ---- Scroll Reveal Animation ----
+        const reveals = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        reveals.forEach(el => revealObserver.observe(el));
+    </script>
+</body>
+</html>

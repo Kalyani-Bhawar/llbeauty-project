@@ -1,0 +1,316 @@
+package com.llbeauty.entity;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String email;
+    private String mobile;
+    private String password;
+    private Double walletBalance;
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        if (this.walletBalance == null) {
+            this.walletBalance = 0.0;
+        }
+    }
+
+
+    @java.lang.SuppressWarnings("all")
+    
+    public static class UserBuilder {
+        @java.lang.SuppressWarnings("all")
+        
+        private Long id;
+        @java.lang.SuppressWarnings("all")
+        
+        private String name;
+        @java.lang.SuppressWarnings("all")
+        
+        private String email;
+        @java.lang.SuppressWarnings("all")
+        
+        private String mobile;
+        @java.lang.SuppressWarnings("all")
+        
+        private String password;
+        @java.lang.SuppressWarnings("all")
+        
+        private Double walletBalance;
+        @java.lang.SuppressWarnings("all")
+        
+        private LocalDateTime createdAt;
+
+        @java.lang.SuppressWarnings("all")
+        
+        UserBuilder() {
+        }
+
+        /**
+         * @return {@code this}.
+         */
+        @java.lang.SuppressWarnings("all")
+        
+        public User.UserBuilder id(final Long id) {
+            this.id = id;
+            return this;
+        }
+
+        /**
+         * @return {@code this}.
+         */
+        @java.lang.SuppressWarnings("all")
+        
+        public User.UserBuilder name(final String name) {
+            this.name = name;
+            return this;
+        }
+
+        /**
+         * @return {@code this}.
+         */
+        @java.lang.SuppressWarnings("all")
+        
+        public User.UserBuilder email(final String email) {
+            this.email = email;
+            return this;
+        }
+
+        /**
+         * @return {@code this}.
+         */
+        @java.lang.SuppressWarnings("all")
+        
+        public User.UserBuilder mobile(final String mobile) {
+            this.mobile = mobile;
+            return this;
+        }
+
+        /**
+         * @return {@code this}.
+         */
+        @java.lang.SuppressWarnings("all")
+        
+        public User.UserBuilder password(final String password) {
+            this.password = password;
+            return this;
+        }
+
+        /**
+         * @return {@code this}.
+         */
+        @java.lang.SuppressWarnings("all")
+        
+        public User.UserBuilder walletBalance(final Double walletBalance) {
+            this.walletBalance = walletBalance;
+            return this;
+        }
+
+        /**
+         * @return {@code this}.
+         */
+        @java.lang.SuppressWarnings("all")
+        
+        public User.UserBuilder createdAt(final LocalDateTime createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        @java.lang.SuppressWarnings("all")
+        
+        public User build() {
+            return new User(this.id, this.name, this.email, this.mobile, this.password, this.walletBalance, this.createdAt);
+        }
+
+        @java.lang.Override
+        @java.lang.SuppressWarnings("all")
+        
+        public java.lang.String toString() {
+            return "User.UserBuilder(id=" + this.id + ", name=" + this.name + ", email=" + this.email + ", mobile=" + this.mobile + ", password=" + this.password + ", walletBalance=" + this.walletBalance + ", createdAt=" + this.createdAt + ")";
+        }
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public static User.UserBuilder builder() {
+        return new User.UserBuilder();
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public Long getId() {
+        return this.id;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public String getName() {
+        return this.name;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public String getEmail() {
+        return this.email;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public String getMobile() {
+        return this.mobile;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public String getPassword() {
+        return this.password;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public Double getWalletBalance() {
+        return this.walletBalance;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public LocalDateTime getCreatedAt() {
+        return this.createdAt;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public void setId(final Long id) {
+        this.id = id;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public void setName(final String name) {
+        this.name = name;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public void setEmail(final String email) {
+        this.email = email;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public void setMobile(final String mobile) {
+        this.mobile = mobile;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public void setPassword(final String password) {
+        this.password = password;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public void setWalletBalance(final Double walletBalance) {
+        this.walletBalance = walletBalance;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public void setCreatedAt(final LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    @java.lang.Override
+    @java.lang.SuppressWarnings("all")
+    
+    public boolean equals(final java.lang.Object o) {
+        if (o == this) return true;
+        if (!(o instanceof User)) return false;
+        final User other = (User) o;
+        if (!other.canEqual((java.lang.Object) this)) return false;
+        final java.lang.Object this$id = this.getId();
+        final java.lang.Object other$id = other.getId();
+        if (this$id == null ? other$id != null : !this$id.equals(other$id)) return false;
+        final java.lang.Object this$walletBalance = this.getWalletBalance();
+        final java.lang.Object other$walletBalance = other.getWalletBalance();
+        if (this$walletBalance == null ? other$walletBalance != null : !this$walletBalance.equals(other$walletBalance)) return false;
+        final java.lang.Object this$name = this.getName();
+        final java.lang.Object other$name = other.getName();
+        if (this$name == null ? other$name != null : !this$name.equals(other$name)) return false;
+        final java.lang.Object this$email = this.getEmail();
+        final java.lang.Object other$email = other.getEmail();
+        if (this$email == null ? other$email != null : !this$email.equals(other$email)) return false;
+        final java.lang.Object this$mobile = this.getMobile();
+        final java.lang.Object other$mobile = other.getMobile();
+        if (this$mobile == null ? other$mobile != null : !this$mobile.equals(other$mobile)) return false;
+        final java.lang.Object this$password = this.getPassword();
+        final java.lang.Object other$password = other.getPassword();
+        if (this$password == null ? other$password != null : !this$password.equals(other$password)) return false;
+        final java.lang.Object this$createdAt = this.getCreatedAt();
+        final java.lang.Object other$createdAt = other.getCreatedAt();
+        if (this$createdAt == null ? other$createdAt != null : !this$createdAt.equals(other$createdAt)) return false;
+        return true;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    protected boolean canEqual(final java.lang.Object other) {
+        return other instanceof User;
+    }
+
+    @java.lang.Override
+    @java.lang.SuppressWarnings("all")
+    
+    public int hashCode() {
+        final int PRIME = 59;
+        int result = 1;
+        final java.lang.Object $id = this.getId();
+        result = result * PRIME + ($id == null ? 43 : $id.hashCode());
+        final java.lang.Object $walletBalance = this.getWalletBalance();
+        result = result * PRIME + ($walletBalance == null ? 43 : $walletBalance.hashCode());
+        final java.lang.Object $name = this.getName();
+        result = result * PRIME + ($name == null ? 43 : $name.hashCode());
+        final java.lang.Object $email = this.getEmail();
+        result = result * PRIME + ($email == null ? 43 : $email.hashCode());
+        final java.lang.Object $mobile = this.getMobile();
+        result = result * PRIME + ($mobile == null ? 43 : $mobile.hashCode());
+        final java.lang.Object $password = this.getPassword();
+        result = result * PRIME + ($password == null ? 43 : $password.hashCode());
+        final java.lang.Object $createdAt = this.getCreatedAt();
+        result = result * PRIME + ($createdAt == null ? 43 : $createdAt.hashCode());
+        return result;
+    }
+
+    @java.lang.Override
+    @java.lang.SuppressWarnings("all")
+    
+    public java.lang.String toString() {
+        return "User(id=" + this.getId() + ", name=" + this.getName() + ", email=" + this.getEmail() + ", mobile=" + this.getMobile() + ", password=" + this.getPassword() + ", walletBalance=" + this.getWalletBalance() + ", createdAt=" + this.getCreatedAt() + ")";
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public User() {
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public User(final Long id, final String name, final String email, final String mobile, final String password, final Double walletBalance, final LocalDateTime createdAt) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.mobile = mobile;
+        this.password = password;
+        this.walletBalance = walletBalance;
+        this.createdAt = createdAt;
+    }
+}

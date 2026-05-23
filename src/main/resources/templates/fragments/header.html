@@ -1,0 +1,31 @@
+<nav th:fragment="header" class="navbar navbar-expand-lg navbar-light bg-beige py-3" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+    <div class="container">
+        <a class="navbar-brand brand-font fs-3" href="/">L.L. BEAUTY</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="/shop">Shop</a></li>
+                <li class="nav-item"><a class="nav-link" href="/salon">Salon</a></li>
+                <li class="nav-item"><a class="nav-link" href="/franchise">Franchise</a></li>
+                
+                <th:block th:if="${currentUser == null}">
+                    <li class="nav-item ms-lg-3"><a class="btn btn-outline-dark px-4 me-2" href="/auth/login">Sign In</a></li>
+                    <li class="nav-item"><a class="btn btn-gold px-4" href="/auth/register">Sign Up</a></li>
+                </th:block>
+                <th:block th:if="${currentUser != null}">
+                    <li class="nav-item ms-lg-3 text-dark font-weight-bold">
+                        <span class="me-2">👋 Hello, <span th:text="${currentUser.name}">User</span></span>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <span class="badge bg-dark text-white p-2" style="font-size: 0.85rem;">👛 Wallet: ₹<span th:text="${#numbers.formatDecimal(currentUser.walletBalance, 1, 0)}">0</span></span>
+                    </li>
+                    <li class="nav-item ms-lg-3"><a class="btn btn-outline-danger px-4" href="/auth/logout">Sign Out</a></li>
+                </th:block>
+            </ul>
+        </div>
+    </div>
+</nav>

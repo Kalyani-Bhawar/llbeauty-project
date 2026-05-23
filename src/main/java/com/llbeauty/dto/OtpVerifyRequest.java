@@ -1,0 +1,103 @@
+package com.llbeauty.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+
+public class OtpVerifyRequest {
+    @NotBlank(message = "Mobile is required")
+    @Pattern(regexp = "^[6-9]\\d{9}$", message = "Enter valid mobile number")
+    private String mobile;
+    @NotBlank(message = "OTP is required")
+    private String otp;
+    // Optional: used to redirect after login
+    private String redirect;
+
+    @java.lang.SuppressWarnings("all")
+    
+    public OtpVerifyRequest() {
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public String getMobile() {
+        return this.mobile;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public String getOtp() {
+        return this.otp;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public String getRedirect() {
+        return this.redirect;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public void setMobile(final String mobile) {
+        this.mobile = mobile;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public void setOtp(final String otp) {
+        this.otp = otp;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    public void setRedirect(final String redirect) {
+        this.redirect = redirect;
+    }
+
+    @java.lang.Override
+    @java.lang.SuppressWarnings("all")
+    
+    public boolean equals(final java.lang.Object o) {
+        if (o == this) return true;
+        if (!(o instanceof OtpVerifyRequest)) return false;
+        final OtpVerifyRequest other = (OtpVerifyRequest) o;
+        if (!other.canEqual((java.lang.Object) this)) return false;
+        final java.lang.Object this$mobile = this.getMobile();
+        final java.lang.Object other$mobile = other.getMobile();
+        if (this$mobile == null ? other$mobile != null : !this$mobile.equals(other$mobile)) return false;
+        final java.lang.Object this$otp = this.getOtp();
+        final java.lang.Object other$otp = other.getOtp();
+        if (this$otp == null ? other$otp != null : !this$otp.equals(other$otp)) return false;
+        final java.lang.Object this$redirect = this.getRedirect();
+        final java.lang.Object other$redirect = other.getRedirect();
+        if (this$redirect == null ? other$redirect != null : !this$redirect.equals(other$redirect)) return false;
+        return true;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    
+    protected boolean canEqual(final java.lang.Object other) {
+        return other instanceof OtpVerifyRequest;
+    }
+
+    @java.lang.Override
+    @java.lang.SuppressWarnings("all")
+    
+    public int hashCode() {
+        final int PRIME = 59;
+        int result = 1;
+        final java.lang.Object $mobile = this.getMobile();
+        result = result * PRIME + ($mobile == null ? 43 : $mobile.hashCode());
+        final java.lang.Object $otp = this.getOtp();
+        result = result * PRIME + ($otp == null ? 43 : $otp.hashCode());
+        final java.lang.Object $redirect = this.getRedirect();
+        result = result * PRIME + ($redirect == null ? 43 : $redirect.hashCode());
+        return result;
+    }
+
+    @java.lang.Override
+    @java.lang.SuppressWarnings("all")
+    
+    public java.lang.String toString() {
+        return "OtpVerifyRequest(mobile=" + this.getMobile() + ", otp=" + this.getOtp() + ", redirect=" + this.getRedirect() + ")";
+    }
+}
