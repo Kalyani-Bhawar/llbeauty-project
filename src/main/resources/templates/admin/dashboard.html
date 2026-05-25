@@ -2,32 +2,238 @@
 <html th:replace="~{admin/layout :: layout(~{::div.content})}">
 <body>
     <div class="content">
-        <h2 class="mb-4">Dashboard Overview</h2>
-        
+
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-start mb-5">
+            <div>
+                <h1 class="page-title mb-1">Dashboard Overview</h1>
+                <div class="page-subtitle">Welcome back, Admin · L.L. BEAUTY Control Center</div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/" class="btn btn-sm" style="background:rgba(201,168,76,0.1);color:#c9a84c;border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:8px 16px;font-size:0.8rem;">
+                    <i class="bi bi-eye me-1"></i> View Live Site
+                </a>
+            </div>
+        </div>
+
+        <!-- KPI Cards Row -->
+        <div class="row g-4 mb-5">
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon gold"><i class="bi bi-calendar-check-fill"></i></div>
+                    <div class="stat-label">Total Bookings</div>
+                    <div class="stat-value" th:text="${totalAppointments}">0</div>
+                    <div style="font-size:0.75rem;color:#2ecc71;margin-top:8px;"><i class="bi bi-arrow-up-short"></i> Salon Appointments</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon emerald"><i class="bi bi-people-fill"></i></div>
+                    <div class="stat-label">Registered Users</div>
+                    <div class="stat-value" th:text="${totalUsers}">0</div>
+                    <div style="font-size:0.75rem;color:#2ecc71;margin-top:8px;"><i class="bi bi-arrow-up-short"></i> Active Members</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon ruby"><i class="bi bi-building-fill"></i></div>
+                    <div class="stat-label">Franchise Leads</div>
+                    <div class="stat-value" th:text="${totalLeads}">0</div>
+                    <div style="font-size:0.75rem;color:#f39c12;margin-top:8px;"><i class="bi bi-dot"></i> Pending Review</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon sapphire"><i class="bi bi-bag-heart-fill"></i></div>
+                    <div class="stat-label">Total Products</div>
+                    <div class="stat-value" th:text="${totalProducts}">0</div>
+                    <div style="font-size:0.75rem;color:#3498db;margin-top:8px;"><i class="bi bi-dot"></i> In Catalog</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Row: Recent Appointments + Quick Actions -->
+        <div class="row g-4 mb-4">
+
+            <!-- Recent Appointments -->
+            <div class="col-lg-8">
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <h6><i class="bi bi-calendar-week me-2" style="color:#c9a84c;"></i>Recent Salon Appointments</h6>
+                        <a href="/admin/appointments" style="font-size:0.78rem;color:#c9a84c;text-decoration:none;">View All →</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Service</th>
+                                    <th>Date</th>
+                                    <th>Slot</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="apt : ${recentAppointments}">
+                                    <td>
+                                        <div style="font-weight:600;font-size:0.85rem;" th:text="${apt.userName}">Name</div>
+                                        <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);" th:text="${apt.userMobile}">Mobile</div>
+                                    </td>
+                                    <td style="font-size:0.83rem;" th:text="${apt.serviceName}">Service</td>
+                                    <td style="font-size:0.83rem;" th:text="${apt.appointmentDate}">Date</td>
+                                    <td style="font-size:0.83rem;" th:text="${apt.timeSlot}">Slot</td>
+                                    <td>
+                                        <span class="badge-status badge-pending" th:if="${apt.status == 'PENDING'}" th:text="${apt.status}">PENDING</span>
+                                        <span class="badge-status badge-completed" th:if="${apt.status == 'COMPLETED'}" th:text="${apt.status}">DONE</span>
+                                        <span class="badge-status badge-cancelled" th:if="${apt.status == 'CANCELLED'}" th:text="${apt.status}">CANCELLED</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(recentAppointments)}">
+                                    <td colspan="5" class="empty-state">
+                                        <i class="bi bi-calendar-x"></i>
+                                        No appointments yet
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="col-lg-4">
+                <div class="data-card h-100">
+                    <div class="data-card-header">
+                        <h6><i class="bi bi-lightning-fill me-2" style="color:#c9a84c;"></i>Quick Actions</h6>
+                    </div>
+                    <div class="p-4 d-flex flex-column gap-3">
+                        <a href="/admin/products/new" class="quick-action-btn gold">
+                            <i class="bi bi-plus-circle-fill me-2"></i> Add New Product
+                        </a>
+                        <a href="/admin/franchise-leads/new" class="quick-action-btn emerald">
+                            <i class="bi bi-person-plus-fill me-2"></i> Add Franchise Lead
+                        </a>
+                        <a href="/admin/salon-info" class="quick-action-btn sapphire">
+                            <i class="bi bi-shop-window me-2"></i> Edit Salon Info
+                        </a>
+                        <a href="/admin/appointments" class="quick-action-btn ruby">
+                            <i class="bi bi-calendar-check me-2"></i> Manage Bookings
+                        </a>
+                        <a href="/admin/users" class="quick-action-btn default">
+                            <i class="bi bi-people me-2"></i> View All Users
+                        </a>
+                        <a href="/admin/wallet-transactions" class="quick-action-btn default">
+                            <i class="bi bi-wallet2 me-2"></i> Wallet Transactions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Third Row: Recent Franchise Leads + Recent Users -->
         <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card bg-dark text-white text-center p-4">
-                    <h1 class="display-4 text-warning" th:text="${totalAppointments}">0</h1>
-                    <p class="mb-0" style="color: #c9a84c;">Total Salon Appointments</p>
+
+            <!-- Recent Franchise Leads -->
+            <div class="col-lg-6">
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <h6><i class="bi bi-building me-2" style="color:#c9a84c;"></i>Recent Franchise Leads</h6>
+                        <a href="/admin/franchise-leads" style="font-size:0.78rem;color:#c9a84c;text-decoration:none;">View All →</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>City</th>
+                                    <th>Type</th>
+                                    <th>Budget</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="lead : ${recentLeads}">
+                                    <td>
+                                        <div style="font-weight:600;font-size:0.85rem;" th:text="${lead.name}">Name</div>
+                                        <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);" th:text="${lead.mobile}">Mobile</div>
+                                    </td>
+                                    <td style="font-size:0.83rem;" th:text="${lead.city}">City</td>
+                                    <td><span class="badge-status" style="background:rgba(52,152,219,0.15);color:#3498db;" th:text="${lead.franchiseType}">Studio</span></td>
+                                    <td style="font-size:0.83rem;color:#c9a84c;font-weight:600;" th:text="${lead.budget}">Budget</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(recentLeads)}">
+                                    <td colspan="4" class="empty-state">
+                                        <i class="bi bi-building-slash"></i>
+                                        No franchise leads yet
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card bg-dark text-white text-center p-4">
-                    <h1 class="display-4 text-warning" th:text="${totalLeads}">0</h1>
-                    <p class="mb-0" style="color: #c9a84c;">Franchise Leads</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card bg-dark text-white text-center p-4">
-                    <h1 class="display-4 text-warning" th:text="${totalUsers}">0</h1>
-                    <p class="mb-0" style="color: #c9a84c;">Registered Users</p>
+
+            <!-- Recent Users -->
+            <div class="col-lg-6">
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <h6><i class="bi bi-person-circle me-2" style="color:#c9a84c;"></i>Recent Registered Users</h6>
+                        <a href="/admin/users" style="font-size:0.78rem;color:#c9a84c;text-decoration:none;">View All →</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Mobile</th>
+                                    <th>Wallet</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="user : ${recentUsers}">
+                                    <td>
+                                        <div style="font-weight:600;font-size:0.85rem;" th:text="${user.name}">Name</div>
+                                    </td>
+                                    <td style="font-size:0.83rem;" th:text="${user.mobile}">Mobile</td>
+                                    <td style="font-size:0.83rem;color:#2ecc71;font-weight:600;">₹<span th:text="${#numbers.formatDecimal(user.walletBalance, 1, 0)}">0</span></td>
+                                    <td style="font-size:0.75rem;color:rgba(255,255,255,0.4);" th:text="${#temporals.format(user.createdAt, 'dd-MM-yy')}">Date</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(recentUsers)}">
+                                    <td colspan="4" class="empty-state">
+                                        <i class="bi bi-person-x"></i>
+                                        No users yet
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <div class="mt-5 text-center">
-            <p class="text-muted">Welcome to the L.L. Beauty Admin Control Panel. Select an option from the sidebar to manage records.</p>
-        </div>
+
     </div>
+
+    <style>
+        .quick-action-btn {
+            display: flex;
+            align-items: center;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+        .quick-action-btn.gold { background: rgba(201,168,76,0.1); color: #c9a84c; border: 1px solid rgba(201,168,76,0.2); }
+        .quick-action-btn.gold:hover { background: rgba(201,168,76,0.2); transform: translateX(4px); }
+        .quick-action-btn.emerald { background: rgba(46,204,113,0.08); color: #2ecc71; border: 1px solid rgba(46,204,113,0.2); }
+        .quick-action-btn.emerald:hover { background: rgba(46,204,113,0.15); transform: translateX(4px); }
+        .quick-action-btn.sapphire { background: rgba(52,152,219,0.08); color: #3498db; border: 1px solid rgba(52,152,219,0.2); }
+        .quick-action-btn.sapphire:hover { background: rgba(52,152,219,0.15); transform: translateX(4px); }
+        .quick-action-btn.ruby { background: rgba(231,76,60,0.08); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
+        .quick-action-btn.ruby:hover { background: rgba(231,76,60,0.15); transform: translateX(4px); }
+        .quick-action-btn.default { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.08); }
+        .quick-action-btn.default:hover { background: rgba(255,255,255,0.08); transform: translateX(4px); color: #fff; }
+    </style>
 </body>
 </html>

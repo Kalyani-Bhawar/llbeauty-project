@@ -1,8 +1,14 @@
 package com.llbeauty.config;
 
+import com.llbeauty.entity.Membership;
+import com.llbeauty.entity.Merchant;
 import com.llbeauty.entity.Product;
+import com.llbeauty.entity.QrCode;
 import com.llbeauty.entity.SalonInfo;
+import com.llbeauty.repository.MembershipRepository;
+import com.llbeauty.repository.MerchantRepository;
 import com.llbeauty.repository.ProductRepository;
+import com.llbeauty.repository.QrCodeRepository;
 import com.llbeauty.repository.SalonInfoRepository;
 import com.llbeauty.service.AuthService;
 import org.slf4j.Logger;
@@ -20,11 +26,22 @@ public class DataInitializer implements CommandLineRunner {
     private final AuthService authService;
     private final ProductRepository productRepository;
     private final SalonInfoRepository salonInfoRepository;
+    private final MembershipRepository membershipRepository;
+    private final MerchantRepository merchantRepository;
+    private final QrCodeRepository qrCodeRepository;
 
-    public DataInitializer(AuthService authService, ProductRepository productRepository, SalonInfoRepository salonInfoRepository) {
+    public DataInitializer(AuthService authService,
+                           ProductRepository productRepository,
+                           SalonInfoRepository salonInfoRepository,
+                           MembershipRepository membershipRepository,
+                           MerchantRepository merchantRepository,
+                           QrCodeRepository qrCodeRepository) {
         this.authService = authService;
         this.productRepository = productRepository;
         this.salonInfoRepository = salonInfoRepository;
+        this.membershipRepository = membershipRepository;
+        this.merchantRepository = merchantRepository;
+        this.qrCodeRepository = qrCodeRepository;
     }
 
     @Override
@@ -83,6 +100,71 @@ public class DataInitializer implements CommandLineRunner {
 
             productRepository.saveAll(List.of(p1, p2, p3, p4));
             log.info("Database seeded with default beauty products.");
+        }
+
+        // 4. Seed Membership Plans if empty
+        if (membershipRepository.count() == 0) {
+            Membership silver = new Membership(
+                null,
+                "Silver Beauty Pass",
+                999.0,
+                0.05,
+                "5% Cashback on All Orders\nExclusive Birthday Coupon\nEarly Access to Sales & Launches\n100 Welcome Credits",
+                365,
+                100.0
+            );
+
+            Membership gold = new Membership(
+                null,
+                "Gold Glam Pass",
+                2999.0,
+                0.10,
+                "10% Cashback on All Orders\nFree Courier Shipping\nDouble Reward Points on Salon\nVIP Customer Support Line\n10% Salon Discounts\n500 Welcome Credits",
+                365,
+                500.0
+            );
+
+            Membership black = new Membership(
+                null,
+                "Black Luxe Pass",
+                7999.0,
+                0.20,
+                "20% Cashback on All Orders\nFree VIP Salon Access\nPriority Home Delivery\nPremium Gift Hamper at Signup\nExclusive Luxury Partner Offers\nPersonal Beauty Consultant\n1500 Welcome Credits",
+                365,
+                1500.0
+            );
+
+            membershipRepository.saveAll(List.of(silver, gold, black));
+            log.info("Database seeded with default membership plans.");
+        }
+
+        // 5. Seed Merchants and QR Codes for local wallet redemption scanning
+        if (merchantRepository.count() == 0) {
+            Merchant flagshipSpa = new Merchant(
+                null,
+                "L.L. Beauty Flagship Spa",
+                "+91 99999 88888",
+                "Aundh, Pune",
+                "ACTIVE",
+                null
+            );
+            Merchant salonLounge = new Merchant(
+                null,
+                "L.L. Beauty Lounge",
+                "+91 98888 77777",
+                "Koregaon Park, Pune",
+                "ACTIVE",
+                null
+            );
+
+            merchantRepository.saveAll(List.of(flagshipSpa, salonLounge));
+
+            // Generate active QR codes
+            QrCode qr1 = new QrCode(null, flagshipSpa, "/wallet/redeem?merchantId=" + flagshipSpa.getId(), "ACTIVE", null);
+            QrCode qr2 = new QrCode(null, salonLounge, "/wallet/redeem?merchantId=" + salonLounge.getId(), "ACTIVE", null);
+
+            qrCodeRepository.saveAll(List.of(qr1, qr2));
+            log.info("Database seeded with sample merchants and scan-to-pay QR codes.");
         }
     }
 }

@@ -51,7 +51,7 @@
                 </div>
                 <!-- Right Image -->
                 <div class="col-lg-6 animate-fade-up delay-2">
-                    <div class="hero-image-wrap">
+                    <div class="hero-image-wrap premium-img">
                         <img src="/images/salon_hero.png" alt="L.L. Beauty Salon Interior">
                         <div class="hero-badge">
                             <div class="d-flex align-items-center gap-3">
@@ -139,29 +139,29 @@
                 <div class="col-lg-4 reveal">
                     <div class="salon-info-card">
                         <h3 class="brand-font mb-4" style="font-size:1.4rem;">
-                            📍 L.L. Beauty Salon
-                            <span style="display:block;font-size:0.9rem;color:#7a7a7a;font-family:'Inter',sans-serif;font-weight:400;margin-top:4px;">Main Branch</span>
+                            📍 <span th:text="${salonInfo?.name ?: 'L.L. Beauty Salon'}">L.L. Beauty Salon</span>
+                            <span style="display:block;font-size:0.9rem;color:#7a7a7a;font-family:'Inter',sans-serif;font-weight:400;margin-top:4px;" th:text="${salonInfo?.tagline ?: 'Main Branch'}">Main Branch</span>
                         </h3>
 
                         <div class="salon-service-item">
                             <div class="salon-service-icon">📍</div>
                             <div>
                                 <div style="font-weight:600;font-size:0.9rem;">Address</div>
-                                <div style="font-size:0.82rem;color:#7a7a7a;">123, Beauty Lane, Near City Mall<br>Pune, Maharashtra – 411001</div>
+                                <div style="font-size:0.82rem;color:#7a7a7a;" th:text="${salonInfo?.address ?: '123, Beauty Lane, Near City Mall, Pune, Maharashtra – 411001'}">123, Beauty Lane, Near City Mall<br>Pune, Maharashtra – 411001</div>
                             </div>
                         </div>
                         <div class="salon-service-item">
                             <div class="salon-service-icon">📞</div>
                             <div>
                                 <div style="font-weight:600;font-size:0.9rem;">Contact</div>
-                                <div style="font-size:0.82rem;color:#7a7a7a;">+91 98765 43210</div>
+                                <div style="font-size:0.82rem;color:#7a7a7a;" th:text="${salonInfo?.contactPhone ?: '+91 98765 43210'}">+91 98765 43210</div>
                             </div>
                         </div>
                         <div class="salon-service-item">
                             <div class="salon-service-icon">🕐</div>
                             <div>
                                 <div style="font-weight:600;font-size:0.9rem;">Timings</div>
-                                <div style="font-size:0.82rem;color:#7a7a7a;">Mon – Sat: 10:00 AM – 7:00 PM<br>Sunday: Closed</div>
+                                <div style="font-size:0.82rem;color:#7a7a7a;" th:text="${salonInfo?.timings ?: 'Mon – Sat: 10:00 AM – 7:00 PM | Sunday: Closed'}">Mon – Sat: 10:00 AM – 7:00 PM<br>Sunday: Closed</div>
                             </div>
                         </div>
                         <div class="salon-service-item">
@@ -256,7 +256,7 @@
                 <!-- Dynamic Product Loop -->
                 <div class="col-lg-3 col-md-6 reveal" th:each="product, iter : ${products}">
                     <div class="product-card">
-                        <div class="product-img-wrap">
+                        <div class="product-img-wrap premium-img">
                             <img th:src="${product.imageUrl}" th:alt="${product.name}">
                             <div class="product-badge" th:if="${iter.index == 0}">Bestseller</div>
                             <div class="product-badge" th:if="${iter.index == 1}">New</div>

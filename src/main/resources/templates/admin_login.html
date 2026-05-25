@@ -134,6 +134,21 @@
             margin: 0 auto 20px;
             font-size: 1.3rem;
         }
+		/* Prevent Chrome Autofill Background */
+		
+		.form-control:-webkit-autofill,
+		.form-control:-webkit-autofill:hover,
+		.form-control:-webkit-autofill:focus,
+		.form-control:-webkit-autofill:active {
+		
+		    -webkit-box-shadow: 0 0 0 1000px rgba(255,255,255,0.06) inset !important;
+		
+		    -webkit-text-fill-color: #fff !important;
+		
+		    border: 1px solid rgba(255,255,255,0.12) !important;
+		
+		    transition: background-color 5000s ease-in-out 0s;
+		}
     </style>
 </head>
 <body>
@@ -151,17 +166,33 @@
             <div th:if="${error}" class="alert alert-danger bg-danger text-white border-0" role="alert" 
                  style="border-radius: 12px; font-size: 0.85rem;" th:text="${error}"></div>
 
-            <form th:action="@{/auth/admin/login}" method="POST">
-                <div class="mb-3">
+            <form th:action="@{/auth/admin/login}"  method="POST" autocomplete="off">
+				<!-- Prevent Browser Autofill -->
+				<input type="text" name="fakeusernameremembered" style="display:none">
+				<input type="password" name="fakepasswordremembered" style="display:none">
+				<div class="mb-3">
                     <label for="email" class="form-label">Admin Email</label>
-                    <input type="email" class="form-control" id="email" name="email" 
-                           placeholder="Enter your admin email" required>
+					<input type="email"
+					       class="form-control"
+					       id="email"
+					       name="email"
+					       placeholder="Enter your admin email"
+					       autocomplete="off"
+					       autocorrect="off"
+					       autocapitalize="off"
+					       spellcheck="false"
+					       required>
                 </div>
 
                 <div class="mb-4">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" 
-                           placeholder="Enter your password" required>
+					<input type="password"
+					       class="form-control"
+					       id="password"
+					       name="password"
+					       placeholder="Enter your password"
+					       autocomplete="new-password"
+					       required>
                 </div>
 
                 <button type="submit" class="btn-admin-login w-100">

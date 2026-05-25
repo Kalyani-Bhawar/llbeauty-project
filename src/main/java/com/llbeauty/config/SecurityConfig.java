@@ -30,7 +30,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // Disable CSRF for simplified cookie/OTP authentication
             .authorizeHttpRequests(auth -> auth
                 // Allow public access to home page, static resources, and basic pages
-                .requestMatchers("/", "/css/**", "/images/**", "/js/**", "/about", "/contact", "/franchise", "/salon", "/auth/**", "/franchise/apply", "/salon/book").permitAll()
+                .requestMatchers("/", "/css/**", "/images/**", "/js/**", "/about", "/contact", "/franchise", "/salon", "/auth/**", "/franchise/apply", "/salon/book", "/membership").permitAll()
                 // Admin access only
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 // All other requests require login (like /shop, /cart, /checkout)

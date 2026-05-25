@@ -10,6 +10,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -21,17 +22,29 @@ public class AdminController {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final SalonInfoRepository salonInfoRepository;
+    private final MembershipRepository membershipRepository;
+    private final UserMembershipRepository userMembershipRepository;
+    private final WalletTransactionRepository walletTransactionRepository;
+    private final OrderRepository orderRepository;
 
     public AdminController(AppointmentRepository appointmentRepository,
                            FranchiseLeadRepository franchiseLeadRepository,
                            UserRepository userRepository,
                            ProductRepository productRepository,
-                           SalonInfoRepository salonInfoRepository) {
+                           SalonInfoRepository salonInfoRepository,
+                           MembershipRepository membershipRepository,
+                           UserMembershipRepository userMembershipRepository,
+                           WalletTransactionRepository walletTransactionRepository,
+                           OrderRepository orderRepository) {
         this.appointmentRepository = appointmentRepository;
         this.franchiseLeadRepository = franchiseLeadRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.salonInfoRepository = salonInfoRepository;
+        this.membershipRepository = membershipRepository;
+        this.userMembershipRepository = userMembershipRepository;
+        this.walletTransactionRepository = walletTransactionRepository;
+        this.orderRepository = orderRepository;
     }
 
     // ==========================================
@@ -44,6 +57,18 @@ public class AdminController {
         model.addAttribute("totalLeads", franchiseLeadRepository.count());
         model.addAttribute("totalUsers", userRepository.count());
         model.addAttribute("totalProducts", productRepository.count());
+
+        // Membership KPIs
+        double totalRev = userMembershipRepository.findAll().stream()
+                .mapToDouble(um -> um.getMembership().getPrice()).sum();
+        model.addAttribute("totalMembershipRevenue", totalRev);
+        model.addAttribute("activeMembers", userMembershipRepository.countByStatus("ACTIVE"));
+
+        // Populate recent lists for dashboard layout
+        model.addAttribute("recentAppointments", appointmentRepository.findAll().stream().limit(5).toList());
+        model.addAttribute("recentLeads", franchiseLeadRepository.findAll().stream().limit(5).toList());
+        model.addAttribute("recentUsers", userRepository.findAll().stream().limit(5).toList());
+
         return "admin/dashboard";
     }
 
@@ -139,6 +164,20 @@ public class AdminController {
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Franchise lead not found.");
         }
+        return "redirect:/admin/franchise-leads";
+    }
+
+    @GetMapping("/franchise-leads/new")
+    public String newFranchiseLeadForm(Model model) {
+        model.addAttribute("activeTab", "franchise-leads");
+        model.addAttribute("lead", new FranchiseLead());
+        return "admin/franchise_form";
+    }
+
+    @PostMapping("/franchise-leads/save")
+    public String saveFranchiseLead(@ModelAttribute("lead") FranchiseLead lead, RedirectAttributes redirectAttributes) {
+        franchiseLeadRepository.save(lead);
+        redirectAttributes.addFlashAttribute("successMessage", "Franchise lead added successfully!");
         return "redirect:/admin/franchise-leads";
     }
 
@@ -308,5 +347,84 @@ public class AdminController {
         Files.copy(file.getInputStream(), targetFilePath, StandardCopyOption.REPLACE_EXISTING);
         
         return "/uploads/" + subDir + "/" + fileName;
+    }
+
+    // ==========================================
+    //  MEMBERSHIPS CRUD & ANALYTICS
+    // ==========================================
+    @GetMapping("/memberships")
+    public String viewMemberships(Model model) {
+        model.addAttribute("activeTab", "memberships");
+        model.addAttribute("memberships", membershipRepository.findAll());
+        return "admin/memberships";
+    }
+
+    @PostMapping("/memberships/save")
+    public String saveMembershipPlan(@ModelAttribute("membership") Membership plan, RedirectAttributes redirectAttributes) {
+        membershipRepository.save(plan);
+        redirectAttributes.addFlashAttribute("successMessage", "Membership plan updated successfully!");
+        return "redirect:/admin/memberships";
+    }
+
+    // ==========================================
+    //  WALLET TRANSACTIONS
+    // ==========================================
+    @GetMapping("/wallet-transactions")
+    public String viewWalletTransactions(Model model) {
+        model.addAttribute("activeTab", "wallet-transactions");
+        model.addAttribute("transactions", walletTransactionRepository.findAll());
+        return "admin/wallet_transactions";
+    }
+
+    // ==========================================
+    //  ORDERS LIST
+    // ==========================================
+    @GetMapping("/orders")
+    public String viewOrders(Model model) {
+        model.addAttribute("activeTab", "orders");
+        model.addAttribute("orders", orderRepository.findAll());
+        return "admin/orders";
+    }
+
+    @GetMapping("/membership-users")
+    public String viewMembershipUsers(Model model) {
+        model.addAttribute("activeTab", "membership-users");
+        List<UserMembership> userPlans = userMembershipRepository.findAll();
+        model.addAttribute("userMemberships", userPlans);
+
+        // Compute Membership Analytics
+        double silverRevenue = 0.0;
+        double goldRevenue = 0.0;
+        double blackRevenue = 0.0;
+        long activeCount = 0;
+        long expiredCount = 0;
+
+        for (UserMembership um : userPlans) {
+            String planName = um.getMembership().getName();
+            double price = um.getMembership().getPrice();
+
+            if ("ACTIVE".equals(um.getStatus())) {
+                activeCount++;
+            } else if ("EXPIRED".equals(um.getStatus())) {
+                expiredCount++;
+            }
+
+            if (planName.contains("Silver")) {
+                silverRevenue += price;
+            } else if (planName.contains("Gold")) {
+                goldRevenue += price;
+            } else if (planName.contains("Black")) {
+                blackRevenue += price;
+            }
+        }
+
+        model.addAttribute("totalRevenue", silverRevenue + goldRevenue + blackRevenue);
+        model.addAttribute("silverRevenue", silverRevenue);
+        model.addAttribute("goldRevenue", goldRevenue);
+        model.addAttribute("blackRevenue", blackRevenue);
+        model.addAttribute("activeCount", activeCount);
+        model.addAttribute("expiredCount", expiredCount);
+
+        return "admin/membership_users";
     }
 }

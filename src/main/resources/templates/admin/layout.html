@@ -283,6 +283,22 @@
                    th:classappend="${activeTab == 'products' ? 'active' : ''}">
                     <i class="bi bi-bag-heart-fill"></i> Products
                 </a>
+                <a href="/admin/orders"
+                   th:classappend="${activeTab == 'orders' ? 'active' : ''}">
+                    <i class="bi bi-box-seam-fill"></i> Orders
+                </a>
+                <a href="/admin/memberships"
+                   th:classappend="${activeTab == 'memberships' ? 'active' : ''}">
+                    <i class="bi bi-award-fill"></i> Membership Plans
+                </a>
+                <a href="/admin/membership-users"
+                   th:classappend="${activeTab == 'membership-users' ? 'active' : ''}">
+                    <i class="bi bi-person-badge-fill"></i> VIP Members
+                </a>
+                <a href="/admin/wallet-transactions"
+                   th:classappend="${activeTab == 'wallet-transactions' ? 'active' : ''}">
+                    <i class="bi bi-wallet2"></i> Wallet Ledger
+                </a>
                 <a href="/admin/salon-info"
                    th:classappend="${activeTab == 'salon-info' ? 'active' : ''}">
                     <i class="bi bi-shop"></i> Salon Info

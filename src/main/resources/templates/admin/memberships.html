@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div class="content">
+
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-start mb-5">
+            <div>
+                <h1 class="page-title mb-1">Manage Membership Tiers</h1>
+                <div class="page-subtitle">Configure pricing, welcome reward credits, and benefits text for VIP levels.</div>
+            </div>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${successMessage}" class="alert alert-success border-0 mb-4" style="background:rgba(46,204,113,0.15); color:#2ecc71; border-radius:12px;">
+            <span th:text="${successMessage}">Success!</span>
+        </div>
+
+        <!-- Plan Grid List -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-4" th:each="plan : ${memberships}">
+                <div class="data-card p-4 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="brand-font text-white mb-0" th:text="${plan.name}">Plan Name</h5>
+                            <span class="badge" style="background:rgba(201,168,76,0.15); color:#c9a84c;">ID: [[${plan.id}]]</span>
+                        </div>
+                        <div style="border-bottom:1.5px solid rgba(255,255,255,0.06); padding-bottom:14px; margin-bottom:16px;">
+                            <span class="fs-3 text-gold-light" style="font-weight:700;">₹[[${#numbers.formatDecimal(plan.price, 1, 0)}]]</span>
+                            <span style="font-size:0.8rem; color:rgba(255,255,255,0.4);"> / [[${plan.durationDays}]] Days</span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <span style="font-size:0.75rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px;">Welcome Perk</span>
+                            <div style="font-weight:600; font-size:0.95rem; color:#2ecc71;">🪙 [[${#numbers.formatDecimal(plan.welcomeCredits, 1, 0)}]] Reward Credits</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <span style="font-size:0.75rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px;">Cashback Rate</span>
+                            <div style="font-weight:600; font-size:0.95rem; color:#3498db;">💎 [[${#numbers.formatDecimal(plan.cashbackPercent * 100, 1, 0)}]]% on checkout</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <span style="font-size:0.75rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:4px;">Benefits List</span>
+                            <p style="font-size:0.82rem; color:rgba(255,255,255,0.6); white-space:pre-line;" th:text="${plan.benefits}">Benefits</p>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-sm btn-outline-gold w-100 mt-3" th:onclick="'openEditModal(' + ${plan.id} + ', \'' + ${plan.name} + '\', ' + ${plan.price} + ', ' + ${plan.welcomeCredits} + ', ' + ${plan.cashbackPercent} + ', `' + ${plan.benefits} + '`)'">
+                        <i class="bi bi-pencil-square me-1"></i> Edit Plan Rules
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLAN EDIT MODAL -->
+        <div class="modal fade" id="editPlanModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content modal-dark" style="background:#151515; border:1px solid rgba(201,168,76,0.15); border-radius:18px;">
+                    <form th:action="@{/admin/memberships/save}" method="post">
+                        <div class="modal-header border-0 pb-0">
+                            <h5 class="modal-title brand-font text-gold">Edit Membership Details</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body py-4">
+                            <input type="hidden" id="editPlanId" name="id">
+                            <input type="hidden" id="editDurationDays" name="durationDays" value="365">
+                            
+                            <div class="mb-3">
+                                <label class="form-label text-white-50">Plan Name</label>
+                                <input type="text" class="form-control bg-dark border-secondary text-white" id="editPlanName" name="name" required readonly>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-white-50">Yearly Price (₹)</label>
+                                    <input type="number" step="1" class="form-control bg-dark border-secondary text-white" id="editPlanPrice" name="price" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-white-50">Welcome Credits</label>
+                                    <input type="number" step="1" class="form-control bg-dark border-secondary text-white" id="editPlanWelcomeCredits" name="welcomeCredits" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-white-50">Checkout Cashback Rate (0.05 = 5%)</label>
+                                <input type="number" step="0.01" min="0" max="1" class="form-control bg-dark border-secondary text-white" id="editPlanCashback" name="cashbackPercent" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-white-50">Benefits List (New line separated)</label>
+                                <textarea class="form-control bg-dark border-secondary text-white" id="editPlanBenefits" name="benefits" rows="4" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-gold">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script th:inline="javascript">
+        let editModal = null;
+        
+        function openEditModal(id, name, price, welcomeCredits, cashbackPercent, benefits) {
+            document.getElementById('editPlanId').value = id;
+            document.getElementById('editPlanName').value = name;
+            document.getElementById('editPlanPrice').value = price;
+            document.getElementById('editPlanWelcomeCredits').value = welcomeCredits;
+            document.getElementById('editPlanCashback').value = cashbackPercent;
+            document.getElementById('editPlanBenefits').value = benefits;
+
+            if (!editModal) {
+                editModal = new bootstrap.Modal(document.getElementById('editPlanModal'));
+            }
+            editModal.show();
+        }
+    </script>
+</body>
+</html>

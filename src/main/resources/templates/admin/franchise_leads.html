@@ -2,7 +2,12 @@
 <html th:replace="~{admin/layout :: layout(~{::div.content})}">
 <body>
     <div class="content">
-        <h2 class="mb-4">Franchise Leads</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Franchise Leads</h2>
+            <a href="/admin/franchise-leads/new" class="btn btn-gold btn-sm px-4">
+                <i class="bi bi-plus-lg"></i> Add New Lead
+            </a>
+        </div>
         <div class="card p-4">
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
@@ -17,6 +22,7 @@
                             <th>Type</th>
                             <th>Budget</th>
                             <th>Applied At</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -30,9 +36,16 @@
                             <td><span class="badge bg-info text-dark" th:text="${lead.franchiseType}">Studio</span></td>
                             <td th:text="${lead.budget}">15-20 Lakhs</td>
                             <td th:text="${#temporals.format(lead.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+                            <td>
+                                <form th:action="@{/admin/franchise-leads/{id}/delete(id=${lead.id})}" method="POST" onsubmit="return confirm('Delete this lead?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(leads)}">
-                            <td colspan="9" class="text-center py-4 text-muted">No franchise leads found.</td>
+                            <td colspan="10" class="text-center py-4 text-muted">No franchise leads found.</td>
                         </tr>
                     </tbody>
                 </table>

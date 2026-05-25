@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}">
+<body>
+    <div class="content">
+        <h2 class="mb-4">Flagship Salon Information</h2>
+        
+        <!-- Alerts -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="card data-card p-4 mx-auto" style="max-width: 800px;">
+            <p class="text-muted mb-4">Update the details of the main L.L. Beauty flagship salon here. This information is displayed on the main website.</p>
+            
+            <form action="/admin/salon-info/save" method="POST" enctype="multipart/form-data">
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-white">Salon Name</label>
+                        <input type="text" class="form-control" name="name" th:value="${salonInfo.name}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-white">Tagline</label>
+                        <input type="text" class="form-control" name="tagline" th:value="${salonInfo.tagline}">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-white">Description</label>
+                    <textarea class="form-control" name="description" rows="3" th:text="${salonInfo.description}" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-white">Complete Address</label>
+                    <textarea class="form-control" name="address" rows="2" th:text="${salonInfo.address}" required></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label text-white">Contact Phone</label>
+                        <input type="text" class="form-control" name="contactPhone" th:value="${salonInfo.contactPhone}" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label text-white">Contact Email</label>
+                        <input type="email" class="form-control" name="contactEmail" th:value="${salonInfo.contactEmail}" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label text-white">Timings</label>
+                        <input type="text" class="form-control" name="timings" th:value="${salonInfo.timings}" placeholder="e.g. 10 AM - 8 PM" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-white">Hero Image</label>
+                    <div th:if="${salonInfo.imageUrl != null}" class="mb-2">
+                        <img th:src="${salonInfo.imageUrl}" alt="Current Salon Image" class="rounded" style="width: 120px; height: 80px; object-fit: cover; border: 1px solid #c9a84c;">
+                    </div>
+                    <input class="form-control bg-dark text-white border-secondary" type="file" name="imageFile" accept="image/*">
+                    <div class="form-text text-muted">Leave empty to keep the existing image. Recommended: Wide image (e.g., 1200x600px).</div>
+                </div>
+
+                <button type="submit" class="btn btn-gold w-100 py-2">
+                    <i class="bi bi-save"></i> Save Salon Info
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

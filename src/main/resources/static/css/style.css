@@ -47,6 +47,19 @@ h1, h2, h3, h4, h5, h6, .brand-font {
 .text-gold    { color: var(--gold) !important; }
 .section-pad  { padding: 90px 0; }
 
+/* ---- Image Styles ---- */
+.premium-img {
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    max-width: 100%;
+}
+.premium-img:hover {
+    box-shadow: var(--shadow-gold);
+    transform: translateY(-4px);
+}
+
 /* ---- Navbar ---- */
 .navbar {
     background: rgba(245,240,232,0.95) !important;
@@ -720,4 +733,69 @@ h1, h2, h3, h4, h5, h6, .brand-font {
     .stat-number { font-size: 1.4rem; }
     .auth-card { padding: 36px 24px; }
     .product-img-wrap { height: 200px; }
+}
+/* =====================================
+   PREMIUM MEMBERSHIP NAVBAR LINK
+===================================== */
+
+.membership-link{
+    color:#c9a84c !important;
+    font-weight:600;
+    position:relative;
+    transition:all 0.3s ease;
+}
+
+.membership-link:hover{
+    color:#f5d77a !important;
+}
+
+.membership-link::after{
+    content:'';
+    position:absolute;
+    left:0;
+    bottom:-4px;
+    width:0;
+    height:2px;
+    background:#c9a84c;
+    transition:0.3s ease;
+}
+
+.membership-link:hover::after{
+    width:100%;
+}
+/* ===================================
+   DASHBOARD LAYOUT FIX
+=================================== */
+
+.info-card{
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+}
+
+.row.g-4{
+    margin-bottom: 80px;
+}
+
+footer{
+    position: relative;
+    z-index: 0;
+}
+
+.member-exclusive-section{
+    margin-bottom: 40px;
+}
+
+/* Mobile Fix */
+
+@media(max-width:991px){
+
+    .dashboard-container{
+        padding-bottom: 180px;
+    }
+
+    .info-card{
+        margin-bottom: 24px;
+    }
+
 }

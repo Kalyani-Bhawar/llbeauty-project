@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}">
+<body>
+    <div class="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Add New Franchise Lead</h2>
+            <a href="/admin/franchise-leads" class="btn btn-outline-secondary btn-sm px-4">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+        
+        <div class="card data-card p-4 mx-auto" style="max-width: 800px;">
+            <form action="/admin/franchise-leads/save" method="POST">
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-white">Applicant Name</label>
+                        <input type="text" class="form-control" name="name" th:value="${lead.name}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-white">Email Address</label>
+                        <input type="email" class="form-control" name="email" th:value="${lead.email}" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-white">Phone Number</label>
+                        <input type="text" class="form-control" name="phone" th:value="${lead.phone}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-white">City</label>
+                        <input type="text" class="form-control" name="city" th:value="${lead.city}" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-white">Franchise Model</label>
+                        <select class="form-select bg-dark text-white border-secondary" name="franchiseType" required>
+                            <option value="Kiosk Model">Kiosk Model</option>
+                            <option value="Studio Model">Studio Model</option>
+                            <option value="Lounge Model">Lounge Model</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-white">Budget</label>
+                        <select class="form-select bg-dark text-white border-secondary" name="budget" required>
+                            <option value="5L - 10L">5L - 10L</option>
+                            <option value="15L - 25L">15L - 25L</option>
+                            <option value="30L - 50L">30L - 50L</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-white">Message / Details</label>
+                    <textarea class="form-control" name="message" rows="3" th:text="${lead.message}"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-gold w-100 py-2">
+                    <i class="bi bi-check-lg"></i> Save Franchise Lead
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

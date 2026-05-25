@@ -63,7 +63,7 @@
             <div class="row g-4 animate-fade-up delay-2">
                 <div class="col-lg-3 col-md-6" th:each="product, iter : ${products}">
                     <div class="product-card">
-                        <div class="product-img-wrap">
+                        <div class="product-img-wrap premium-img">
                             <img th:src="${product.imageUrl}" th:alt="${product.name}">
                             <div class="product-badge" th:if="${iter.index == 0}">Bestseller</div>
                             <div class="product-badge" th:if="${iter.index == 1}">New</div>

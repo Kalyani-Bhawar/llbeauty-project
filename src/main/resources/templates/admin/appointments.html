@@ -3,6 +3,17 @@
 <body>
     <div class="content">
         <h2 class="mb-4">Salon Appointments</h2>
+
+        <!-- Alerts -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
         <div class="card p-4">
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
@@ -16,6 +27,7 @@
                             <th>Time</th>
                             <th>Status</th>
                             <th>Booked At</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -32,9 +44,28 @@
                                 <span class="badge bg-danger" th:if="${appointment.status == 'CANCELLED'}" th:text="${appointment.status}">CANCELLED</span>
                             </td>
                             <td th:text="${#temporals.format(appointment.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+                            <td>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <!-- Status Update Form -->
+                                    <form th:action="@{/admin/appointments/{id}/status(id=${appointment.id})}" method="POST" class="d-inline">
+                                        <select name="status" class="form-select form-select-sm bg-dark text-white border-secondary" style="min-width: 120px;" onchange="this.form.submit()">
+                                            <option value="PENDING" th:selected="${appointment.status == 'PENDING'}">Pending</option>
+                                            <option value="COMPLETED" th:selected="${appointment.status == 'COMPLETED'}">Completed</option>
+                                            <option value="CANCELLED" th:selected="${appointment.status == 'CANCELLED'}">Cancelled</option>
+                                        </select>
+                                    </form>
+                                    
+                                    <!-- Delete Appointment Form -->
+                                    <form th:action="@{/admin/appointments/{id}/delete(id=${appointment.id})}" method="POST" onsubmit="return confirm('Delete this appointment booking?');" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(appointments)}">
-                            <td colspan="8" class="text-center py-4 text-muted">No appointments found.</td>
+                            <td colspan="9" class="text-center py-4 text-muted">No appointments found.</td>
                         </tr>
                     </tbody>
                 </table>
