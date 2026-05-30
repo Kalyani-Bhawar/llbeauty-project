@@ -10,6 +10,7 @@ import com.llbeauty.repository.MerchantRepository;
 import com.llbeauty.repository.ProductRepository;
 import com.llbeauty.repository.QrCodeRepository;
 import com.llbeauty.repository.SalonInfoRepository;
+import com.llbeauty.repository.UserMembershipRepository;
 import com.llbeauty.service.AuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,19 +30,25 @@ public class DataInitializer implements CommandLineRunner {
     private final MembershipRepository membershipRepository;
     private final MerchantRepository merchantRepository;
     private final QrCodeRepository qrCodeRepository;
+    private final UserMembershipRepository userMembershipRepository;
+    private final com.llbeauty.repository.SalonServiceRepository salonServiceRepository;
 
     public DataInitializer(AuthService authService,
                            ProductRepository productRepository,
                            SalonInfoRepository salonInfoRepository,
                            MembershipRepository membershipRepository,
                            MerchantRepository merchantRepository,
-                           QrCodeRepository qrCodeRepository) {
+                           QrCodeRepository qrCodeRepository,
+                           UserMembershipRepository userMembershipRepository,
+                           com.llbeauty.repository.SalonServiceRepository salonServiceRepository) {
         this.authService = authService;
         this.productRepository = productRepository;
         this.salonInfoRepository = salonInfoRepository;
         this.membershipRepository = membershipRepository;
         this.merchantRepository = merchantRepository;
         this.qrCodeRepository = qrCodeRepository;
+        this.userMembershipRepository = userMembershipRepository;
+        this.salonServiceRepository = salonServiceRepository;
     }
 
     @Override
@@ -102,40 +109,47 @@ public class DataInitializer implements CommandLineRunner {
             log.info("Database seeded with default beauty products.");
         }
 
-        // 4. Seed Membership Plans if empty
-        if (membershipRepository.count() == 0) {
-            Membership silver = new Membership(
+        // 4. Seed Membership Plans (reset and seed if not exactly the 3 Eva Club cards)
+        long planCount = membershipRepository.count();
+        boolean hasAllEvaCards = membershipRepository.findAll().stream()
+                .allMatch(m -> m.getName().equals("Eva Pink Card") || m.getName().equals("Eva Gold Card") || m.getName().equals("Eva Black Card"));
+        if (planCount != 3 || !hasAllEvaCards) {
+            log.info("Resetting membership plans to seed new Eva Club Membership Cards...");
+            userMembershipRepository.deleteAll();
+            membershipRepository.deleteAll();
+
+            Membership pink = new Membership(
                 null,
-                "Silver Beauty Pass",
-                999.0,
+                "Eva Pink Card",
+                2999.0,
                 0.05,
-                "5% Cashback on All Orders\nExclusive Birthday Coupon\nEarly Access to Sales & Launches\n100 Welcome Credits",
+                "5% Discount\nEarly Access to Sales & Events\nExclusive Birthday Offers\nReward Points Earning\nStandard Member Support",
                 365,
-                100.0
+                300.0
             );
 
             Membership gold = new Membership(
                 null,
-                "Gold Glam Pass",
-                2999.0,
-                0.10,
-                "10% Cashback on All Orders\nFree Courier Shipping\nDouble Reward Points on Salon\nVIP Customer Support Line\n10% Salon Discounts\n500 Welcome Credits",
+                "Eva Gold Card",
+                9999.0,
+                0.15,
+                "15% Discount\nFree Delivery on All Orders\nVIP Launch Access\nDouble Reward Points\nEvent Invitations",
                 365,
-                500.0
+                1000.0
             );
 
             Membership black = new Membership(
                 null,
-                "Black Luxe Pass",
-                7999.0,
-                0.20,
-                "20% Cashback on All Orders\nFree VIP Salon Access\nPriority Home Delivery\nPremium Gift Hamper at Signup\nExclusive Luxury Partner Offers\nPersonal Beauty Consultant\n1500 Welcome Credits",
+                "Eva Black Card",
+                24999.0,
+                0.25,
+                "25% Discount\nConcierge Support\nLuxury Gifts on Signup\nTriple Reward Points\nVIP Lounge Access",
                 365,
-                1500.0
+                3000.0
             );
 
-            membershipRepository.saveAll(List.of(silver, gold, black));
-            log.info("Database seeded with default membership plans.");
+            membershipRepository.saveAll(List.of(pink, gold, black));
+            log.info("Database seeded with Eva Pink, Gold, and Black membership cards.");
         }
 
         // 5. Seed Merchants and QR Codes for local wallet redemption scanning
@@ -165,6 +179,52 @@ public class DataInitializer implements CommandLineRunner {
 
             qrCodeRepository.saveAll(List.of(qr1, qr2));
             log.info("Database seeded with sample merchants and scan-to-pay QR codes.");
+        }
+
+        // 6. Seed Salon Services if empty
+        if (salonServiceRepository.count() == 0) {
+            com.llbeauty.entity.SalonService s1 = com.llbeauty.entity.SalonService.builder()
+                .name("Hair Styling & Cut")
+                .description("Professional cut, shampoo, conditioning and blow-dry styling.")
+                .price(899.0)
+                .durationMinutes(45)
+                .imageUrl("/images/haircare.png")
+                .build();
+
+            com.llbeauty.entity.SalonService s2 = com.llbeauty.entity.SalonService.builder()
+                .name("Luxury Hair Spa")
+                .description("Deep nourishment, repair treatment, and relaxing scalp massage.")
+                .price(1499.0)
+                .durationMinutes(60)
+                .imageUrl("/images/haircare.png")
+                .build();
+
+            com.llbeauty.entity.SalonService s3 = com.llbeauty.entity.SalonService.builder()
+                .name("Gold Glow Facial")
+                .description("Premium exfoliating facial with botanical extracts for instant radiance.")
+                .price(1999.0)
+                .durationMinutes(50)
+                .imageUrl("/images/skincare.png")
+                .build();
+
+            com.llbeauty.entity.SalonService s4 = com.llbeauty.entity.SalonService.builder()
+                .name("Bridal Makeover")
+                .description("Elite luxury bridal makeover including saree draping, hair, and makeup.")
+                .price(9999.0)
+                .durationMinutes(180)
+                .imageUrl("/images/spa.png")
+                .build();
+
+            com.llbeauty.entity.SalonService s5 = com.llbeauty.entity.SalonService.builder()
+                .name("Hair Color")
+                .description("Premium global hair coloring and highlights.")
+                .price(2999.0)
+                .durationMinutes(120)
+                .imageUrl("/images/haircare.png")
+                .build();
+
+            salonServiceRepository.saveAll(List.of(s1, s2, s3, s4, s5));
+            log.info("Database seeded with default salon services.");
         }
     }
 }

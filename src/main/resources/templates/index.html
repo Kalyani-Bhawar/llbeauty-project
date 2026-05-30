@@ -16,8 +16,8 @@
 
     <!-- ========== HERO SECTION ========== -->
     <section class="hero-section">
-        <div class="container">
-            <div class="row align-items-center g-5">
+        <div class="container py-5">
+			<div class="row align-items-center justify-content-between g-5">
                 <!-- Left Content -->
                 <div class="col-lg-6">
                     <div class="animate-fade-up">
@@ -270,13 +270,21 @@
                             <div class="product-category" th:text="${product.category}">Category</div>
                             <div class="product-name" th:text="${product.name}">Product Name</div>
                             <div class="product-desc" th:text="${product.description}">Description</div>
-                            <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center justify-content-between mt-2">
                                 <div>
-                                    <span class="product-price">₹<span th:text="${#numbers.formatDecimal(product.price, 1, 0)}">0</span></span>
+                                    <span class="product-price" style="font-size:1.1rem;">₹<span th:text="${#numbers.formatDecimal(product.price, 1, 0)}">0</span></span>
                                 </div>
-                                <a href="/shop" class="btn-outline-gold text-decoration-none"
-                                   style="padding:6px 16px;font-size:0.75rem;"
-                                   onclick="return checkAuth(event, '/shop')">Add →</a>
+                                <div class="d-flex gap-2">
+                                    <button class="btn-outline-gold" style="padding:6px 12px;font-size:0.75rem;border-radius:6px;" 
+                                        th:onclick="'return handleAddToCart(event, ' + ${product.id} + ')'" title="Add to Cart">
+                                        <i class="bi bi-cart-plus"></i>
+                                    </button>
+                                    <form action="/checkout" method="get" class="m-0 p-0" onsubmit="return checkAuth(event, '/checkout')">
+                                        <input type="hidden" name="productId" th:value="${product.id}">
+                                        <button type="submit" class="btn-gold text-decoration-none"
+                                           style="padding:6px 14px;font-size:0.75rem;border-radius:6px; height:100%;">Buy Now</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -414,8 +422,7 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts (Bootstrap JS is loaded in fragments/header.html) -->
     <script>
         // ---- Auth Guard ----
         let pendingRedirect = null;
@@ -437,6 +444,31 @@
         function closeAuthGuard() {
             document.getElementById('authGuardOverlay').classList.remove('active');
             pendingRedirect = null;
+        }
+
+        function handleAddToCart(event, productId){
+            event.preventDefault();
+            const isLoggedIn = [[${currentUser != null}]];
+            if(!isLoggedIn){
+                pendingRedirect = "/";
+                document.getElementById('authGuardLoginBtn').href = '/auth/login?redirect=' + encodeURIComponent(pendingRedirect);
+                document.getElementById('authGuardOverlay').classList.add('active');
+                return false;
+            }
+            const formData = new FormData();
+            formData.append("productId", productId);
+            formData.append("quantity", 1);
+            fetch('/checkout/cart/add', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success'){
+                    toggleCartDrawer();
+                }else{
+                    alert("Adding product failed. Please try again.");
+                }
+            })
+            .catch(err => console.error("Cart AJAX error: ", err));
+            return true;
         }
 
         // Close modal on backdrop click

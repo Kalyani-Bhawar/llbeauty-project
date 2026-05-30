@@ -94,7 +94,7 @@
                             </div>
                             <div class="col-sm-6 mt-2">
                                 <div style="font-size: 0.75rem; color: var(--gold-dark); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Timings</div>
-                                <div style="font-size: 0.88rem; color: var(--dark);" class="mt-1" th:text="${salonInfo?.timings ?: 'Mon – Sat: 10:00 AM – 07:00 PM | Sunday: Closed'}">Mon – Sat: 10:00 AM – 07:00 PM | Sunday: Closed</div>
+                                <div style="font-size: 0.88rem; color: var(--dark);" class="mt-1" th:text="${salonInfo?.timings ?: 'Mon – Sat: 07:00 AM – 10:00 PM | Sunday: Closed'}">Mon – Sat: 07:00 AM – 10:00 PM | Sunday: Closed</div>
                             </div>
                             <div class="col-sm-6 mt-2">
                                 <div style="font-size: 0.75rem; color: var(--gold-dark); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Booking Note</div>
@@ -119,36 +119,49 @@
                 <!-- Left: Services list -->
                 <div class="col-lg-7 animate-fade-up">
                     <!-- Services Grid -->
-                    <h4 class="brand-font mb-4">Select a Package / Service</h4>
+                    <h4 class="brand-font mb-2">Select Services (Multiple Allowed)</h4>
+                    <p class="text-muted small mb-4">Click to select or deselect multiple services. The total price and duration will calculate dynamically below.</p>
                     <div class="row g-3">
                         <div class="col-md-6 col-sm-12">
-                            <div class="service-selection-card active" onclick="selectService(this, 'Hair Styling & Cut', '₹899')">
-                                <div class="service-icon">💇</div>
-                                <h5 class="fw-bold mb-1" style="font-size: 1rem;">Hair Styling &amp; Cut</h5>
+                            <div class="service-selection-card active" data-name="Hair Styling & Cut" data-price="899" onclick="toggleService(this)">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="service-icon">💇</div>
+                                    <span class="badge bg-gold text-dark border-pill check-icon" style="font-size:0.65rem;">✓ SELECTED</span>
+                                </div>
+                                <h5 class="fw-bold mb-1 mt-2" style="font-size: 1rem;">Hair Styling &amp; Cut</h5>
                                 <p class="text-muted small mb-2">Professional cut, shampoo, conditioning and blow-dry styling.</p>
                                 <div class="text-gold fw-bold">₹899 <span class="text-muted small fw-normal">· 45 min</span></div>
                             </div>
                         </div>
                         <div class="col-md-6 col-sm-12">
-                            <div class="service-selection-card" onclick="selectService(this, 'Luxury Hair Spa', '₹1,499')">
-                                <div class="service-icon">🧖</div>
-                                <h5 class="fw-bold mb-1" style="font-size: 1rem;">Luxury Hair Spa</h5>
+                            <div class="service-selection-card" data-name="Luxury Hair Spa" data-price="1499" onclick="toggleService(this)">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="service-icon">🧖</div>
+                                    <span class="badge bg-gold text-dark border-pill check-icon" style="font-size:0.65rem; display:none;">✓ SELECTED</span>
+                                </div>
+                                <h5 class="fw-bold mb-1 mt-2" style="font-size: 1rem;">Luxury Hair Spa</h5>
                                 <p class="text-muted small mb-2">Deep nourishment, repair treatment, and relaxing scalp massage.</p>
                                 <div class="text-gold fw-bold">₹1,499 <span class="text-muted small fw-normal">· 60 min</span></div>
                             </div>
                         </div>
                         <div class="col-md-6 col-sm-12">
-                            <div class="service-selection-card" onclick="selectService(this, 'Gold Glow Facial', '₹1,999')">
-                                <div class="service-icon">✨</div>
-                                <h5 class="fw-bold mb-1" style="font-size: 1rem;">Gold Glow Facial</h5>
+                            <div class="service-selection-card" data-name="Gold Glow Facial" data-price="1999" onclick="toggleService(this)">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="service-icon">✨</div>
+                                    <span class="badge bg-gold text-dark border-pill check-icon" style="font-size:0.65rem; display:none;">✓ SELECTED</span>
+                                </div>
+                                <h5 class="fw-bold mb-1 mt-2" style="font-size: 1rem;">Gold Glow Facial</h5>
                                 <p class="text-muted small mb-2">Premium exfoliating facial with botanical extracts for instant radiance.</p>
                                 <div class="text-gold fw-bold">₹1,999 <span class="text-muted small fw-normal">· 50 min</span></div>
                             </div>
                         </div>
                         <div class="col-md-6 col-sm-12">
-                            <div class="service-selection-card" onclick="selectService(this, 'Bridal Makeover', '₹9,999')">
-                                <div class="service-icon">👰</div>
-                                <h5 class="fw-bold mb-1" style="font-size: 1rem;">Bridal Makeover</h5>
+                            <div class="service-selection-card" data-name="Bridal Makeover" data-price="9999" onclick="toggleService(this)">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="service-icon">👰</div>
+                                    <span class="badge bg-gold text-dark border-pill check-icon" style="font-size:0.65rem; display:none;">✓ SELECTED</span>
+                                </div>
+                                <h5 class="fw-bold mb-1 mt-2" style="font-size: 1rem;">Bridal Makeover</h5>
                                 <p class="text-muted small mb-2">Elite luxury bridal makeover including saree draping, hair, and makeup.</p>
                                 <div class="text-gold fw-bold">₹9,999 <span class="text-muted small fw-normal">· 180 min</span></div>
                             </div>
@@ -169,25 +182,17 @@
                         </div>
 
                         <form th:if="${currentUser != null}" th:action="@{/salon/book}" method="POST" id="bookingForm">
-                            
-                            <!-- Service Selection Dropdown -->
-                            <div class="mb-3">
-                                <label for="serviceSelect" class="form-label text-dark fw-bold">Select Service</label>
-                                <select class="form-control" id="serviceSelect" name="serviceName" onchange="handleDropdownServiceChange(this)" required>
-                                    <option value="Hair Styling & Cut" data-price="₹899" selected>Hair Styling &amp; Cut (₹899)</option>
-                                    <option value="Luxury Hair Spa" data-price="₹1,499">Luxury Hair Spa (₹1,499)</option>
-                                    <option value="Gold Glow Facial" data-price="₹1,999">Gold Glow Facial (₹1,999)</option>
-                                    <option value="Bridal Makeover" data-price="₹9,999">Bridal Makeover (₹9,999)</option>
-                                </select>
-                            </div>
+                            <!-- Hidden input storing comma-separated selected services list -->
+                            <input type="hidden" id="servicesHiddenInput" name="services" value="Hair Styling & Cut" required>
 
-                            <!-- Selected Service Info Summary Card -->
-                            <div class="mb-3 p-3 bg-beige rounded-3 d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="small text-muted">Selected Service Summary:</div>
-                                    <div class="fw-bold text-dark" id="displayServiceName">Hair Styling &amp; Cut</div>
+                            <!-- Selected Services Info Summary Card -->
+                            <div class="mb-4 p-3 bg-beige rounded-3">
+                                <div class="small text-gold fw-bold text-uppercase" style="font-size:0.7rem; letter-spacing:0.5px;">Selected Services Summary:</div>
+                                <div class="fw-bold text-dark mt-1" id="displayServiceName" style="font-size:0.95rem; line-height:1.4;">Hair Styling &amp; Cut</div>
+                                <div class="d-flex justify-content-between align-items-center mt-3 border-top pt-2" style="border-color: rgba(0,0,0,0.06) !important;">
+                                    <span class="small text-muted font-weight-bold">AGGREGATE ESTIMATED TOTAL:</span>
+                                    <span class="fw-bold text-gold fs-5" id="displayServicePrice">₹899</span>
                                 </div>
-                                <div class="fw-bold text-gold" id="displayServicePrice">₹899</div>
                             </div>
 
                             <!-- Appointment Date -->
@@ -199,15 +204,25 @@
                             <!-- Time Slot Selection -->
                             <div class="mb-4">
                                 <label for="timeSlot" class="form-label">Available Time Slot</label>
-                                <select class="form-control" id="timeSlot" name="timeSlot" required>
-                                    <option value="" disabled selected>Choose a slot...</option>
-                                    <option value="10:00 AM">10:00 AM</option>
-                                    <option value="11:30 AM">11:30 AM</option>
-                                    <option value="01:00 PM">01:00 PM</option>
-                                    <option value="02:30 PM">02:30 PM</option>
-                                    <option value="04:00 PM">04:00 PM</option>
-                                    <option value="05:30 PM">05:30 PM</option>
-                                </select>
+								<select class="form-control" id="timeSlot" name="timeSlot" required>
+								    <option value="" disabled selected>Choose a slot...</option>
+								    <option value="07:00 AM">07:00 AM</option>
+								    <option value="08:00 AM">08:00 AM</option>
+								    <option value="09:00 AM">09:00 AM</option>
+								    <option value="10:00 AM">10:00 AM</option>
+								    <option value="11:00 AM">11:00 AM</option>
+								    <option value="12:00 PM">12:00 PM</option>
+								    <option value="01:00 PM">01:00 PM</option>
+								    <option value="02:00 PM">02:00 PM</option>
+								    <option value="03:00 PM">03:00 PM</option>
+								    <option value="04:00 PM">04:00 PM</option>
+								    <option value="05:00 PM">05:00 PM</option>
+								    <option value="06:00 PM">06:00 PM</option>
+								    <option value="07:00 PM">07:00 PM</option>
+								    <option value="08:00 PM">08:00 PM</option>
+								    <option value="09:00 PM">09:00 PM</option>
+								    <option value="10:00 PM">10:00 PM</option>
+								</select>
                             </div>
 
                             <!-- User details confirmation -->
@@ -221,17 +236,17 @@
                                 <input type="tel" class="form-control" th:value="${currentUser.mobile}" disabled>
                             </div>
 
-                            <div class="mb-4 p-3 bg-light rounded-3 text-center" style="border: 1px dashed rgba(25,135,84,0.4);">
-                                <div style="color: #198754; font-size: 0.85rem; font-weight: 600;">
-                                    💵 Zero Advanced Payment Required
+                            <div class="mb-4 p-3 bg-light rounded-3 text-center" style="border: 1px dashed rgba(201,168,76,0.5);">
+                                <div style="color: var(--gold-dark); font-size: 0.85rem; font-weight: 600;">
+                                    💳 ₹100 Advanced Secure Payment Required
                                 </div>
-                                <div class="text-muted" style="font-size: 0.75rem; margin-top: 4px;">
-                                    Booking is free. Pay at salon on arrival using Cash, UPI or Wallet.
+                                <div class="text-muted" style="font-size: 0.75rem; margin-top: 4px; line-height:1.4;">
+                                    Pay a minor ₹100.00 advanced fee to secure your VIP queue slot token. Pay remaining balance at salon.
                                 </div>
                             </div>
 
                             <button type="submit" class="btn-gold w-100 py-3" style="border-radius: 12px; font-size: 0.9rem;">
-                                Confirm Appointment &nbsp;✓
+                                Pay Advance &amp; Book &nbsp;✓
                             </button>
                         </form>
                     </div>
@@ -260,54 +275,76 @@
 
             dateInput.min = yyyy + '-' + mm + '-' + dd;
             dateInput.value = yyyy + '-' + mm + '-' + dd;
+			
+			// Block Sunday selection only
+			dateInput.addEventListener('change', function() {
+			    const selected = new Date(this.value + 'T00:00:00');
+			    if (selected.getDay() === 0) {
+			        alert('Sorry! Salon is closed on Sundays. Please select another day.');
+			        this.value = '';
+			    }
+			});
+			}
+      
+
+        // Toggle Service Cards Selection (Multiple selection support)
+        function toggleService(element) {
+            // Toggle active state
+            element.classList.toggle('active');
+            
+            // Toggle check icon display
+            const check = element.querySelector('.check-icon');
+            if (check) {
+                check.style.display = element.classList.contains('active') ? 'inline-block' : 'none';
+            }
+            
+            recalculateSelections();
         }
 
-        // Card Click Selection
-        function selectService(element, name, price) {
-            // Remove active class from all cards
-            document.querySelectorAll('.service-selection-card').forEach(card => {
-                card.classList.remove('active');
+        function recalculateSelections() {
+            const activeCards = document.querySelectorAll('.service-selection-card.active');
+            const displayNames = document.getElementById('displayServiceName');
+            const displayPrice = document.getElementById('displayServicePrice');
+            const hiddenInput = document.getElementById('servicesHiddenInput');
+
+            if (activeCards.length === 0) {
+                // Prevent empty submission by forcing at least one service
+                displayNames.innerText = "No services selected. Choose at least one above.";
+                displayPrice.innerText = "₹0";
+                if (hiddenInput) hiddenInput.value = "";
+                return;
+            }
+
+            let namesList = [];
+            let totalPrice = 0;
+
+            activeCards.forEach(card => {
+                const name = card.getAttribute('data-name');
+                const price = parseFloat(card.getAttribute('data-price'));
+                namesList.push(name);
+                totalPrice += price;
             });
-            
-            // Add active class to clicked card
-            element.classList.add('active');
 
-            // Update display fields in summary card
-            const displayName = document.getElementById('displayServiceName');
-            const displayPrice = document.getElementById('displayServicePrice');
-            const serviceSelect = document.getElementById('serviceSelect');
-
-            if (displayName && displayPrice) {
-                displayName.textContent = name;
-                displayPrice.textContent = price;
+            // Update text nodes
+            if (displayNames && displayPrice) {
+                displayNames.innerText = namesList.join(', ');
+                displayPrice.innerText = '₹' + totalPrice.toLocaleString('en-IN');
             }
-            // Update dropdown menu
-            if (serviceSelect) {
-                serviceSelect.value = name;
+
+            // Populate hidden inputs
+            if (hiddenInput) {
+                hiddenInput.value = namesList.join(',');
             }
         }
 
-        // Dropdown Selection Change
-        function handleDropdownServiceChange(selectElement) {
-            const selectedOption = selectElement.options[selectElement.selectedIndex];
-            const name = selectElement.value;
-            const price = selectedOption.getAttribute('data-price');
-            
-            // Update display fields in summary card
-            const displayName = document.getElementById('displayServiceName');
-            const displayPrice = document.getElementById('displayServicePrice');
-            
-            if (displayName && displayPrice) {
-                displayName.textContent = name;
-                displayPrice.textContent = price;
-            }
-            
-            // Highlight corresponding card on the left
-            document.querySelectorAll('.service-selection-card').forEach(card => {
-                card.classList.remove('active');
-                const onclickAttr = card.getAttribute('onclick');
-                if (onclickAttr && onclickAttr.includes(name)) {
-                    card.classList.add('active');
+        // Form verification on submit
+        const bookingForm = document.getElementById('bookingForm');
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', function(e) {
+                const hiddenInput = document.getElementById('servicesHiddenInput');
+                if (!hiddenInput || hiddenInput.value.trim() === "") {
+                    e.preventDefault();
+                    alert("Please select at least one service to schedule your appointment.");
                 }
             });
         }

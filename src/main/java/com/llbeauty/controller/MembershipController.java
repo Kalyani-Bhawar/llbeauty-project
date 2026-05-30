@@ -30,7 +30,7 @@ public class MembershipController {
     private User getAuthenticatedUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
-            return userRepository.findByMobile(auth.getName()).orElse(null);
+            return userRepository.findByEmail(auth.getName()).orElse(null);
         }
         return null;
     }
@@ -83,7 +83,10 @@ public class MembershipController {
     @ResponseBody
     public ResponseEntity<?> confirmPayment(@RequestParam("planId") Long planId,
                                             @RequestParam("paymentId") String paymentId,
-                                            @RequestParam("orderId") String orderId) {
+                                            @RequestParam("orderId") String orderId,
+                                            @RequestParam(value = "razorpaySignature", required = false) String razorpaySignature,
+                                            @RequestParam(value = "dob", required = false) String dob,
+                                            @RequestParam(value = "referralCode", required = false) String referralCode) {
         User user = getAuthenticatedUser();
         if (user == null) {
             Map<String, Object> err = new HashMap<>();
@@ -92,7 +95,7 @@ public class MembershipController {
         }
 
         try {
-            UserMembership um = membershipService.activateMembership(user, planId, paymentId, orderId);
+            UserMembership um = membershipService.activateMembership(user, planId, paymentId, orderId, razorpaySignature, dob, referralCode);
             Map<String, Object> success = new HashMap<>();
             success.put("status", "success");
             success.put("message", "Membership " + um.getMembership().getName() + " activated successfully!");

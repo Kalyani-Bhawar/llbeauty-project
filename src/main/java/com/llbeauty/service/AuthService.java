@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 /**
- * AuthService — handles User registration, User login (OTP-based) and Admin login (password).
+ * AuthService — handles User registration, User login (Email OTP-based) and Admin login (password).
  */
 @Service
 public class AuthService {
@@ -40,11 +40,11 @@ public class AuthService {
     }
 
     // =========================================================
-    //  USER — Register (Step 1: save user, send OTP)
+    //  USER — Register (Step 1: save user, send OTP to email)
     // =========================================================
     public boolean registerUser(RegisterRequest request) {
-        if (userRepository.existsByMobile(request.getMobile())) {
-            log.warn("Mobile already registered: {}", request.getMobile());
+        if (userRepository.existsByEmail(request.getEmail())) {
+            log.warn("Email already registered: {}", request.getEmail());
             return false;
         }
         User user = new User();
@@ -52,32 +52,33 @@ public class AuthService {
         user.setMobile(request.getMobile());
         user.setEmail(request.getEmail());
         userRepository.save(user);
-        // Send dummy OTP
-        otpService.sendOtp(request.getMobile());
-        log.info("New user registered: {}", request.getMobile());
+        
+        // Send OTP to registered email
+        otpService.sendOtp(request.getEmail());
+        log.info("New user registered with email: {}", request.getEmail());
         return true;
     }
 
     // =========================================================
     //  USER — Send OTP for Login (existing user)
     // =========================================================
-    public boolean sendLoginOtp(String mobile) {
-        if (!userRepository.existsByMobile(mobile)) {
-            log.warn("Mobile not registered: {}", mobile);
+    public boolean sendLoginOtp(String email) {
+        if (!userRepository.existsByEmail(email)) {
+            log.warn("Email not registered: {}", email);
             return false;
         }
-        otpService.sendOtp(mobile);
+        otpService.sendOtp(email);
         return true;
     }
 
     // =========================================================
     //  USER — Verify OTP and Issue JWT
     // =========================================================
-    public String verifyOtpAndLogin(String mobile, String enteredOtp) {
-        boolean valid = otpService.verifyOtp(mobile, enteredOtp);
+    public String verifyOtpAndLogin(String email, String enteredOtp) {
+        boolean valid = otpService.verifyOtp(email, enteredOtp);
         if (!valid) return null;
-        String token = jwtUtil.generateToken(mobile, "USER");
-        log.info("JWT issued for USER: {}", mobile);
+        String token = jwtUtil.generateToken(email, "USER");
+        log.info("JWT issued for USER (Email): {}", email);
         return token;
     }
 

@@ -31,6 +31,12 @@ public class UserMembership {
     @Column(name = "razorpay_payment_id")
     private String razorpayPaymentId;
 
+    @Column(name = "dob")
+    private String dob;
+
+    @Column(name = "referral_code")
+    private String referralCode;
+
     public UserMembership() {
     }
 
@@ -99,5 +105,21 @@ public class UserMembership {
 
     public void setRazorpayPaymentId(String razorpayPaymentId) {
         this.razorpayPaymentId = razorpayPaymentId;
+    }
+
+    public String getDob() {
+        return dob;
+    }
+
+    public void setDob(String dob) {
+        this.dob = dob;
+    }
+
+    public String getReferralCode() {
+        return referralCode;
+    }
+
+    public void setReferralCode(String referralCode) {
+        this.referralCode = referralCode;
     }
 }

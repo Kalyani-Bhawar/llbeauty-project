@@ -1,5 +1,6 @@
 package com.llbeauty.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
@@ -9,6 +10,8 @@ public class RegisterRequest {
     @NotBlank(message = "Mobile number is required")
     @Pattern(regexp = "^[6-9]\\d{9}$", message = "Enter a valid 10-digit mobile number")
     private String mobile;
+    @NotBlank(message = "Email address is required")
+    @Email(message = "Enter a valid email address")
     private String email;
 
     @java.lang.SuppressWarnings("all")

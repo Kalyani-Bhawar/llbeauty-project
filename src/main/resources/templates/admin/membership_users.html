@@ -49,30 +49,30 @@
         <!-- Plan Revenue Breakdown -->
         <div class="row g-4 mb-5">
             <div class="col-md-4">
-                <div class="data-card p-4 h-100">
-                    <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); margin-bottom:8px;">Silver Beauty Pass Revenue</div>
-                    <div style="font-family:'Playfair Display',serif; font-size:1.6rem; color:#bdc3c7; font-weight:700;">
-                        ₹<span th:text="${#numbers.formatDecimal(silverRevenue, 1, 0)}">0</span>
-                    </div>
-                    <div style="font-size:0.78rem; color:rgba(255,255,255,0.35); margin-top:4px;">@ ₹999/yr per member</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="data-card p-4 h-100" style="border-color:rgba(201,168,76,0.2);">
-                    <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); margin-bottom:8px;">Gold Glam Pass Revenue</div>
-                    <div style="font-family:'Playfair Display',serif; font-size:1.6rem; color:#c9a84c; font-weight:700;">
-                        ₹<span th:text="${#numbers.formatDecimal(goldRevenue, 1, 0)}">0</span>
+                <div class="data-card p-4 h-100" style="border-color:rgba(255,117,140,0.2);">
+                    <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); margin-bottom:8px;">Eva Pink Card Revenue</div>
+                    <div style="font-family:'Playfair Display',serif; font-size:1.6rem; color:#ff758c; font-weight:700;">
+                        ₹<span th:text="${#numbers.formatDecimal(pinkRevenue, 1, 0)}">0</span>
                     </div>
                     <div style="font-size:0.78rem; color:rgba(255,255,255,0.35); margin-top:4px;">@ ₹2,999/yr per member</div>
                 </div>
             </div>
             <div class="col-md-4">
+                <div class="data-card p-4 h-100" style="border-color:rgba(201,168,76,0.25);">
+                    <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); margin-bottom:8px;">Eva Gold Card Revenue</div>
+                    <div style="font-family:'Playfair Display',serif; font-size:1.6rem; color:#c9a84c; font-weight:700;">
+                        ₹<span th:text="${#numbers.formatDecimal(goldRevenue, 1, 0)}">0</span>
+                    </div>
+                    <div style="font-size:0.78rem; color:rgba(255,255,255,0.35); margin-top:4px;">@ ₹9,999/yr per member</div>
+                </div>
+            </div>
+            <div class="col-md-4">
                 <div class="data-card p-4 h-100" style="border-color:rgba(212,175,55,0.3);">
-                    <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); margin-bottom:8px;">Black Luxe Pass Revenue</div>
+                    <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); margin-bottom:8px;">Eva Black Card Revenue</div>
                     <div style="font-family:'Playfair Display',serif; font-size:1.6rem; color:#d4af37; font-weight:700;">
                         ₹<span th:text="${#numbers.formatDecimal(blackRevenue, 1, 0)}">0</span>
                     </div>
-                    <div style="font-size:0.78rem; color:rgba(255,255,255,0.35); margin-top:4px;">@ ₹7,999/yr per member</div>
+                    <div style="font-size:0.78rem; color:rgba(255,255,255,0.35); margin-top:4px;">@ ₹24,999/yr per member</div>
                 </div>
             </div>
         </div>
@@ -92,7 +92,9 @@
                             <th>Plan</th>
                             <th>Start Date</th>
                             <th>Expiry Date</th>
+                            <th>DOB</th>
                             <th>Payment ID</th>
+                            <th>Referral</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -105,15 +107,19 @@
                             <td style="font-size:0.83rem;" th:text="${um.user?.mobile ?: '-'}">Mobile</td>
                             <td>
                                 <span style="padding:4px 12px; border-radius:20px; font-size:0.72rem; font-weight:600;"
-                                      th:classappend="${#strings.contains(um.membership.name, 'Silver')} ? 'badge-status' : (${#strings.contains(um.membership.name, 'Gold')} ? 'badge-status badge-pending' : 'badge-status badge-completed')"
-                                      th:text="${um.membership?.name ?: 'N/A'}">Pass Name</span>
+                                      th:classappend="${#strings.contains(um.membership.name, 'Pink')} ? 'badge-status' : (${#strings.contains(um.membership.name, 'Gold')} ? 'badge-status badge-pending' : 'badge-status badge-completed')"
+                                      th:text="${um.membership?.name ?: 'N/A'}">Card Name</span>
                             </td>
                             <td style="font-size:0.78rem;color:rgba(255,255,255,0.5);"
                                 th:text="${#temporals.format(um.startDate, 'dd-MM-yyyy')}">Date</td>
                             <td style="font-size:0.78rem;color:rgba(255,255,255,0.5);"
                                 th:text="${#temporals.format(um.expiryDate, 'dd-MM-yyyy')}">Date</td>
+                            <td style="font-size:0.78rem;color:rgba(255,255,255,0.5);"
+                                th:text="${um.dob != null and !um.dob.isEmpty() ? um.dob : '-'}">DOB</td>
                             <td style="font-size:0.72rem; font-family:monospace; color:rgba(255,255,255,0.4);"
                                 th:text="${um.razorpayPaymentId ?: 'N/A'}">pay_id</td>
+                            <td style="font-size:0.83rem;color:#c9a84c;"
+                                th:text="${um.referralCode != null and !um.referralCode.isEmpty() ? um.referralCode : '-'}">Referral</td>
                             <td>
                                 <span class="badge-status badge-completed" th:if="${um.status == 'ACTIVE'}">ACTIVE</span>
                                 <span class="badge-status badge-cancelled" th:if="${um.status == 'EXPIRED'}">EXPIRED</span>
@@ -122,7 +128,7 @@
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(userMemberships)}">
-                            <td colspan="7" class="empty-state">
+                            <td colspan="11" class="empty-state">
                                 <i class="bi bi-award"></i>
                                 No membership records yet. Members will appear here after purchase.
                             </td>

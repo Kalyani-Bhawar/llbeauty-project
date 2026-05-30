@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}">
+<body>
+    <div class="content">
+        <h2 class="mb-4" th:text="${service.id != null ? 'Edit Salon Service' : 'Add New Salon Service'}">Salon Service</h2>
+        
+        <div class="card data-card p-4 mx-auto" style="max-width: 700px;">
+            <form th:action="@{/admin/salon-services/save}" method="POST" enctype="multipart/form-data">
+                <!-- Keep ID hidden if updating -->
+                <input type="hidden" name="id" th:value="${service.id}">
+                <input type="hidden" name="imageUrl" th:value="${service.imageUrl}">
+
+                <div class="mb-3">
+                    <label class="form-label text-white">Service Name</label>
+                    <input type="text" class="form-control" name="name" th:value="${service.name}" placeholder="e.g. Luxury Hair Cut" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-white">Description</label>
+                    <textarea class="form-control" name="description" rows="3" th:text="${service.description}" placeholder="Provide details about the steps, products used, and benefits..." required></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-white">Price (₹)</label>
+                        <input type="number" step="0.01" class="form-control" name="price" th:value="${service.price}" placeholder="e.g. 899.00" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-white">Duration (Minutes)</label>
+                        <input type="number" class="form-control" name="durationMinutes" th:value="${service.durationMinutes}" placeholder="e.g. 45" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-white">Service Image</label>
+                    <div th:if="${service.imageUrl != null}" class="mb-2">
+                        <img th:src="${service.imageUrl}" alt="Current Service Image" class="rounded" style="width: 100px; height: 100px; object-fit: cover; border: 1.5px solid var(--gold);">
+                    </div>
+                    <input class="form-control bg-dark text-white border-secondary" type="file" name="imageFile" accept="image/*">
+                    <div class="form-text text-muted">Upload a representative picture for this salon service. Recommended size: 600x600px square.</div>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-gold flex-grow-1 py-2">
+                        <i class="bi bi-check-circle"></i> Save Service
+                    </button>
+                    <a href="/admin/salon-services" class="btn btn-outline-light px-4 py-2">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

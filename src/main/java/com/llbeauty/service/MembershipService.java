@@ -16,6 +16,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.llbeauty.repository.PaymentRepository;
+import com.llbeauty.repository.MembershipPurchaseRepository;
+import com.llbeauty.entity.Payment;
+import com.llbeauty.entity.MembershipPurchase;
+import com.llbeauty.entity.MembershipHistory;
+import com.llbeauty.repository.MembershipHistoryRepository;
+import java.math.BigDecimal;
 
 @Service
 public class MembershipService {
@@ -23,19 +30,28 @@ public class MembershipService {
     private final MembershipRepository membershipRepository;
     private final UserMembershipRepository userMembershipRepository;
     private final WalletService walletService;
+    private final RazorpayService razorpayService;
+    private final PaymentRepository paymentRepository;
+    private final MembershipPurchaseRepository membershipPurchaseRepository;
+    private final MembershipHistoryRepository membershipHistoryRepository;
 
-    @Value("${razorpay.key.id:rzp_test_dummy}")
+    @Value("${razorpay.key.id}")
     private String razorpayKeyId;
-
-    @Value("${razorpay.key.secret:dummysecret}")
-    private String razorpayKeySecret;
 
     public MembershipService(MembershipRepository membershipRepository,
                              UserMembershipRepository userMembershipRepository,
-                             WalletService walletService) {
+                             WalletService walletService,
+                             RazorpayService razorpayService,
+                             PaymentRepository paymentRepository,
+                             MembershipPurchaseRepository membershipPurchaseRepository,
+                             MembershipHistoryRepository membershipHistoryRepository) {
         this.membershipRepository = membershipRepository;
         this.userMembershipRepository = userMembershipRepository;
         this.walletService = walletService;
+        this.razorpayService = razorpayService;
+        this.paymentRepository = paymentRepository;
+        this.membershipPurchaseRepository = membershipPurchaseRepository;
+        this.membershipHistoryRepository = membershipHistoryRepository;
     }
 
     public List<Membership> getAllPlans() {
@@ -98,32 +114,49 @@ public class MembershipService {
             isUpgrade = true;
             currentMembershipId = current.getId();
         }
+        
+        double gstAmount = finalPrice * 0.18;
+        double finalPriceWithGst = finalPrice + gstAmount;
 
         Map<String, Object> response = new HashMap<>();
         response.put("planId", planId);
         response.put("planName", newPlan.getName());
         response.put("price", finalPrice);
+        response.put("gstAmount", gstAmount);
+        response.put("finalPriceWithGst", finalPriceWithGst);
         response.put("isUpgrade", isUpgrade);
         response.put("currentMembershipId", currentMembershipId);
 
         // Generate Razorpay Order
-        if (finalPrice > 0 && !isDummyCredentials()) {
+        if (finalPriceWithGst > 0) {
             try {
-                RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
-                JSONObject orderRequest = new JSONObject();
-                orderRequest.put("amount", (int) Math.round(finalPrice * 100)); // in paise
-                orderRequest.put("currency", "INR");
-                orderRequest.put("receipt", "member_" + user.getId() + "_" + System.currentTimeMillis());
+                com.razorpay.Order order = razorpayService.createOrder(finalPriceWithGst, "member_" + user.getId() + "_" + System.currentTimeMillis());
+                
+                // Track Payment
+                Payment payment = new Payment();
+                payment.setUser(user);
+                payment.setRazorpayOrderId(order.get("id"));
+                payment.setAmount(finalPriceWithGst);
+                payment.setStatus("PENDING");
+                payment.setPaymentMethod("RAZORPAY");
+                payment.setPurpose("MEMBERSHIP");
+                paymentRepository.save(payment);
 
-                com.razorpay.Order order = client.orders.create(orderRequest);
+                // Track Membership Purchase
+                MembershipPurchase purchase = new MembershipPurchase();
+                purchase.setUser(user);
+                purchase.setMembership(newPlan);
+                purchase.setAmountPaid(finalPriceWithGst);
+                purchase.setStatus("PENDING");
+                purchase.setRazorpayOrderId(order.get("id"));
+                membershipPurchaseRepository.save(purchase);
+
                 response.put("razorpayOrderId", order.get("id"));
                 response.put("key", razorpayKeyId);
                 response.put("useMock", false);
             } catch (Exception e) {
-                // Log exception and fallback to mock
-                response.put("useMock", true);
-                response.put("razorpayOrderId", "mock_order_" + System.currentTimeMillis());
-                response.put("key", "mock_key");
+                e.printStackTrace();
+                throw new IllegalStateException("Failed to initialize payment gateway.");
             }
         } else {
             response.put("useMock", true);
@@ -134,11 +167,31 @@ public class MembershipService {
         return response;
     }
 
-    /**
-     * Activates or upgrades the membership after verified payment
-     */
     @Transactional
-    public UserMembership activateMembership(User user, Long planId, String paymentId, String orderId) {
+    public UserMembership activateMembership(User user, Long planId, String paymentId, String orderId, String signature, String dob, String referralCode) {
+        
+        if (orderId != null && signature != null) {
+            boolean isValid = razorpayService.verifySignature(orderId, paymentId, signature);
+            if (!isValid) {
+                throw new IllegalStateException("Invalid payment signature.");
+            }
+
+            Payment payment = paymentRepository.findByRazorpayOrderId(orderId);
+            if (payment != null) {
+                payment.setStatus("SUCCESS");
+                payment.setRazorpayPaymentId(paymentId);
+                payment.setRazorpaySignature(signature);
+                paymentRepository.save(payment);
+            }
+
+            MembershipPurchase purchase = membershipPurchaseRepository.findByRazorpayOrderId(orderId);
+            if (purchase != null) {
+                purchase.setStatus("SUCCESS");
+                purchase.setRazorpayPaymentId(paymentId);
+                membershipPurchaseRepository.save(purchase);
+            }
+        }
+
         Membership plan = membershipRepository.findById(planId)
                 .orElseThrow(() -> new IllegalArgumentException("Plan not found"));
 
@@ -158,16 +211,34 @@ public class MembershipService {
         newMembership.setExpiryDate(LocalDateTime.now().plusDays(plan.getDurationDays()));
         newMembership.setStatus("ACTIVE");
         newMembership.setRazorpayPaymentId(paymentId);
+        newMembership.setDob(dob);
+        newMembership.setReferralCode(referralCode);
 
         UserMembership saved = userMembershipRepository.save(newMembership);
 
+        // Deactivate old active history records
+        List<MembershipHistory> histories = membershipHistoryRepository.findByUserOrderByStartDateDesc(user);
+        for (MembershipHistory h : histories) {
+            if ("ACTIVE".equals(h.getStatus())) {
+                h.setStatus("EXPIRED");
+                membershipHistoryRepository.save(h);
+            }
+        }
+
+        // Save to membership history
+        MembershipHistory history = new MembershipHistory();
+        history.setUser(user);
+        history.setPlanName(plan.getName());
+        history.setPrice(BigDecimal.valueOf(plan.getPrice()));
+        history.setStartDate(newMembership.getStartDate());
+        history.setExpiryDate(newMembership.getExpiryDate());
+        history.setStatus("ACTIVE");
+        history.setPaymentId(paymentId);
+        membershipHistoryRepository.save(history);
+
         // Grant Welcome Credits
-        walletService.credit(user, plan.getWelcomeCredits(), "Welcome credit for " + plan.getName() + " activation");
+        walletService.credit(user, BigDecimal.valueOf(plan.getWelcomeCredits()), "Welcome credit for " + plan.getName() + " activation", "MEMBERSHIP_WELCOME");
 
         return saved;
-    }
-
-    private boolean isDummyCredentials() {
-        return "rzp_test_dummy".equals(razorpayKeyId) || razorpayKeyId == null || razorpayKeyId.trim().isEmpty();
     }
 }

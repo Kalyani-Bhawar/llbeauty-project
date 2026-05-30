@@ -1,6 +1,7 @@
 package com.llbeauty.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -9,275 +10,149 @@ public class WalletTransaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    private Double amount;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal amount;
+
     private String type; // CREDIT, DEBIT
+    private String source; // RAZORPAY_TOPUP, QR_REDEEM, etc.
     private String description;
+    
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    private String razorpayOrderId;
+    private String razorpayPaymentId;
 
     @PrePersist
     public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-    }
-
-
-    @java.lang.SuppressWarnings("all")
-    
-    public static class WalletTransactionBuilder {
-        @java.lang.SuppressWarnings("all")
-        
-        private Long id;
-        @java.lang.SuppressWarnings("all")
-        
-        private User user;
-        @java.lang.SuppressWarnings("all")
-        
-        private Double amount;
-        @java.lang.SuppressWarnings("all")
-        
-        private String type;
-        @java.lang.SuppressWarnings("all")
-        
-        private String description;
-        @java.lang.SuppressWarnings("all")
-        
-        private LocalDateTime createdAt;
-
-        @java.lang.SuppressWarnings("all")
-        
-        WalletTransactionBuilder() {
-        }
-
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public WalletTransaction.WalletTransactionBuilder id(final Long id) {
-            this.id = id;
-            return this;
-        }
-
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public WalletTransaction.WalletTransactionBuilder user(final User user) {
-            this.user = user;
-            return this;
-        }
-
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public WalletTransaction.WalletTransactionBuilder amount(final Double amount) {
-            this.amount = amount;
-            return this;
-        }
-
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public WalletTransaction.WalletTransactionBuilder type(final String type) {
-            this.type = type;
-            return this;
-        }
-
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public WalletTransaction.WalletTransactionBuilder description(final String description) {
-            this.description = description;
-            return this;
-        }
-
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public WalletTransaction.WalletTransactionBuilder createdAt(final LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-            return this;
-        }
-
-        @java.lang.SuppressWarnings("all")
-        
-        public WalletTransaction build() {
-            return new WalletTransaction(this.id, this.user, this.amount, this.type, this.description, this.createdAt);
-        }
-
-        @java.lang.Override
-        @java.lang.SuppressWarnings("all")
-        
-        public java.lang.String toString() {
-            return "WalletTransaction.WalletTransactionBuilder(id=" + this.id + ", user=" + this.user + ", amount=" + this.amount + ", type=" + this.type + ", description=" + this.description + ", createdAt=" + this.createdAt + ")";
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
         }
     }
 
-    @java.lang.SuppressWarnings("all")
-    
-    public static WalletTransaction.WalletTransactionBuilder builder() {
-        return new WalletTransaction.WalletTransactionBuilder();
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public Long getId() {
-        return this.id;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public User getUser() {
-        return this.user;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public Double getAmount() {
-        return this.amount;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public String getType() {
-        return this.type;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public String getDescription() {
-        return this.description;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public LocalDateTime getCreatedAt() {
-        return this.createdAt;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setId(final Long id) {
-        this.id = id;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setUser(final User user) {
-        this.user = user;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setAmount(final Double amount) {
-        this.amount = amount;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setType(final String type) {
-        this.type = type;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setDescription(final String description) {
-        this.description = description;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setCreatedAt(final LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    
-    public boolean equals(final java.lang.Object o) {
-        if (o == this) return true;
-        if (!(o instanceof WalletTransaction)) return false;
-        final WalletTransaction other = (WalletTransaction) o;
-        if (!other.canEqual((java.lang.Object) this)) return false;
-        final java.lang.Object this$id = this.getId();
-        final java.lang.Object other$id = other.getId();
-        if (this$id == null ? other$id != null : !this$id.equals(other$id)) return false;
-        final java.lang.Object this$amount = this.getAmount();
-        final java.lang.Object other$amount = other.getAmount();
-        if (this$amount == null ? other$amount != null : !this$amount.equals(other$amount)) return false;
-        final java.lang.Object this$user = this.getUser();
-        final java.lang.Object other$user = other.getUser();
-        if (this$user == null ? other$user != null : !this$user.equals(other$user)) return false;
-        final java.lang.Object this$type = this.getType();
-        final java.lang.Object other$type = other.getType();
-        if (this$type == null ? other$type != null : !this$type.equals(other$type)) return false;
-        final java.lang.Object this$description = this.getDescription();
-        final java.lang.Object other$description = other.getDescription();
-        if (this$description == null ? other$description != null : !this$description.equals(other$description)) return false;
-        final java.lang.Object this$createdAt = this.getCreatedAt();
-        final java.lang.Object other$createdAt = other.getCreatedAt();
-        if (this$createdAt == null ? other$createdAt != null : !this$createdAt.equals(other$createdAt)) return false;
-        return true;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    protected boolean canEqual(final java.lang.Object other) {
-        return other instanceof WalletTransaction;
-    }
-
-    @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    
-    public int hashCode() {
-        final int PRIME = 59;
-        int result = 1;
-        final java.lang.Object $id = this.getId();
-        result = result * PRIME + ($id == null ? 43 : $id.hashCode());
-        final java.lang.Object $amount = this.getAmount();
-        result = result * PRIME + ($amount == null ? 43 : $amount.hashCode());
-        final java.lang.Object $user = this.getUser();
-        result = result * PRIME + ($user == null ? 43 : $user.hashCode());
-        final java.lang.Object $type = this.getType();
-        result = result * PRIME + ($type == null ? 43 : $type.hashCode());
-        final java.lang.Object $description = this.getDescription();
-        result = result * PRIME + ($description == null ? 43 : $description.hashCode());
-        final java.lang.Object $createdAt = this.getCreatedAt();
-        result = result * PRIME + ($createdAt == null ? 43 : $createdAt.hashCode());
-        return result;
-    }
-
-    @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    
-    public java.lang.String toString() {
-        return "WalletTransaction(id=" + this.getId() + ", user=" + this.getUser() + ", amount=" + this.getAmount() + ", type=" + this.getType() + ", description=" + this.getDescription() + ", createdAt=" + this.getCreatedAt() + ")";
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
     public WalletTransaction() {
     }
 
-    @java.lang.SuppressWarnings("all")
-    
-    public WalletTransaction(final Long id, final User user, final Double amount, final String type, final String description, final LocalDateTime createdAt) {
+    public WalletTransaction(Long id, User user, BigDecimal amount, String type, String source, String description, LocalDateTime createdAt, String razorpayOrderId, String razorpayPaymentId) {
         this.id = id;
         this.user = user;
         this.amount = amount;
         this.type = type;
+        this.source = source;
         this.description = description;
         this.createdAt = createdAt;
+        this.razorpayOrderId = razorpayOrderId;
+        this.razorpayPaymentId = razorpayPaymentId;
+    }
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getRazorpayOrderId() {
+        return razorpayOrderId;
+    }
+
+    public void setRazorpayOrderId(String razorpayOrderId) {
+        this.razorpayOrderId = razorpayOrderId;
+    }
+
+    public String getRazorpayPaymentId() {
+        return razorpayPaymentId;
+    }
+
+    public void setRazorpayPaymentId(String razorpayPaymentId) {
+        this.razorpayPaymentId = razorpayPaymentId;
+    }
+
+    // Simple Builder Pattern matching the old code style
+    public static class WalletTransactionBuilder {
+        private Long id;
+        private User user;
+        private BigDecimal amount;
+        private String type;
+        private String source;
+        private String description;
+        private LocalDateTime createdAt;
+        private String razorpayOrderId;
+        private String razorpayPaymentId;
+
+        WalletTransactionBuilder() {}
+
+        public WalletTransactionBuilder id(Long id) { this.id = id; return this; }
+        public WalletTransactionBuilder user(User user) { this.user = user; return this; }
+        public WalletTransactionBuilder amount(BigDecimal amount) { this.amount = amount; return this; }
+        public WalletTransactionBuilder type(String type) { this.type = type; return this; }
+        public WalletTransactionBuilder source(String source) { this.source = source; return this; }
+        public WalletTransactionBuilder description(String description) { this.description = description; return this; }
+        public WalletTransactionBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
+        public WalletTransactionBuilder razorpayOrderId(String razorpayOrderId) { this.razorpayOrderId = razorpayOrderId; return this; }
+        public WalletTransactionBuilder razorpayPaymentId(String razorpayPaymentId) { this.razorpayPaymentId = razorpayPaymentId; return this; }
+
+        public WalletTransaction build() {
+            return new WalletTransaction(id, user, amount, type, source, description, createdAt, razorpayOrderId, razorpayPaymentId);
+        }
+    }
+
+    public static WalletTransactionBuilder builder() {
+        return new WalletTransactionBuilder();
     }
 }

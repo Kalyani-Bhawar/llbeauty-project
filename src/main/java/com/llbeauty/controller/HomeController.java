@@ -9,6 +9,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HomeController {
     private final ProductRepository productRepository;
+    private final com.llbeauty.repository.ContactMessageRepository contactMessageRepository;
+    private final com.llbeauty.repository.SalonServiceRepository salonServiceRepository;
+
+    public HomeController(final ProductRepository productRepository,
+                          final com.llbeauty.repository.ContactMessageRepository contactMessageRepository,
+                          final com.llbeauty.repository.SalonServiceRepository salonServiceRepository) {
+        this.productRepository = productRepository;
+        this.contactMessageRepository = contactMessageRepository;
+        this.salonServiceRepository = salonServiceRepository;
+    }
 
     @GetMapping("/")
     public String home(Model model) {
@@ -22,7 +32,8 @@ public class HomeController {
     }
 
     @GetMapping("/salon")
-    public String salon() {
+    public String salon(Model model) {
+        model.addAttribute("services", salonServiceRepository.findAll());
         return "salon";
     }
 
@@ -31,9 +42,24 @@ public class HomeController {
         return "franchise";
     }
 
-    @java.lang.SuppressWarnings("all")
-    
-    public HomeController(final ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    @GetMapping("/contact")
+    public String contact() {
+        return "contact";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/contact/submit")
+    public String submitContact(
+            @org.springframework.web.bind.annotation.RequestParam("name") String name,
+            @org.springframework.web.bind.annotation.RequestParam("email") String email,
+            @org.springframework.web.bind.annotation.RequestParam("phone") String phone,
+            @org.springframework.web.bind.annotation.RequestParam("subject") String subject,
+            @org.springframework.web.bind.annotation.RequestParam("message") String message,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+            
+        com.llbeauty.entity.ContactMessage msg = new com.llbeauty.entity.ContactMessage(name, email, phone, subject, message);
+        contactMessageRepository.save(msg);
+        
+        redirectAttributes.addFlashAttribute("successMessage", "Thank you for reaching out! Our team will get back to you shortly.");
+        return "redirect:/contact";
     }
 }

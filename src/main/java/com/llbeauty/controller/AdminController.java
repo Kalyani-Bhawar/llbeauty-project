@@ -26,6 +26,9 @@ public class AdminController {
     private final UserMembershipRepository userMembershipRepository;
     private final WalletTransactionRepository walletTransactionRepository;
     private final OrderRepository orderRepository;
+    private final com.llbeauty.repository.PaymentRepository paymentRepository;
+    private final com.llbeauty.repository.SalonServiceRepository salonServiceRepository;
+    private final com.llbeauty.repository.ContactMessageRepository contactMessageRepository;
 
     public AdminController(AppointmentRepository appointmentRepository,
                            FranchiseLeadRepository franchiseLeadRepository,
@@ -35,7 +38,10 @@ public class AdminController {
                            MembershipRepository membershipRepository,
                            UserMembershipRepository userMembershipRepository,
                            WalletTransactionRepository walletTransactionRepository,
-                           OrderRepository orderRepository) {
+                           OrderRepository orderRepository,
+                           com.llbeauty.repository.PaymentRepository paymentRepository,
+                           com.llbeauty.repository.SalonServiceRepository salonServiceRepository,
+                           com.llbeauty.repository.ContactMessageRepository contactMessageRepository) {
         this.appointmentRepository = appointmentRepository;
         this.franchiseLeadRepository = franchiseLeadRepository;
         this.userRepository = userRepository;
@@ -45,6 +51,9 @@ public class AdminController {
         this.userMembershipRepository = userMembershipRepository;
         this.walletTransactionRepository = walletTransactionRepository;
         this.orderRepository = orderRepository;
+        this.paymentRepository = paymentRepository;
+        this.salonServiceRepository = salonServiceRepository;
+        this.contactMessageRepository = contactMessageRepository;
     }
 
     // ==========================================
@@ -53,21 +62,38 @@ public class AdminController {
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("activeTab", "dashboard");
-        model.addAttribute("totalAppointments", appointmentRepository.count());
-        model.addAttribute("totalLeads", franchiseLeadRepository.count());
         model.addAttribute("totalUsers", userRepository.count());
+        model.addAttribute("totalOrders", orderRepository.count());
+        model.addAttribute("totalMemberships", userMembershipRepository.count());
+        model.addAttribute("totalAppointments", appointmentRepository.count());
         model.addAttribute("totalProducts", productRepository.count());
+        model.addAttribute("totalLeads", franchiseLeadRepository.count());
 
-        // Membership KPIs
-        double totalRev = userMembershipRepository.findAll().stream()
-                .mapToDouble(um -> um.getMembership().getPrice()).sum();
-        model.addAttribute("totalMembershipRevenue", totalRev);
-        model.addAttribute("activeMembers", userMembershipRepository.countByStatus("ACTIVE"));
+        double totalRevenue = paymentRepository.findAll().stream()
+                .filter(p -> p.getStatus() != null && "SUCCESS".equalsIgnoreCase(p.getStatus()))
+                .mapToDouble(Payment::getAmount)
+                .sum();
+        model.addAttribute("totalRevenue", totalRevenue);
 
-        // Populate recent lists for dashboard layout
-        model.addAttribute("recentAppointments", appointmentRepository.findAll().stream().limit(5).toList());
-        model.addAttribute("recentLeads", franchiseLeadRepository.findAll().stream().limit(5).toList());
-        model.addAttribute("recentUsers", userRepository.findAll().stream().limit(5).toList());
+        List<WalletTransaction> recentTxns = walletTransactionRepository.findAll().stream()
+                .filter(t -> t.getCreatedAt() != null)
+                .sorted((t1, t2) -> t2.getCreatedAt().compareTo(t1.getCreatedAt()))
+                .limit(5)
+                .toList();
+        model.addAttribute("recentTransactions", recentTxns);
+
+        model.addAttribute("recentAppointments", appointmentRepository.findAll().stream()
+                .filter(a -> a.getCreatedAt() != null)
+                .sorted((a1, a2) -> a2.getCreatedAt().compareTo(a1.getCreatedAt()))
+                .limit(5).toList());
+
+        model.addAttribute("recentUsers", userRepository.findAll().stream()
+                .filter(u -> u.getCreatedAt() != null)
+                .sorted((u1, u2) -> u2.getCreatedAt().compareTo(u1.getCreatedAt()))
+                .limit(5).toList());
+
+        model.addAttribute("recentLeads", franchiseLeadRepository.findAll().stream()
+                .limit(5).toList());
 
         return "admin/dashboard";
     }
@@ -89,7 +115,7 @@ public class AdminController {
         Optional<User> userOpt = userRepository.findById(id);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            user.setWalletBalance(balance);
+            user.setWalletBalance(java.math.BigDecimal.valueOf(balance));
             userRepository.save(user);
             redirectAttributes.addFlashAttribute("successMessage", "Wallet balance updated successfully for " + user.getName());
         } else {
@@ -393,7 +419,7 @@ public class AdminController {
         model.addAttribute("userMemberships", userPlans);
 
         // Compute Membership Analytics
-        double silverRevenue = 0.0;
+        double pinkRevenue = 0.0;
         double goldRevenue = 0.0;
         double blackRevenue = 0.0;
         long activeCount = 0;
@@ -409,8 +435,8 @@ public class AdminController {
                 expiredCount++;
             }
 
-            if (planName.contains("Silver")) {
-                silverRevenue += price;
+            if (planName.contains("Pink")) {
+                pinkRevenue += price;
             } else if (planName.contains("Gold")) {
                 goldRevenue += price;
             } else if (planName.contains("Black")) {
@@ -418,13 +444,95 @@ public class AdminController {
             }
         }
 
-        model.addAttribute("totalRevenue", silverRevenue + goldRevenue + blackRevenue);
-        model.addAttribute("silverRevenue", silverRevenue);
+        model.addAttribute("totalRevenue", pinkRevenue + goldRevenue + blackRevenue);
+        model.addAttribute("pinkRevenue", pinkRevenue);
         model.addAttribute("goldRevenue", goldRevenue);
         model.addAttribute("blackRevenue", blackRevenue);
         model.addAttribute("activeCount", activeCount);
         model.addAttribute("expiredCount", expiredCount);
 
         return "admin/membership_users";
+    }
+
+    // ==========================================
+    //  SALON SERVICES CRUD
+    // ==========================================
+    @GetMapping("/salon-services")
+    public String viewSalonServices(Model model) {
+        model.addAttribute("activeTab", "salon-services");
+        model.addAttribute("services", salonServiceRepository.findAll());
+        return "admin/salon_services";
+    }
+
+    @GetMapping("/salon-services/new")
+    public String newSalonServiceForm(Model model) {
+        model.addAttribute("activeTab", "salon-services");
+        model.addAttribute("service", new com.llbeauty.entity.SalonService());
+        return "admin/service_form";
+    }
+
+    @PostMapping("/salon-services/save")
+    public String saveSalonService(@ModelAttribute("service") com.llbeauty.entity.SalonService service,
+                                   @RequestParam("imageFile") MultipartFile imageFile,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            if (!imageFile.isEmpty()) {
+                String imageUrl = saveUploadedFile(imageFile, "services");
+                service.setImageUrl(imageUrl);
+            } else if (service.getImageUrl() == null || service.getImageUrl().isEmpty()) {
+                service.setImageUrl("/images/haircare.png");
+            }
+            salonServiceRepository.save(service);
+            redirectAttributes.addFlashAttribute("successMessage", "Salon service saved successfully!");
+        } catch (IOException e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to upload image: " + e.getMessage());
+        }
+        return "redirect:/admin/salon-services";
+    }
+
+    @GetMapping("/salon-services/edit/{id}")
+    public String editSalonServiceForm(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+        Optional<com.llbeauty.entity.SalonService> sOpt = salonServiceRepository.findById(id);
+        if (sOpt.isPresent()) {
+            model.addAttribute("activeTab", "salon-services");
+            model.addAttribute("service", sOpt.get());
+            return "admin/service_form";
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Salon service not found.");
+            return "redirect:/admin/salon-services";
+        }
+    }
+
+    @PostMapping("/salon-services/delete/{id}")
+    public String deleteSalonService(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        if (salonServiceRepository.existsById(id)) {
+            salonServiceRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Salon service deleted successfully.");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Salon service not found.");
+        }
+        return "redirect:/admin/salon-services";
+    }
+
+    // ==========================================
+    //  CONTACT MESSAGES VIEW
+    // ==========================================
+    @GetMapping("/contact-messages")
+    public String viewContactMessages(Model model) {
+        model.addAttribute("activeTab", "contact-messages");
+        model.addAttribute("messages", contactMessageRepository.findAll());
+        return "admin/messages";
+    }
+
+    @PostMapping("/contact-messages/delete/{id}")
+    public String deleteContactMessage(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        if (contactMessageRepository.existsById(id)) {
+            contactMessageRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Contact message deleted successfully.");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Contact message not found.");
+        }
+        return "redirect:/admin/contact-messages";
     }
 }

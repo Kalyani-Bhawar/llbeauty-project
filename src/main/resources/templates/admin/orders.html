@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div class="content">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-start mb-5">
+            <div>
+                <h1 class="page-title mb-1">Orders Management</h1>
+                <div class="page-subtitle">Track beauty e-commerce transactions, orders, and shipment status.</div>
+            </div>
+        </div>
+
+        <!-- Orders Table Card -->
+        <div class="data-card">
+            <div class="data-card-header">
+                <h6><i class="bi bi-box-seam me-2" style="color:#c9a84c;"></i>All Customer Orders</h6>
+                <span style="font-size:0.78rem;color:rgba(255,255,255,0.4);" th:text="${orders.size()} + ' Orders'">0 Orders</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Items Purchased</th>
+                            <th>Total Amount</th>
+                            <th>Payment ID</th>
+                            <th>Date & Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="order : ${orders}">
+                            <td style="font-size:0.8rem;color:rgba(255,255,255,0.4);font-family:monospace;" th:text="'#LLB-ORD-' + ${order.id}">#LLB-ORD-1</td>
+                            <td>
+                                <div style="font-weight:600;font-size:0.88rem;" th:text="${order.user?.name ?: 'Unknown'}">John Doe</div>
+                                <div style="font-size:0.75rem;color:rgba(255,255,255,0.35);" th:text="${order.user?.email ?: ''}">email</div>
+                                <div style="font-size:0.75rem;color:rgba(255,255,255,0.35);" th:text="${order.user?.mobile ?: ''}">mobile</div>
+                            </td>
+                            <td>
+                                <div style="font-size: 0.83rem;">
+                                    <ul class="list-unstyled mb-0">
+                                        <li th:each="item : ${order.items}" style="margin-bottom: 2px;">
+                                            <span th:text="${item.product?.name}">Product Name</span>
+                                            <span class="text-gold" th:text="' x ' + ${item.quantity}"> x 1</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                            <td>
+                                <span style="font-weight:700;font-size:0.95rem;color:#fff;">
+                                    ₹<span th:text="${#numbers.formatDecimal(order.totalAmount, 1, 2)}">0.00</span>
+                                </span>
+                            </td>
+                            <td style="font-size:0.72rem; font-family:monospace; color:rgba(255,255,255,0.4);" th:text="${order.paymentId ?: 'N/A'}">pay_id</td>
+                            <td style="font-size:0.78rem;color:rgba(255,255,255,0.4);" th:text="${#temporals.format(order.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+                            <td>
+                                <span class="badge-status badge-completed" th:if="${order.status == 'SUCCESS'}">SUCCESS</span>
+                                <span class="badge-status badge-pending" th:if="${order.status == 'PENDING'}">PENDING</span>
+                                <span class="badge-status badge-cancelled" th:if="${order.status == 'FAILED'}">FAILED</span>
+                                <span class="badge-status" th:if="${order.status != 'SUCCESS' and order.status != 'PENDING' and order.status != 'FAILED'}" th:text="${order.status}">Status</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(orders)}">
+                            <td colspan="7" class="empty-state">
+                                <i class="bi bi-box-seam"></i>
+                                No customer orders found in the database.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

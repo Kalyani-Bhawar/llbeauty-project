@@ -13,11 +13,17 @@ public class Appointment {
     private Long userId;
     private String userName;
     private String userMobile;
-    private String serviceName;
+    private String serviceName; // Kept for backwards compatibility
     private LocalDate appointmentDate;
     private String timeSlot;
-    private String status; // PENDING, CONFIRMED, CANCELLED
+    private String status; // PENDING, CONFIRMED, CANCELLED, PAYMENT_PENDING
     private LocalDateTime createdAt;
+    
+    @Column(length = 1000)
+    private String services; // Comma-separated list of selected services
+    private Double advancePaid; // Fixed ₹100.0 advanced payment amount
+    private String paymentStatus; // PENDING, PAID
+    private String token; // Unique queue/booking token e.g., "LL-TKN-4902"
 
     @PrePersist
     public void prePersist() {
@@ -25,357 +31,232 @@ public class Appointment {
         if (this.status == null) {
             this.status = "PENDING";
         }
+        if (this.paymentStatus == null) {
+            this.paymentStatus = "PENDING";
+        }
+        if (this.advancePaid == null) {
+            this.advancePaid = 100.0;
+        }
     }
 
+    // Default Constructor
+    public Appointment() {
+    }
 
-    @java.lang.SuppressWarnings("all")
-    
+    // All Arguments Constructor
+    public Appointment(Long id, Long userId, String userName, String userMobile, String serviceName, 
+                       LocalDate appointmentDate, String timeSlot, String status, LocalDateTime createdAt,
+                       String services, Double advancePaid, String paymentStatus, String token) {
+        this.id = id;
+        this.userId = userId;
+        this.userName = userName;
+        this.userMobile = userMobile;
+        this.serviceName = serviceName;
+        this.appointmentDate = appointmentDate;
+        this.timeSlot = timeSlot;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.services = services;
+        this.advancePaid = advancePaid;
+        this.paymentStatus = paymentStatus;
+        this.token = token;
+    }
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserMobile() {
+        return userMobile;
+    }
+
+    public void setUserMobile(String userMobile) {
+        this.userMobile = userMobile;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public LocalDate getAppointmentDate() {
+        return appointmentDate;
+    }
+
+    public void setAppointmentDate(LocalDate appointmentDate) {
+        this.appointmentDate = appointmentDate;
+    }
+
+    public String getTimeSlot() {
+        return timeSlot;
+    }
+
+    public void setTimeSlot(String timeSlot) {
+        this.timeSlot = timeSlot;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getServices() {
+        return services;
+    }
+
+    public void setServices(String services) {
+        this.services = services;
+    }
+
+    public Double getAdvancePaid() {
+        return advancePaid;
+    }
+
+    public void setAdvancePaid(Double advancePaid) {
+        this.advancePaid = advancePaid;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    // Builder Class
+    public static AppointmentBuilder builder() {
+        return new AppointmentBuilder();
+    }
+
     public static class AppointmentBuilder {
-        @java.lang.SuppressWarnings("all")
-        
         private Long id;
-        @java.lang.SuppressWarnings("all")
-        
         private Long userId;
-        @java.lang.SuppressWarnings("all")
-        
         private String userName;
-        @java.lang.SuppressWarnings("all")
-        
         private String userMobile;
-        @java.lang.SuppressWarnings("all")
-        
         private String serviceName;
-        @java.lang.SuppressWarnings("all")
-        
         private LocalDate appointmentDate;
-        @java.lang.SuppressWarnings("all")
-        
         private String timeSlot;
-        @java.lang.SuppressWarnings("all")
-        
         private String status;
-        @java.lang.SuppressWarnings("all")
-        
         private LocalDateTime createdAt;
+        private String services;
+        private Double advancePaid;
+        private String paymentStatus;
+        private String token;
 
-        @java.lang.SuppressWarnings("all")
-        
         AppointmentBuilder() {
         }
 
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Appointment.AppointmentBuilder id(final Long id) {
+        public AppointmentBuilder id(Long id) {
             this.id = id;
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Appointment.AppointmentBuilder userId(final Long userId) {
+        public AppointmentBuilder userId(Long userId) {
             this.userId = userId;
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Appointment.AppointmentBuilder userName(final String userName) {
+        public AppointmentBuilder userName(String userName) {
             this.userName = userName;
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Appointment.AppointmentBuilder userMobile(final String userMobile) {
+        public AppointmentBuilder userMobile(String userMobile) {
             this.userMobile = userMobile;
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Appointment.AppointmentBuilder serviceName(final String serviceName) {
+        public AppointmentBuilder serviceName(String serviceName) {
             this.serviceName = serviceName;
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Appointment.AppointmentBuilder appointmentDate(final LocalDate appointmentDate) {
+        public AppointmentBuilder appointmentDate(LocalDate appointmentDate) {
             this.appointmentDate = appointmentDate;
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Appointment.AppointmentBuilder timeSlot(final String timeSlot) {
+        public AppointmentBuilder timeSlot(String timeSlot) {
             this.timeSlot = timeSlot;
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Appointment.AppointmentBuilder status(final String status) {
+        public AppointmentBuilder status(String status) {
             this.status = status;
             return this;
         }
 
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Appointment.AppointmentBuilder createdAt(final LocalDateTime createdAt) {
+        public AppointmentBuilder createdAt(LocalDateTime createdAt) {
             this.createdAt = createdAt;
             return this;
         }
 
-        @java.lang.SuppressWarnings("all")
-        
+        public AppointmentBuilder services(String services) {
+            this.services = services;
+            return this;
+        }
+
+        public AppointmentBuilder advancePaid(Double advancePaid) {
+            this.advancePaid = advancePaid;
+            return this;
+        }
+
+        public AppointmentBuilder paymentStatus(String paymentStatus) {
+            this.paymentStatus = paymentStatus;
+            return this;
+        }
+
+        public AppointmentBuilder token(String token) {
+            this.token = token;
+            return this;
+        }
+
         public Appointment build() {
-            return new Appointment(this.id, this.userId, this.userName, this.userMobile, this.serviceName, this.appointmentDate, this.timeSlot, this.status, this.createdAt);
+            return new Appointment(id, userId, userName, userMobile, serviceName, appointmentDate, timeSlot, status, createdAt, services, advancePaid, paymentStatus, token);
         }
-
-        @java.lang.Override
-        @java.lang.SuppressWarnings("all")
-        
-        public java.lang.String toString() {
-            return "Appointment.AppointmentBuilder(id=" + this.id + ", userId=" + this.userId + ", userName=" + this.userName + ", userMobile=" + this.userMobile + ", serviceName=" + this.serviceName + ", appointmentDate=" + this.appointmentDate + ", timeSlot=" + this.timeSlot + ", status=" + this.status + ", createdAt=" + this.createdAt + ")";
-        }
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public static Appointment.AppointmentBuilder builder() {
-        return new Appointment.AppointmentBuilder();
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public Long getId() {
-        return this.id;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public Long getUserId() {
-        return this.userId;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public String getUserName() {
-        return this.userName;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public String getUserMobile() {
-        return this.userMobile;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public String getServiceName() {
-        return this.serviceName;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public LocalDate getAppointmentDate() {
-        return this.appointmentDate;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public String getTimeSlot() {
-        return this.timeSlot;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public String getStatus() {
-        return this.status;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public LocalDateTime getCreatedAt() {
-        return this.createdAt;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setId(final Long id) {
-        this.id = id;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setUserId(final Long userId) {
-        this.userId = userId;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setUserName(final String userName) {
-        this.userName = userName;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setUserMobile(final String userMobile) {
-        this.userMobile = userMobile;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setServiceName(final String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setAppointmentDate(final LocalDate appointmentDate) {
-        this.appointmentDate = appointmentDate;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setTimeSlot(final String timeSlot) {
-        this.timeSlot = timeSlot;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setStatus(final String status) {
-        this.status = status;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setCreatedAt(final LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    
-    public boolean equals(final java.lang.Object o) {
-        if (o == this) return true;
-        if (!(o instanceof Appointment)) return false;
-        final Appointment other = (Appointment) o;
-        if (!other.canEqual((java.lang.Object) this)) return false;
-        final java.lang.Object this$id = this.getId();
-        final java.lang.Object other$id = other.getId();
-        if (this$id == null ? other$id != null : !this$id.equals(other$id)) return false;
-        final java.lang.Object this$userId = this.getUserId();
-        final java.lang.Object other$userId = other.getUserId();
-        if (this$userId == null ? other$userId != null : !this$userId.equals(other$userId)) return false;
-        final java.lang.Object this$userName = this.getUserName();
-        final java.lang.Object other$userName = other.getUserName();
-        if (this$userName == null ? other$userName != null : !this$userName.equals(other$userName)) return false;
-        final java.lang.Object this$userMobile = this.getUserMobile();
-        final java.lang.Object other$userMobile = other.getUserMobile();
-        if (this$userMobile == null ? other$userMobile != null : !this$userMobile.equals(other$userMobile)) return false;
-        final java.lang.Object this$serviceName = this.getServiceName();
-        final java.lang.Object other$serviceName = other.getServiceName();
-        if (this$serviceName == null ? other$serviceName != null : !this$serviceName.equals(other$serviceName)) return false;
-        final java.lang.Object this$appointmentDate = this.getAppointmentDate();
-        final java.lang.Object other$appointmentDate = other.getAppointmentDate();
-        if (this$appointmentDate == null ? other$appointmentDate != null : !this$appointmentDate.equals(other$appointmentDate)) return false;
-        final java.lang.Object this$timeSlot = this.getTimeSlot();
-        final java.lang.Object other$timeSlot = other.getTimeSlot();
-        if (this$timeSlot == null ? other$timeSlot != null : !this$timeSlot.equals(other$timeSlot)) return false;
-        final java.lang.Object this$status = this.getStatus();
-        final java.lang.Object other$status = other.getStatus();
-        if (this$status == null ? other$status != null : !this$status.equals(other$status)) return false;
-        final java.lang.Object this$createdAt = this.getCreatedAt();
-        final java.lang.Object other$createdAt = other.getCreatedAt();
-        if (this$createdAt == null ? other$createdAt != null : !this$createdAt.equals(other$createdAt)) return false;
-        return true;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    protected boolean canEqual(final java.lang.Object other) {
-        return other instanceof Appointment;
-    }
-
-    @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    
-    public int hashCode() {
-        final int PRIME = 59;
-        int result = 1;
-        final java.lang.Object $id = this.getId();
-        result = result * PRIME + ($id == null ? 43 : $id.hashCode());
-        final java.lang.Object $userId = this.getUserId();
-        result = result * PRIME + ($userId == null ? 43 : $userId.hashCode());
-        final java.lang.Object $userName = this.getUserName();
-        result = result * PRIME + ($userName == null ? 43 : $userName.hashCode());
-        final java.lang.Object $userMobile = this.getUserMobile();
-        result = result * PRIME + ($userMobile == null ? 43 : $userMobile.hashCode());
-        final java.lang.Object $serviceName = this.getServiceName();
-        result = result * PRIME + ($serviceName == null ? 43 : $serviceName.hashCode());
-        final java.lang.Object $appointmentDate = this.getAppointmentDate();
-        result = result * PRIME + ($appointmentDate == null ? 43 : $appointmentDate.hashCode());
-        final java.lang.Object $timeSlot = this.getTimeSlot();
-        result = result * PRIME + ($timeSlot == null ? 43 : $timeSlot.hashCode());
-        final java.lang.Object $status = this.getStatus();
-        result = result * PRIME + ($status == null ? 43 : $status.hashCode());
-        final java.lang.Object $createdAt = this.getCreatedAt();
-        result = result * PRIME + ($createdAt == null ? 43 : $createdAt.hashCode());
-        return result;
-    }
-
-    @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    
-    public java.lang.String toString() {
-        return "Appointment(id=" + this.getId() + ", userId=" + this.getUserId() + ", userName=" + this.getUserName() + ", userMobile=" + this.getUserMobile() + ", serviceName=" + this.getServiceName() + ", appointmentDate=" + this.getAppointmentDate() + ", timeSlot=" + this.getTimeSlot() + ", status=" + this.getStatus() + ", createdAt=" + this.getCreatedAt() + ")";
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public Appointment() {
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public Appointment(final Long id, final Long userId, final String userName, final String userMobile, final String serviceName, final LocalDate appointmentDate, final String timeSlot, final String status, final LocalDateTime createdAt) {
-        this.id = id;
-        this.userId = userId;
-        this.userName = userName;
-        this.userMobile = userMobile;
-        this.serviceName = serviceName;
-        this.appointmentDate = appointmentDate;
-        this.timeSlot = timeSlot;
-        this.status = status;
-        this.createdAt = createdAt;
     }
 }

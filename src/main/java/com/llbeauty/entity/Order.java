@@ -17,6 +17,9 @@ public class Order {
     private String paymentId;
     private LocalDateTime createdAt;
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private java.util.List<OrderItem> items = new java.util.ArrayList<>();
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
@@ -280,4 +283,7 @@ public class Order {
         this.paymentId = paymentId;
         this.createdAt = createdAt;
     }
+
+    public java.util.List<OrderItem> getItems() { return this.items; }
+    public void setItems(java.util.List<OrderItem> items) { this.items = items; }
 }

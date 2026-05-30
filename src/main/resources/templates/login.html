@@ -44,12 +44,15 @@
             <form th:action="@{/auth/login/send-otp}" method="POST">
                 <input type="hidden" name="redirect" th:value="${redirect}">
                 <div class="mb-4">
-                    <label for="mobile" class="form-label">Mobile Number</label>
-                    <input type="tel" class="form-control" id="mobile" name="mobile" 
-                           placeholder="Enter 10-digit mobile number" required 
-                           pattern="^[6-9]\d{9}$" title="Enter a valid 10-digit mobile number starting with 6-9">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email"
+                           class="form-control"
+                           id="email"
+                           name="email"
+                           placeholder="name@example.com"
+                           required>
                     <div class="form-text text-muted" style="font-size: 0.75rem; margin-top: 6px;">
-                        We will send a dummy verification OTP (1234) to this number.
+                        A secure OTP will be sent to your registered email address.
                     </div>
                 </div>
 

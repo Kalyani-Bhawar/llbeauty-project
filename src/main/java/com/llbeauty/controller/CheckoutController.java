@@ -29,6 +29,9 @@ public class CheckoutController {
     private final WalletService walletService;
     private final MembershipService membershipService;
     private final UserMembershipRepository userMembershipRepository;
+    private final com.llbeauty.service.RazorpayService razorpayService;
+    private final PaymentRepository paymentRepository;
+    private final OrderItemRepository orderItemRepository;
 
     @Value("${razorpay.key.id:rzp_test_dummy}")
     private String razorpayKeyId;
@@ -41,19 +44,25 @@ public class CheckoutController {
                               UserRepository userRepository,
                               WalletService walletService,
                               MembershipService membershipService,
-                              UserMembershipRepository userMembershipRepository) {
+                              UserMembershipRepository userMembershipRepository,
+                              com.llbeauty.service.RazorpayService razorpayService,
+                              PaymentRepository paymentRepository,
+                              OrderItemRepository orderItemRepository) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.walletService = walletService;
         this.membershipService = membershipService;
         this.userMembershipRepository = userMembershipRepository;
+        this.razorpayService = razorpayService;
+        this.paymentRepository = paymentRepository;
+        this.orderItemRepository = orderItemRepository;
     }
 
     private User getAuthenticatedUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
-            return userRepository.findByMobile(auth.getName()).orElse(null);
+            return userRepository.findByEmail(auth.getName()).orElse(null);
         }
         return null;
     }
@@ -96,6 +105,63 @@ public class CheckoutController {
         success.put("status", "success");
         success.put("cartSize", cart.values().stream().mapToInt(Integer::intValue).sum());
         return ResponseEntity.ok(success);
+    }
+
+    // Get cart items (AJAX)
+    @GetMapping("/cart/items")
+    @ResponseBody
+    public ResponseEntity<?> getCartItems(HttpSession session) {
+        Map<Long, Integer> cart = getCartFromSession(session);
+        List<Map<String, Object>> items = new ArrayList<>();
+        double subtotal = 0.0;
+        for (Map.Entry<Long, Integer> entry : cart.entrySet()) {
+            Product product = productRepository.findById(entry.getKey()).orElse(null);
+            if (product != null) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("productId", product.getId());
+                item.put("name", product.getName());
+                item.put("price", product.getPrice());
+                item.put("imageUrl", product.getImageUrl());
+                item.put("quantity", entry.getValue());
+                double total = product.getPrice() * entry.getValue();
+                item.put("total", total);
+                items.add(item);
+                subtotal += total;
+            }
+        }
+        Map<String, Object> response = new HashMap<>();
+        response.put("items", items);
+        response.put("subtotal", subtotal);
+        response.put("cartSize", cart.values().stream().mapToInt(Integer::intValue).sum());
+        return ResponseEntity.ok(response);
+    }
+
+    // Update cart item quantity (AJAX)
+    @PostMapping("/cart/update")
+    @ResponseBody
+    public ResponseEntity<?> updateCartItem(@RequestParam("productId") Long productId,
+                                            @RequestParam("quantity") Integer quantity,
+                                            HttpSession session) {
+        Map<Long, Integer> cart = getCartFromSession(session);
+        if (quantity <= 0) {
+            cart.remove(productId);
+        } else {
+            cart.put(productId, quantity);
+        }
+        return getCartItems(session); // Return updated list
+    }
+
+    // Clear cart (AJAX)
+    @PostMapping("/cart/clear")
+    @ResponseBody
+    public ResponseEntity<?> clearCart(HttpSession session) {
+        session.removeAttribute("LLB_CART");
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("cartSize", 0);
+        response.put("subtotal", 0.0);
+        response.put("items", new ArrayList<>());
+        return ResponseEntity.ok(response);
     }
 
     // Display checkout page
@@ -155,15 +221,30 @@ public class CheckoutController {
         }
 
         double discountAmount = subtotal * discountPercent;
-        double finalAmount = subtotal - discountAmount;
+        double discountedTotal = subtotal - discountAmount;
+        double gstAmount = discountedTotal * 0.18;
+        double finalAmount = discountedTotal + gstAmount;
 
         model.addAttribute("items", checkoutItems);
         model.addAttribute("subtotal", subtotal);
         model.addAttribute("discountPercent", discountPercent * 100);
         model.addAttribute("discountAmount", discountAmount);
+        model.addAttribute("gstAmount", gstAmount);
         model.addAttribute("finalAmount", finalAmount);
         model.addAttribute("passName", passName);
         model.addAttribute("walletBalance", walletService.getBalance(user));
+
+        String preCreatedOrderId = "mock_order_" + System.currentTimeMillis();
+        if (finalAmount > 0 && !isDummyCredentials()) {
+            try {
+                com.razorpay.Order rzpOrder = razorpayService.createOrder(finalAmount, "order_init_" + System.currentTimeMillis());
+                preCreatedOrderId = rzpOrder.get("id");
+            } catch (Exception e) {
+                // fallback to mock
+            }
+        }
+        model.addAttribute("razorpayOrderId", preCreatedOrderId);
+        model.addAttribute("razorpayKeyId", razorpayKeyId);
 
         return "checkout";
     }
@@ -211,23 +292,41 @@ public class CheckoutController {
         }
         double discountAmount = subtotal * discountPercent;
         double discountedTotal = subtotal - discountAmount;
+        
+        double gstAmount = discountedTotal * 0.18;
+        double grandTotal = discountedTotal + gstAmount;
 
         // 2. Handle Wallet Redemption
         double walletRedeemed = 0.0;
         if (useWallet) {
-            double currentWallet = walletService.getBalance(user);
-            walletRedeemed = Math.min(currentWallet, discountedTotal);
+            double currentWallet = walletService.getBalance(user).doubleValue();
+            walletRedeemed = Math.min(currentWallet, grandTotal);
         }
 
-        double amountToPay = discountedTotal - walletRedeemed;
+        double amountToPay = grandTotal - walletRedeemed;
 
         // 3. Create Pending Order
         Order order = new Order();
         order.setUser(user);
-        order.setTotalAmount(discountedTotal); // Total value of order
+        order.setTotalAmount(grandTotal); // Total value of order
         order.setStatus("PENDING");
         order.setPaymentId(null);
         Order savedOrder = orderRepository.save(order);
+
+        // Save Order Items
+        for (Product p : productsToDeductStock) {
+            OrderItem oi = new OrderItem();
+            oi.setOrder(savedOrder);
+            oi.setProduct(p);
+            // Quick workaround to find quantity from cart
+            int qty = 1;
+            if (directProductId == null) {
+                qty = getCartFromSession(session).getOrDefault(p.getId(), 1);
+            }
+            oi.setQuantity(qty);
+            oi.setPriceAtPurchase(p.getPrice());
+            orderItemRepository.save(oi);
+        }
 
         // Deduct Wallet Balance if applied
         if (walletRedeemed > 0) {
@@ -250,13 +349,18 @@ public class CheckoutController {
         // 4. Generate Razorpay order for remaining balance
         if (!isDummyCredentials()) {
             try {
-                RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
-                JSONObject orderRequest = new JSONObject();
-                orderRequest.put("amount", (int) Math.round(amountToPay * 100)); // in paise
-                orderRequest.put("currency", "INR");
-                orderRequest.put("receipt", "order_" + savedOrder.getId() + "_" + System.currentTimeMillis());
+                com.razorpay.Order rzpOrder = razorpayService.createOrder(amountToPay, "order_" + savedOrder.getId() + "_" + System.currentTimeMillis());
+                
+                // Create Payment entity
+                Payment payment = new Payment();
+                payment.setUser(user);
+                payment.setRazorpayOrderId(rzpOrder.get("id"));
+                payment.setAmount(amountToPay);
+                payment.setStatus("PENDING");
+                payment.setPaymentMethod("RAZORPAY" + (walletRedeemed > 0 ? "+WALLET" : ""));
+                payment.setPurpose("ORDER");
+                paymentRepository.save(payment);
 
-                com.razorpay.Order rzpOrder = client.orders.create(orderRequest);
                 response.put("razorpayOrderId", rzpOrder.get("id"));
                 response.put("key", razorpayKeyId);
                 response.put("useMock", false);
@@ -280,11 +384,28 @@ public class CheckoutController {
     @ResponseBody
     public ResponseEntity<?> confirmOrderPayment(@RequestParam("orderId") Long orderId,
                                                  @RequestParam("paymentId") String paymentId,
+                                                 @RequestParam(value = "razorpayOrderId", required = false) String razorpayOrderId,
+                                                 @RequestParam(value = "razorpaySignature", required = false) String razorpaySignature,
                                                  @RequestParam(value = "directProductId", required = false) Long directProductId,
                                                  HttpSession session) {
         User user = getAuthenticatedUser();
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Login required"));
+        }
+
+        if (razorpayOrderId != null && razorpaySignature != null && !isDummyCredentials()) {
+            boolean isValid = razorpayService.verifySignature(razorpayOrderId, paymentId, razorpaySignature);
+            if (!isValid) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid payment signature"));
+            }
+            
+            Payment payment = paymentRepository.findByRazorpayOrderId(razorpayOrderId);
+            if (payment != null) {
+                payment.setStatus("SUCCESS");
+                payment.setRazorpayPaymentId(paymentId);
+                payment.setRazorpaySignature(razorpaySignature);
+                paymentRepository.save(payment);
+            }
         }
 
         Order order = orderRepository.findById(orderId).orElse(null);

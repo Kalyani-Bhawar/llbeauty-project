@@ -2,6 +2,7 @@ package com.llbeauty.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "users")
@@ -13,14 +14,14 @@ public class User {
     private String email;
     private String mobile;
     private String password;
-    private Double walletBalance;
+    private BigDecimal walletBalance;
     private LocalDateTime createdAt;
 
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
         if (this.walletBalance == null) {
-            this.walletBalance = 0.0;
+            this.walletBalance = BigDecimal.ZERO;
         }
     }
 
@@ -45,7 +46,7 @@ public class User {
         private String password;
         @java.lang.SuppressWarnings("all")
         
-        private Double walletBalance;
+        private BigDecimal walletBalance;
         @java.lang.SuppressWarnings("all")
         
         private LocalDateTime createdAt;
@@ -110,7 +111,7 @@ public class User {
          */
         @java.lang.SuppressWarnings("all")
         
-        public User.UserBuilder walletBalance(final Double walletBalance) {
+        public User.UserBuilder walletBalance(final BigDecimal walletBalance) {
             this.walletBalance = walletBalance;
             return this;
         }
@@ -177,7 +178,7 @@ public class User {
 
     @java.lang.SuppressWarnings("all")
     
-    public Double getWalletBalance() {
+    public BigDecimal getWalletBalance() {
         return this.walletBalance;
     }
 
@@ -219,7 +220,7 @@ public class User {
 
     @java.lang.SuppressWarnings("all")
     
-    public void setWalletBalance(final Double walletBalance) {
+    public void setWalletBalance(final BigDecimal walletBalance) {
         this.walletBalance = walletBalance;
     }
 
@@ -304,7 +305,7 @@ public class User {
 
     @java.lang.SuppressWarnings("all")
     
-    public User(final Long id, final String name, final String email, final String mobile, final String password, final Double walletBalance, final LocalDateTime createdAt) {
+    public User(final Long id, final String name, final String email, final String mobile, final String password, final BigDecimal walletBalance, final LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
         this.email = email;

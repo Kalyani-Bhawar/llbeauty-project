@@ -11,10 +11,10 @@ import java.util.Optional;
 @Repository
 public interface OtpRepository extends JpaRepository<Otp, Long> {
 
-    Optional<Otp> findTopByMobileOrderByIdDesc(String mobile);
+    Optional<Otp> findTopByEmailOrderByIdDesc(String email);
 
     @Modifying
     @Transactional
-    @Query("DELETE FROM Otp o WHERE o.mobile = :mobile")
-    void deleteByMobile(String mobile);
+    @Query("DELETE FROM Otp o WHERE o.email = :email")
+    void deleteByEmail(String email);
 }

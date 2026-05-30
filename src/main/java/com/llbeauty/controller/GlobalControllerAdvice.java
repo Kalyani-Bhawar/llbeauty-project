@@ -23,8 +23,8 @@ public class GlobalControllerAdvice {
     public User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
-            String mobileOrEmail = auth.getName();
-            Optional<User> userOpt = userRepository.findByMobile(mobileOrEmail);
+            String email = auth.getName();
+            Optional<User> userOpt = userRepository.findByEmail(email);
             return userOpt.orElse(null);
         }
         return null;
@@ -34,8 +34,8 @@ public class GlobalControllerAdvice {
     public UserMembership activeMembership() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
-            String mobileOrEmail = auth.getName();
-            Optional<User> userOpt = userRepository.findByMobile(mobileOrEmail);
+            String email = auth.getName();
+            Optional<User> userOpt = userRepository.findByEmail(email);
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
                 Optional<UserMembership> activeOpt = userMembershipRepository.findByUserAndStatus(user, "ACTIVE");
