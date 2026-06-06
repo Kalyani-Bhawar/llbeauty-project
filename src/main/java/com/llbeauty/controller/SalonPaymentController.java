@@ -7,7 +7,7 @@ import com.llbeauty.repository.AppointmentRepository;
 import com.llbeauty.repository.UserRepository;
 import com.llbeauty.repository.PaymentRepository;
 import com.llbeauty.service.WalletService;
-import com.llbeauty.service.RazorpayService;
+import com.llbeauty.service.PaymentService;
 import com.llbeauty.config.RazorpayConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,22 +33,22 @@ public class SalonPaymentController {
     private final AppointmentRepository appointmentRepository;
     private final UserRepository userRepository;
     private final WalletService walletService;
-    private final RazorpayService razorpayService;
-    private final PaymentRepository paymentRepository;
+    private final PaymentService paymentService;
     private final RazorpayConfig razorpayConfig;
+    private final com.llbeauty.service.RewardService rewardService;
 
     public SalonPaymentController(AppointmentRepository appointmentRepository,
                                   UserRepository userRepository,
                                   WalletService walletService,
-                                  RazorpayService razorpayService,
-                                  PaymentRepository paymentRepository,
-                                  RazorpayConfig razorpayConfig) {
+                                  PaymentService paymentService,
+                                  RazorpayConfig razorpayConfig,
+                                  com.llbeauty.service.RewardService rewardService) {
         this.appointmentRepository = appointmentRepository;
         this.userRepository = userRepository;
         this.walletService = walletService;
-        this.razorpayService = razorpayService;
-        this.paymentRepository = paymentRepository;
+        this.paymentService = paymentService;
         this.razorpayConfig = razorpayConfig;
+        this.rewardService = rewardService;
     }
 
     private User getAuthenticatedUser() {
@@ -81,31 +81,11 @@ public class SalonPaymentController {
             return "redirect:/salon/success?appointmentId=" + app.getId();
         }
 
-        // Pre-create Razorpay Order for ₹100
-        String razorpayOrderId = "mock_order_" + System.currentTimeMillis();
-        if (!isDummyCredentials()) {
-            try {
-                com.razorpay.Order order = razorpayService.createOrder(100.0, "salon_init_" + appointmentId + "_" + System.currentTimeMillis());
-                razorpayOrderId = order.get("id");
-                
-                // Track Payment
-                Payment payment = new Payment();
-                payment.setUser(user);
-                payment.setRazorpayOrderId(razorpayOrderId);
-                payment.setAmount(100.0);
-                payment.setStatus("PENDING");
-                payment.setPaymentMethod("RAZORPAY");
-                payment.setPurpose("SALON_DEPOSIT");
-                paymentRepository.save(payment);
-            } catch (Exception e) {
-                log.error("Failed to pre-create Razorpay order for salon booking", e);
-            }
-        }
+        // No longer pre-creating the Razorpay Order here.
 
         model.addAttribute("appointment", app);
         model.addAttribute("walletBalance", walletService.getBalance(user));
         model.addAttribute("razorpayKeyId", razorpayConfig.getKeyId());
-        model.addAttribute("razorpayOrderId", razorpayOrderId);
 
         return "salon_payment";
     }
@@ -136,17 +116,8 @@ public class SalonPaymentController {
         String razorpayOrderId = "mock_order_" + System.currentTimeMillis();
         if (amountToPay > 0 && !isDummyCredentials()) {
             try {
-                com.razorpay.Order order = razorpayService.createOrder(amountToPay, "salon_" + appointmentId + "_" + System.currentTimeMillis());
-                razorpayOrderId = order.get("id");
-                
-                Payment payment = new Payment();
-                payment.setUser(user);
-                payment.setRazorpayOrderId(razorpayOrderId);
-                payment.setAmount(amountToPay);
-                payment.setStatus("PENDING");
-                payment.setPaymentMethod("RAZORPAY" + (useWallet ? "+WALLET" : ""));
-                payment.setPurpose("SALON_DEPOSIT");
-                paymentRepository.save(payment);
+                Payment payment = paymentService.initiatePayment(user, amountToPay, "SALON_DEPOSIT", String.valueOf(appointmentId), "RAZORPAY" + (useWallet ? "+WALLET" : ""));
+                razorpayOrderId = payment.getRazorpayOrderId();
             } catch (Exception e) {
                 log.error("Failed to create Razorpay order for salon booking", e);
             }
@@ -191,17 +162,10 @@ public class SalonPaymentController {
 
         // Verify Razorpay signature if payment is through Razorpay
         if (razorpayOrderId != null && razorpaySignature != null && !isDummyCredentials()) {
-            boolean isValid = razorpayService.verifySignature(razorpayOrderId, paymentId, razorpaySignature);
-            if (!isValid) {
+            try {
+                paymentService.verifyAndProcessPayment(razorpayOrderId, paymentId, razorpaySignature);
+            } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid signature"));
-            }
-            
-            Payment payment = paymentRepository.findByRazorpayOrderId(razorpayOrderId);
-            if (payment != null) {
-                payment.setStatus("SUCCESS");
-                payment.setRazorpayPaymentId(paymentId);
-                payment.setRazorpaySignature(razorpaySignature);
-                paymentRepository.save(payment);
             }
         }
 
@@ -213,6 +177,9 @@ public class SalonPaymentController {
         app.setPaymentStatus("PAID");
         app.setToken(bookingToken);
         appointmentRepository.save(app);
+
+        // Award Reward Points for Salon Deposit!
+        rewardService.awardPoints(user, BigDecimal.valueOf(total));
 
         log.info("Salon Appointment secured successfully. ID: {}, Token: {}", app.getId(), bookingToken);
 

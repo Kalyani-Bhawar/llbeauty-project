@@ -18,9 +18,12 @@ public class WalletTransaction {
     @Column(precision = 10, scale = 2)
     private BigDecimal amount;
 
-    private String type; // CREDIT, DEBIT
+    private String type; // CREDIT, DEBIT, REFUND, TOPUP, PURCHASE
     private String source; // RAZORPAY_TOPUP, QR_REDEEM, etc.
     private String description;
+    private Long paymentId;
+    private Long orderId;
+    private String status; // PENDING, SUCCESS, FAILED
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -38,7 +41,7 @@ public class WalletTransaction {
     public WalletTransaction() {
     }
 
-    public WalletTransaction(Long id, User user, BigDecimal amount, String type, String source, String description, LocalDateTime createdAt, String razorpayOrderId, String razorpayPaymentId) {
+    public WalletTransaction(Long id, User user, BigDecimal amount, String type, String source, String description, LocalDateTime createdAt, String razorpayOrderId, String razorpayPaymentId, Long paymentId, Long orderId, String status) {
         this.id = id;
         this.user = user;
         this.amount = amount;
@@ -48,6 +51,9 @@ public class WalletTransaction {
         this.createdAt = createdAt;
         this.razorpayOrderId = razorpayOrderId;
         this.razorpayPaymentId = razorpayPaymentId;
+        this.paymentId = paymentId;
+        this.orderId = orderId;
+        this.status = status;
     }
 
     // Getters and Setters
@@ -115,6 +121,15 @@ public class WalletTransaction {
         this.razorpayOrderId = razorpayOrderId;
     }
 
+    public Long getPaymentId() { return paymentId; }
+    public void setPaymentId(Long paymentId) { this.paymentId = paymentId; }
+
+    public Long getOrderId() { return orderId; }
+    public void setOrderId(Long orderId) { this.orderId = orderId; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
     public String getRazorpayPaymentId() {
         return razorpayPaymentId;
     }
@@ -134,6 +149,9 @@ public class WalletTransaction {
         private LocalDateTime createdAt;
         private String razorpayOrderId;
         private String razorpayPaymentId;
+        private Long paymentId;
+        private Long orderId;
+        private String status;
 
         WalletTransactionBuilder() {}
 
@@ -146,9 +164,12 @@ public class WalletTransaction {
         public WalletTransactionBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
         public WalletTransactionBuilder razorpayOrderId(String razorpayOrderId) { this.razorpayOrderId = razorpayOrderId; return this; }
         public WalletTransactionBuilder razorpayPaymentId(String razorpayPaymentId) { this.razorpayPaymentId = razorpayPaymentId; return this; }
+        public WalletTransactionBuilder paymentId(Long paymentId) { this.paymentId = paymentId; return this; }
+        public WalletTransactionBuilder orderId(Long orderId) { this.orderId = orderId; return this; }
+        public WalletTransactionBuilder status(String status) { this.status = status; return this; }
 
         public WalletTransaction build() {
-            return new WalletTransaction(id, user, amount, type, source, description, createdAt, razorpayOrderId, razorpayPaymentId);
+            return new WalletTransaction(id, user, amount, type, source, description, createdAt, razorpayOrderId, razorpayPaymentId, paymentId, orderId, status);
         }
     }
 

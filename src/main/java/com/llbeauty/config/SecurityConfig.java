@@ -47,7 +47,9 @@ public class SecurityConfig {
             		        "/auth/**",
             		        "/franchise/apply",
             		        "/salon/book",
-            		        "/membership"
+            		        "/membership",
+            		        "/member/verify/**",
+                            "/razorpay/webhook"
             		).permitAll()
             		// Admin access only
                 .requestMatchers("/admin/**").hasRole("ADMIN")

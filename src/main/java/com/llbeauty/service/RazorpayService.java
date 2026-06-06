@@ -21,6 +21,20 @@ public class RazorpayService {
     @Value("${razorpay.key.secret}")
     private String razorpayKeySecret;
 
+    @Value("${razorpay.webhook.secret:dummysecret}")
+    private String razorpayWebhookSecret;
+
+    @Value("${razorpay.merchant.upi.id:placeholder@upi}")
+    private String merchantUpiId;
+
+    public String getRazorpayKeyId() {
+        return razorpayKeyId;
+    }
+
+    public String getMerchantUpiId() {
+        return merchantUpiId;
+    }
+
     public Order createOrder(Double amount, String receipt) throws RazorpayException {
         RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
         JSONObject orderRequest = new JSONObject();
@@ -36,6 +50,34 @@ public class RazorpayService {
             String payload = orderId + "|" + paymentId;
             Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
             SecretKeySpec secret_key = new SecretKeySpec(razorpayKeySecret.getBytes("UTF-8"), "HmacSHA256");
+            sha256_HMAC.init(secret_key);
+            byte[] hash = sha256_HMAC.doFinal(payload.getBytes("UTF-8"));
+            
+            Formatter formatter = new Formatter();
+            for (byte b : hash) {
+                formatter.format("%02x", b);
+            }
+            String generatedSignature = formatter.toString();
+            return generatedSignature.equals(signature);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public com.razorpay.Refund refundPayment(String paymentId, Double amount) throws RazorpayException {
+        RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+        JSONObject refundRequest = new JSONObject();
+        if (amount != null) {
+            refundRequest.put("amount", (int) Math.round(amount * 100)); // partial refund
+        }
+        return client.payments.refund(paymentId, refundRequest);
+    }
+
+    public boolean verifyWebhookSignature(String payload, String signature) {
+        try {
+            Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secret_key = new SecretKeySpec(razorpayWebhookSecret.getBytes("UTF-8"), "HmacSHA256");
             sha256_HMAC.init(secret_key);
             byte[] hash = sha256_HMAC.doFinal(payload.getBytes("UTF-8"));
             

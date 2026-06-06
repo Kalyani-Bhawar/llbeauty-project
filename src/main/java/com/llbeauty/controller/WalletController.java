@@ -36,6 +36,8 @@ public class WalletController {
     private final RazorpayService razorpayService;
     private final PaymentRepository paymentRepository;
     private final MembershipHistoryRepository membershipHistoryRepository;
+    private final com.llbeauty.service.RewardService rewardService;
+    private final com.llbeauty.service.PaymentService paymentService;
 
     @org.springframework.beans.factory.annotation.Value("${razorpay.key.id}")
     private String razorpayKeyId;
@@ -46,7 +48,9 @@ public class WalletController {
                             MerchantRepository merchantRepository,
                             RazorpayService razorpayService,
                             PaymentRepository paymentRepository,
-                            MembershipHistoryRepository membershipHistoryRepository) {
+                            MembershipHistoryRepository membershipHistoryRepository,
+                            com.llbeauty.service.RewardService rewardService,
+                            com.llbeauty.service.PaymentService paymentService) {
         this.userRepository = userRepository;
         this.walletService = walletService;
         this.membershipService = membershipService;
@@ -54,6 +58,8 @@ public class WalletController {
         this.razorpayService = razorpayService;
         this.paymentRepository = paymentRepository;
         this.membershipHistoryRepository = membershipHistoryRepository;
+        this.rewardService = rewardService;
+        this.paymentService = paymentService;
     }
 
     private User getAuthenticatedUser() {
@@ -81,15 +87,22 @@ public class WalletController {
         // Fetch active membership
         Optional<UserMembership> activeOpt = membershipService.getActiveMembership(user);
 
+        // Fetch rewards points
+        com.llbeauty.entity.RewardPoint rp = rewardService.getPoints(user);
+        List<MembershipHistory> historyList = membershipHistoryRepository.findByUserOrderByStartDateDesc(user);
+
         model.addAttribute("user", user);
         model.addAttribute("walletBalance", balance);
         model.addAttribute("transactions", transactions);
+        model.addAttribute("rewardPoint", rp);
+        model.addAttribute("membershipHistory", historyList);
 
         if (activeOpt.isPresent()) {
             UserMembership active = activeOpt.get();
             model.addAttribute("activeMembership", active);
             // Membership details
-            model.addAttribute("membershipId", "LLB-MEMBER-" + String.format("%04d", active.getId()));
+            String mId = active.getMemberId() != null ? active.getMemberId() : ("LLB-MEMBER-" + String.format("%04d", active.getId()));
+            model.addAttribute("membershipId", mId);
             model.addAttribute("plan", active.getMembership());
             model.addAttribute("expiryDate", active.getExpiryDate());
         }
@@ -184,19 +197,11 @@ public class WalletController {
             User user = getAuthenticatedUser();
             if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
 
-            com.razorpay.Order order = razorpayService.createOrder(amount.doubleValue(), "topup_" + System.currentTimeMillis());
-
-            Payment payment = new Payment();
-            payment.setUser(user);
-            payment.setRazorpayOrderId(order.get("id"));
-            payment.setAmount(amount.doubleValue());
-            payment.setStatus("PENDING");
-            payment.setPaymentMethod("RAZORPAY");
-            payment.setPurpose("WALLET_TOPUP");
-            paymentRepository.save(payment);
+            String dummyRefId = "topup_" + System.currentTimeMillis();
+            Payment payment = paymentService.initiatePayment(user, amount.doubleValue(), "WALLET_TOPUP", dummyRefId, "RAZORPAY");
 
             Map<String, Object> response = new HashMap<>();
-            response.put("razorpayOrderId", order.get("id"));
+            response.put("razorpayOrderId", payment.getRazorpayOrderId());
             response.put("razorpayKeyId", razorpayKeyId);
             response.put("amount", amount);
             return ResponseEntity.ok(response);
@@ -216,18 +221,15 @@ public class WalletController {
             String paymentId = data.get("razorpayPaymentId");
             String signature = data.get("razorpaySignature");
 
-            boolean isValid = razorpayService.verifySignature(orderId, paymentId, signature);
-            if (!isValid) {
+            Payment payment = null;
+            try {
+                payment = paymentService.verifyAndProcessPayment(orderId, paymentId, signature);
+            } catch (Exception e) {
                 return ResponseEntity.status(400).body(Map.of("error", "Payment verification failed."));
             }
 
-            Payment payment = paymentRepository.findByRazorpayOrderId(orderId);
             BigDecimal creditAmount = BigDecimal.ZERO;
             if (payment != null) {
-                payment.setStatus("SUCCESS");
-                payment.setRazorpayPaymentId(paymentId);
-                payment.setRazorpaySignature(signature);
-                paymentRepository.save(payment);
                 creditAmount = BigDecimal.valueOf(payment.getAmount());
             }
 

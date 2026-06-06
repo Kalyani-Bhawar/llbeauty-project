@@ -12,4 +12,6 @@ public interface UserMembershipRepository extends JpaRepository<UserMembership, 
     Optional<UserMembership> findByUserAndStatus(User user, String status);
     List<UserMembership> findByUser(User user);
     long countByStatus(String status);
+    Optional<UserMembership> findByUuid(String uuid);
+    Optional<UserMembership> findByMemberId(String memberId);
 }

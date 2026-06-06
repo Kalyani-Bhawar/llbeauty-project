@@ -32,6 +32,7 @@ public class DataInitializer implements CommandLineRunner {
     private final QrCodeRepository qrCodeRepository;
     private final UserMembershipRepository userMembershipRepository;
     private final com.llbeauty.repository.SalonServiceRepository salonServiceRepository;
+    private final com.llbeauty.service.MembershipService membershipService;
 
     public DataInitializer(AuthService authService,
                            ProductRepository productRepository,
@@ -40,7 +41,8 @@ public class DataInitializer implements CommandLineRunner {
                            MerchantRepository merchantRepository,
                            QrCodeRepository qrCodeRepository,
                            UserMembershipRepository userMembershipRepository,
-                           com.llbeauty.repository.SalonServiceRepository salonServiceRepository) {
+                           com.llbeauty.repository.SalonServiceRepository salonServiceRepository,
+                           com.llbeauty.service.MembershipService membershipService) {
         this.authService = authService;
         this.productRepository = productRepository;
         this.salonInfoRepository = salonInfoRepository;
@@ -49,6 +51,7 @@ public class DataInitializer implements CommandLineRunner {
         this.qrCodeRepository = qrCodeRepository;
         this.userMembershipRepository = userMembershipRepository;
         this.salonServiceRepository = salonServiceRepository;
+        this.membershipService = membershipService;
     }
 
     @Override
@@ -226,5 +229,9 @@ public class DataInitializer implements CommandLineRunner {
             salonServiceRepository.saveAll(List.of(s1, s2, s3, s4, s5));
             log.info("Database seeded with default salon services.");
         }
+
+        // Run the membership identifiers backfill
+        membershipService.populateMissingMembershipIdentifiers();
+        log.info("Finished running backfill for missing membership identifiers.");
     }
 }

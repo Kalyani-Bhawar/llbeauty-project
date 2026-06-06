@@ -37,6 +37,12 @@ public class UserMembership {
     @Column(name = "referral_code")
     private String referralCode;
 
+    @Column(name = "member_id")
+    private String memberId;
+
+    @Column(name = "uuid", unique = true)
+    private String uuid;
+
     public UserMembership() {
     }
 
@@ -121,5 +127,21 @@ public class UserMembership {
 
     public void setReferralCode(String referralCode) {
         this.referralCode = referralCode;
+    }
+
+    public String getMemberId() {
+        return memberId;
+    }
+
+    public void setMemberId(String memberId) {
+        this.memberId = memberId;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 }

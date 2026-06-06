@@ -21,10 +21,12 @@ public class MembershipController {
 
     private final MembershipService membershipService;
     private final UserRepository userRepository;
+    private final com.llbeauty.service.WalletService walletService;
 
-    public MembershipController(MembershipService membershipService, UserRepository userRepository) {
+    public MembershipController(MembershipService membershipService, UserRepository userRepository, com.llbeauty.service.WalletService walletService) {
         this.membershipService = membershipService;
         this.userRepository = userRepository;
+        this.walletService = walletService;
     }
 
     private User getAuthenticatedUser() {
@@ -43,6 +45,9 @@ public class MembershipController {
         if (user != null) {
             Optional<UserMembership> activeOpt = membershipService.getActiveMembership(user);
             activeOpt.ifPresent(userMembership -> model.addAttribute("activeMembership", userMembership));
+            model.addAttribute("walletBalance", walletService.getBalance(user));
+        } else {
+            model.addAttribute("walletBalance", 0);
         }
         return "membership";
     }
@@ -50,7 +55,8 @@ public class MembershipController {
     // Initiate purchase - returns Razorpay order options in JSON
     @PostMapping("/buy")
     @ResponseBody
-    public ResponseEntity<?> initiateBuy(@RequestParam("planId") Long planId) {
+    public ResponseEntity<?> initiateBuy(@RequestParam("planId") Long planId,
+                                         @RequestParam(value = "useWallet", defaultValue = "false") boolean useWallet) {
         User user = getAuthenticatedUser();
         if (user == null) {
             Map<String, Object> err = new HashMap<>();
@@ -60,7 +66,7 @@ public class MembershipController {
         }
 
         try {
-            Map<String, Object> paymentOptions = membershipService.preparePurchase(user, planId);
+            Map<String, Object> paymentOptions = membershipService.preparePurchase(user, planId, useWallet);
             paymentOptions.put("userEmail", user.getEmail());
             paymentOptions.put("userName", user.getName());
             paymentOptions.put("userMobile", user.getMobile());

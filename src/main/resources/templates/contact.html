@@ -88,6 +88,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
 
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show border-0 mb-5 shadow-sm" style="background: #ffebee; color: #c62828; border-radius:12px;" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> <span th:text="${errorMessage}">Error!</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
             <div class="row g-5">
                 <!-- Contact Info -->
                 <div class="col-lg-5 animate-fade-up">

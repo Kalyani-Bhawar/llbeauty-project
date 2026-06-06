@@ -27,6 +27,7 @@
                             <th>Payment ID</th>
                             <th>Date & Time</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -58,9 +59,52 @@
                                 <span class="badge-status badge-completed" th:if="${order.status == 'SUCCESS'}">SUCCESS</span>
                                 <span class="badge-status badge-pending" th:if="${order.status == 'PENDING'}">PENDING</span>
                                 <span class="badge-status badge-cancelled" th:if="${order.status == 'FAILED'}">FAILED</span>
-                                <span class="badge-status" th:if="${order.status != 'SUCCESS' and order.status != 'PENDING' and order.status != 'FAILED'}" th:text="${order.status}">Status</span>
+                                <span class="badge-status badge-cancelled" th:if="${order.status == 'REFUNDED'}">REFUNDED</span>
+                                <span class="badge-status" th:if="${order.status != 'SUCCESS' and order.status != 'PENDING' and order.status != 'FAILED' and order.status != 'REFUNDED'}" th:text="${order.status}">Status</span>
+                            </td>
+                            <td>
+                                <button th:if="${order.status == 'SUCCESS'}" 
+                                        class="btn btn-sm btn-outline-danger" 
+                                        data-bs-toggle="modal" 
+                                        th:data-bs-target="'#refundModal' + ${order.id}">
+                                    Refund
+                                </button>
                             </td>
                         </tr>
+                        
+                        <!-- Refund Modal per Order -->
+                        <div th:each="order : ${orders}" th:if="${order.status == 'SUCCESS'}" class="modal fade" th:id="'refundModal' + ${order.id}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form th:action="@{/admin/orders/{id}/refund(id=${order.id})}" method="post">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-dark">Refund Order <span th:text="'#LLB-ORD-' + ${order.id}"></span></h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-dark">
+                                            <p>Select refund method for <strong>₹<span th:text="${#numbers.formatDecimal(order.totalAmount, 1, 2)}">0.00</span></strong></p>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="radio" name="refundMethod" id="refundWallet" value="WALLET" checked>
+                                                <label class="form-check-label" for="refundWallet">
+                                                    Refund to Wallet Credits (Default)
+                                                </label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="radio" name="refundMethod" id="refundRazorpay" value="RAZORPAY">
+                                                <label class="form-check-label" for="refundRazorpay">
+                                                    Refund to Original Payment Source (Razorpay)
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-danger">Process Refund</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
                         <tr th:if="${#lists.isEmpty(orders)}">
                             <td colspan="7" class="empty-state">
                                 <i class="bi bi-box-seam"></i>

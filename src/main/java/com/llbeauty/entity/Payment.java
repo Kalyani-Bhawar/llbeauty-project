@@ -21,8 +21,29 @@ public class Payment {
     private Double amount;
     private String status; // PENDING, SUCCESS, FAILED
     private String paymentMethod; // RAZORPAY, WALLET, RAZORPAY+WALLET
+    private Double walletDeductionAmount = 0.0; // amount deducted from wallet before Razorpay
+    private Double totalAmountPaid; // total amount finally paid (wallet + Razorpay)
+    public Double getWalletDeductionAmount() {
+        return walletDeductionAmount;
+    }
 
-    private String purpose; // ORDER, WALLET_TOPUP, MEMBERSHIP
+    public void setWalletDeductionAmount(Double walletDeductionAmount) {
+        this.walletDeductionAmount = walletDeductionAmount;
+    }
+
+    public Double getTotalAmountPaid() {
+        return totalAmountPaid;
+    }
+
+    public void setTotalAmountPaid(Double totalAmountPaid) {
+        this.totalAmountPaid = totalAmountPaid;
+    }
+
+    private String currency = "INR";
+
+    private String paymentFor; // PRODUCT, MEMBERSHIP, WALLET_TOPUP, SALON_BOOKING
+
+    private String referenceId; // To store Order ID, Appointment ID, etc.
 
     private LocalDateTime createdAt;
 
@@ -48,8 +69,12 @@ public class Payment {
     public void setStatus(String status) { this.status = status; }
     public String getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
-    public String getPurpose() { return purpose; }
-    public void setPurpose(String purpose) { this.purpose = purpose; }
+    public String getPaymentFor() { return paymentFor; }
+    public void setPaymentFor(String paymentFor) { this.paymentFor = paymentFor; }
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
+    public String getReferenceId() { return referenceId; }
+    public void setReferenceId(String referenceId) { this.referenceId = referenceId; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

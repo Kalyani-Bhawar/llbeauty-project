@@ -17,6 +17,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.*;
 
 @Controller
@@ -29,15 +30,12 @@ public class CheckoutController {
     private final WalletService walletService;
     private final MembershipService membershipService;
     private final UserMembershipRepository userMembershipRepository;
-    private final com.llbeauty.service.RazorpayService razorpayService;
-    private final PaymentRepository paymentRepository;
+    private final com.llbeauty.service.PaymentService paymentService;
     private final OrderItemRepository orderItemRepository;
+    private final com.llbeauty.service.RewardService rewardService;
 
     @Value("${razorpay.key.id:rzp_test_dummy}")
     private String razorpayKeyId;
-
-    @Value("${razorpay.key.secret:dummysecret}")
-    private String razorpayKeySecret;
 
     public CheckoutController(ProductRepository productRepository,
                               OrderRepository orderRepository,
@@ -45,18 +43,18 @@ public class CheckoutController {
                               WalletService walletService,
                               MembershipService membershipService,
                               UserMembershipRepository userMembershipRepository,
-                              com.llbeauty.service.RazorpayService razorpayService,
-                              PaymentRepository paymentRepository,
-                              OrderItemRepository orderItemRepository) {
+                              com.llbeauty.service.PaymentService paymentService,
+                              OrderItemRepository orderItemRepository,
+                              com.llbeauty.service.RewardService rewardService) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.walletService = walletService;
         this.membershipService = membershipService;
         this.userMembershipRepository = userMembershipRepository;
-        this.razorpayService = razorpayService;
-        this.paymentRepository = paymentRepository;
+        this.paymentService = paymentService;
         this.orderItemRepository = orderItemRepository;
+        this.rewardService = rewardService;
     }
 
     private User getAuthenticatedUser() {
@@ -234,16 +232,7 @@ public class CheckoutController {
         model.addAttribute("passName", passName);
         model.addAttribute("walletBalance", walletService.getBalance(user));
 
-        String preCreatedOrderId = "mock_order_" + System.currentTimeMillis();
-        if (finalAmount > 0 && !isDummyCredentials()) {
-            try {
-                com.razorpay.Order rzpOrder = razorpayService.createOrder(finalAmount, "order_init_" + System.currentTimeMillis());
-                preCreatedOrderId = rzpOrder.get("id");
-            } catch (Exception e) {
-                // fallback to mock
-            }
-        }
-        model.addAttribute("razorpayOrderId", preCreatedOrderId);
+        // Not generating pre-created order ID here anymore. Handled via AJAX.
         model.addAttribute("razorpayKeyId", razorpayKeyId);
 
         return "checkout";
@@ -349,19 +338,9 @@ public class CheckoutController {
         // 4. Generate Razorpay order for remaining balance
         if (!isDummyCredentials()) {
             try {
-                com.razorpay.Order rzpOrder = razorpayService.createOrder(amountToPay, "order_" + savedOrder.getId() + "_" + System.currentTimeMillis());
-                
-                // Create Payment entity
-                Payment payment = new Payment();
-                payment.setUser(user);
-                payment.setRazorpayOrderId(rzpOrder.get("id"));
-                payment.setAmount(amountToPay);
-                payment.setStatus("PENDING");
-                payment.setPaymentMethod("RAZORPAY" + (walletRedeemed > 0 ? "+WALLET" : ""));
-                payment.setPurpose("ORDER");
-                paymentRepository.save(payment);
+                Payment payment = paymentService.initiatePayment(user, amountToPay, "PRODUCT", String.valueOf(savedOrder.getId()), "RAZORPAY" + (walletRedeemed > 0 ? "+WALLET" : ""));
 
-                response.put("razorpayOrderId", rzpOrder.get("id"));
+                response.put("razorpayOrderId", payment.getRazorpayOrderId());
                 response.put("key", razorpayKeyId);
                 response.put("useMock", false);
             } catch (Exception e) {
@@ -394,17 +373,10 @@ public class CheckoutController {
         }
 
         if (razorpayOrderId != null && razorpaySignature != null && !isDummyCredentials()) {
-            boolean isValid = razorpayService.verifySignature(razorpayOrderId, paymentId, razorpaySignature);
-            if (!isValid) {
+            try {
+                paymentService.verifyAndProcessPayment(razorpayOrderId, paymentId, razorpaySignature);
+            } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid payment signature"));
-            }
-            
-            Payment payment = paymentRepository.findByRazorpayOrderId(razorpayOrderId);
-            if (payment != null) {
-                payment.setStatus("SUCCESS");
-                payment.setRazorpayPaymentId(paymentId);
-                payment.setRazorpaySignature(razorpaySignature);
-                paymentRepository.save(payment);
             }
         }
 
@@ -458,6 +430,9 @@ public class CheckoutController {
             if (cashbackAmount > 0) {
                 walletService.credit(user, cashbackAmount, "Cashback for Order #" + order.getId() + " (" + activeOpt.get().getMembership().getName() + ")");
             }
+            
+            // Award Reward Points!
+            rewardService.awardPoints(user, BigDecimal.valueOf(order.getTotalAmount()));
         }
 
         // Award default purchase credits (e.g. 5% cashback or 1 credit per 20 rupees spent even for non-VIP if desired, but VIP gets the plan specific percentage)

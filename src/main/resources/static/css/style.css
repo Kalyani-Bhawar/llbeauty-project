@@ -756,6 +756,7 @@ footer,
     color: rgba(255,255,255,0.8);
     padding: 60px 0 30px;
     position: relative;
+    margin-top: auto; /* Push footer down when content is short */
     z-index: 1;
 }
 .footer-brand {
@@ -1409,6 +1410,7 @@ html { scroll-behavior: smooth; }
 /* ── Dark-background form controls (wallet/dashboard pages) ── */
 .bg-dark .form-control,
 .topup-page .form-control,
+.dashboard-content .form-control,
 .dashboard-page .form-control {
     background: rgba(255,255,255,0.04) !important;
     border-color: rgba(255,255,255,0.1) !important;
@@ -1416,6 +1418,7 @@ html { scroll-behavior: smooth; }
 }
 .bg-dark .form-control:focus,
 .topup-page .form-control:focus,
+.dashboard-content .form-control:focus,
 .dashboard-page .form-control:focus {
     border-color: var(--gold) !important;
     box-shadow: 0 0 0 4px rgba(201,168,76,0.12) !important;
@@ -1493,7 +1496,7 @@ html { scroll-behavior: smooth; }
 
 /* ── Ensure footer always sticks to bottom ── */
 body { display: flex; flex-direction: column; min-height: 100vh; }
-main, .dashboard-page, .topup-page, .auth-page { flex: 1; }
+main, .dashboard-content, .dashboard-page, .topup-page, .auth-page { flex: 1; }
 
 /* ── Container max-width consistency ── */
 .container {
