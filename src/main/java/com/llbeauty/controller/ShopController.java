@@ -14,15 +14,21 @@ public class ShopController {
     private final ProductRepository productRepository;
 
     @GetMapping("/shop")
-    public String shop(Model model, @RequestParam(value = "category", required = false) String category) {
+    public String shop(Model model, 
+                       @RequestParam(value = "category", required = false) String category,
+                       @RequestParam(value = "search", required = false) String search) {
         List<Product> products;
-        if (category != null && !category.trim().isEmpty()) {
-            products = productRepository.findByCategory(category.trim());
+        String trimmedCategory = (category != null && !category.trim().isEmpty()) ? category.trim() : null;
+        String trimmedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+
+        if (trimmedCategory != null || trimmedSearch != null) {
+            products = productRepository.searchProducts(trimmedCategory, trimmedSearch);
         } else {
             products = productRepository.findAll();
         }
         model.addAttribute("products", products);
         model.addAttribute("selectedCategory", category);
+        model.addAttribute("selectedSearch", search);
         return "shop";
     }
 

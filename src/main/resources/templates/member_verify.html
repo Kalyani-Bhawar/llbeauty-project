@@ -4,254 +4,353 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Membership Verification – L.L. BEAUTY</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="/css/style.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            background-color: #050505;
-            color: #ffffff;
+            background: #080808;
+            color: #fff;
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 24px;
         }
 
-        .verify-card {
-            background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.95) 100%);
-            border: 1px solid rgba(201, 168, 76, 0.25);
+        .card {
+            background: #111;
+            border: 1px solid rgba(201,168,76,0.28);
             border-radius: 24px;
-            padding: 40px 30px;
-            max-width: 500px;
+            max-width: 420px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(201, 168, 76, 0.12);
-            position: relative;
             overflow: hidden;
+        }
+
+        /* ── TOP SECTION ── */
+        .card-top {
+            padding: 32px 28px 0;
             text-align: center;
         }
 
-        .verify-card::before {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(201, 168, 76, 0.04) 0%, transparent 60%);
-            pointer-events: none;
-        }
-
-        .verify-header {
-            margin-bottom: 25px;
-        }
-
-        .verify-logo {
+        .logo {
             font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
+            font-size: 1.75rem;
             font-weight: 700;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
+            letter-spacing: 3px;
+            color: #fff;
+        }
+        .logo span { color: #C9A84C; }
+
+        .logo-sub {
+            font-size: 0.6rem;
+            letter-spacing: 3px;
+            color: #C9A84C;
+            text-transform: uppercase;
+            margin-top: 4px;
+            font-weight: 600;
         }
 
-        .verify-logo span {
-            color: var(--gold);
-        }
+        /* ── BADGE ── */
+        .badge-wrap { margin: 20px 0 22px; }
 
-        .verify-badge-container {
-            margin: 20px 0 25px 0;
-        }
-
-        .badge-verify {
-            font-size: 0.95rem;
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 24px;
+            border-radius: 50px;
+            font-size: 0.75rem;
             font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
-            padding: 10px 28px;
-            border-radius: 50px;
             border: 1.5px solid transparent;
-            display: inline-block;
         }
-
         .badge-active {
-            background: rgba(46, 204, 113, 0.12);
+            background: rgba(46,204,113,0.1);
+            border-color: rgba(46,204,113,0.4);
             color: #2ecc71;
-            border-color: rgba(46, 204, 113, 0.4);
-            box-shadow: 0 0 20px rgba(46, 204, 113, 0.2);
-            font-weight: 800;
         }
-
         .badge-expired {
-            background: rgba(231, 76, 60, 0.12);
+            background: rgba(231,76,60,0.1);
+            border-color: rgba(231,76,60,0.4);
             color: #e74c3c;
-            border-color: rgba(231, 76, 60, 0.4);
-            box-shadow: 0 0 20px rgba(231, 76, 60, 0.2);
-            font-weight: 800;
         }
-
         .badge-failed {
-            background: rgba(231, 76, 60, 0.15);
-            color: #e74c3c;
+            background: rgba(231,76,60,0.12);
             border-color: #e74c3c;
-            box-shadow: 0 0 20px rgba(231, 76, 60, 0.25);
-            font-weight: 800;
+            color: #e74c3c;
+        }
+        .badge svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+        /* ── INFO ROWS ── */
+        .info-block {
+            padding: 0 28px;
         }
 
-        .verify-details {
-            text-align: left;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 25px;
-        }
-
-        .detail-row {
+        .info-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+            padding: 11px 0;
+            border-bottom: 1px dashed rgba(255,255,255,0.06);
         }
+        .info-row:last-child { border-bottom: none; }
 
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-
-        .detail-label {
-            font-size: 0.78rem;
+        .info-label {
+            font-size: 0.66rem;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: rgba(255, 255, 255, 0.45);
+            color: rgba(255,255,255,0.35);
             font-weight: 600;
         }
 
-        .detail-value {
-            font-size: 0.95rem;
+        .info-val {
+            font-size: 0.88rem;
             font-weight: 600;
-            color: #ffffff;
+            color: #fff;
         }
-
-        .detail-value.gold {
-            color: var(--gold);
+        .info-val.gold {
+            color: #C9A84C;
             font-family: 'Playfair Display', serif;
-            font-size: 1.1rem;
+            font-size: 1rem;
+        }
+        .info-val.green { color: #2ecc71; }
+        .info-val.red   { color: #e74c3c; }
+        .info-val.mono  { font-family: monospace; font-size: 0.82rem; letter-spacing: 1px; }
+
+        /* ── DISCOUNT STRIP ── */
+        .discount-strip {
+            margin: 20px 28px 28px;
+            background: #13110a;
+            border: 1px solid rgba(201,168,76,0.35);
+            border-radius: 16px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            position: relative;
+            overflow: hidden;
+        }
+        .discount-strip::after {
+            content: '';
+            position: absolute;
+            right: -24px; top: -24px;
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            background: rgba(201,168,76,0.07);
+            pointer-events: none;
         }
 
-        .detail-value.status-verified {
-            color: #2ecc71;
+        .disc-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
             font-weight: 700;
+            color: #C9A84C;
+            line-height: 1;
+            flex-shrink: 0;
         }
 
-        .detail-value.status-expired {
+        .disc-right { flex: 1; min-width: 0; }
+
+        .disc-title {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .disc-benefits { display: flex; flex-direction: column; gap: 5px; }
+
+        .disc-benefit {
+            font-size: 0.71rem;
+            color: rgba(255,255,255,0.55);
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        .disc-benefit svg {
+            width: 11px; height: 11px;
+            color: #C9A84C;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* ── EXPIRED NOTICE ── */
+        .expired-notice {
+            margin: 0 28px 28px;
+            background: rgba(231,76,60,0.07);
+            border: 1px solid rgba(231,76,60,0.25);
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 0.78rem;
+            color: rgba(231,76,60,0.85);
+            line-height: 1.5;
+        }
+
+        /* ── ERROR BLOCK ── */
+        .error-body {
+            padding: 28px;
+            text-align: center;
+        }
+        .error-icon {
+            font-size: 3.5rem;
             color: #e74c3c;
-            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .error-text {
+            font-size: 0.88rem;
+            color: rgba(255,255,255,0.45);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .btn-home {
+            display: inline-block;
+            width: 100%;
+            padding: 11px;
+            border-radius: 50px;
+            background: transparent;
+            border: 1.5px solid rgba(201,168,76,0.5);
+            color: #C9A84C;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-decoration: none;
+            text-transform: uppercase;
+            text-align: center;
         }
 
-        .verify-footer {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.3);
-            margin-top: 15px;
+        /* ── FOOTER ── */
+        .card-footer {
+            background: rgba(201,168,76,0.04);
+            border-top: 1px solid rgba(201,168,76,0.1);
+            padding: 12px 28px;
+            text-align: center;
+            font-size: 0.63rem;
+            color: rgba(255,255,255,0.22);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
-
-        .verify-error-icon {
-            font-size: 4.5rem;
-            color: #e74c3c;
-            margin-bottom: 15px;
-        }
+        .card-footer svg { width: 12px; height: 12px; color: rgba(46,204,113,0.6); }
     </style>
 </head>
 <body>
 
-    <div class="verify-card animate-fade-up">
-        
-        <!-- ERROR STATE (Verification Failed) -->
-        <div th:if="${error != null or notFound != null}">
-            <div class="verify-header">
-                <div class="verify-logo">L.L. <span>BEAUTY</span></div>
-            </div>
-            
-            <div class="verify-badge-container">
-                <span class="badge-verify badge-failed">
-                    <i class="bi bi-x-octagon-fill me-2"></i> VERIFICATION FAILED
+<div class="card">
+
+    <!-- ════ ERROR STATE ════ -->
+    <div th:if="${error != null or notFound != null}">
+        <div class="card-top">
+            <div class="logo">L.L. <span>BEAUTY</span></div>
+            <div class="logo-sub">VIP Member Verification</div>
+            <div class="badge-wrap">
+                <span class="badge badge-failed">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    VERIFICATION FAILED
                 </span>
             </div>
-
-            <div class="verify-details text-center py-4">
-                <p class="text-white-50 mb-0" style="font-size: 0.95rem; line-height: 1.6;">
-                    The scanned membership code is invalid or has not been found in our records. Please verify the QR code and try again.
-                </p>
+        </div>
+        <div class="error-body">
+            <div class="error-text">
+                The scanned membership code is invalid or not found in our records. Please verify the QR code and try again.
             </div>
+            <a href="/" class="btn-home">&#8962; Return Home</a>
+        </div>
+    </div>
 
-            <a href="/" class="btn btn-gold btn-sm px-4 py-2 w-100" style="border-radius: 50px;">
-                <i class="bi bi-house me-1"></i> Return Home
-            </a>
+    <!-- ════ SUCCESS STATE ════ -->
+    <div th:if="${error == null and notFound == null}">
+
+        <div class="card-top">
+            <div class="logo">L.L. <span>BEAUTY</span></div>
+            <div class="logo-sub">VIP Member Verification</div>
+            <div class="badge-wrap">
+                <span class="badge badge-active" th:if="${um.status == 'ACTIVE'}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+                    VERIFIED MEMBER
+                </span>
+                <span class="badge badge-expired" th:if="${um.status == 'EXPIRED'}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    MEMBERSHIP EXPIRED
+                </span>
+            </div>
         </div>
 
-        <!-- SUCCESS STATE -->
-        <div th:if="${error == null and notFound == null}">
-            <div class="verify-header">
-                <div class="verify-logo">L.L. <span>BEAUTY</span></div>
-                <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px; color: var(--gold); font-weight:600;">
-                    VIP Member Verification
-                </div>
+        <!-- Info Rows -->
+        <div class="info-block">
+            <div class="info-row">
+                <span class="info-label">Member Name</span>
+                <span class="info-val" th:text="${user.name}">Member Name</span>
             </div>
+            <div class="info-row">
+                <span class="info-label">Member ID</span>
+                <span class="info-val mono" th:text="${um.memberId}">LLB-G-00001</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Membership Plan</span>
+                <span class="info-val gold" th:text="${um.membership.name}">Eva Gold Card</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Status</span>
+                <span class="info-val"
+                      th:classappend="${um.status == 'ACTIVE'} ? 'green' : 'red'"
+                      th:text="${statusMessage}">VERIFIED MEMBER</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Mobile</span>
+                <span class="info-val" th:text="${user.mobile}">9XXXXXXXXX</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Email</span>
+                <span class="info-val" th:text="${user.email ?: 'No Email'}" style="font-size:0.82rem;">email@example.com</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Start Date</span>
+                <span class="info-val" th:text="${#temporals.format(um.startDate, 'dd-MM-yyyy')}">01-01-2026</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Expiry Date</span>
+                <span class="info-val" th:text="${#temporals.format(um.expiryDate, 'dd-MM-yyyy')}">01-01-2027</span>
+            </div>
+        </div>
 
-            <!-- Verification Status Header / Badge -->
-            <div class="verify-badge-container">
-                <span class="badge-verify badge-active" th:if="${um.status == 'ACTIVE'}">
-                    <i class="bi bi-patch-check-fill me-2"></i> VERIFIED MEMBER
-                </span>
-                <span class="badge-verify badge-expired" th:if="${um.status == 'EXPIRED'}">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i> MEMBERSHIP EXPIRED
-                </span>
+        <!-- ACTIVE → Discount Strip -->
+        <div class="discount-strip" th:if="${um.status == 'ACTIVE'}">
+            <div class="disc-num" th:text="${(um.membership.cashbackPercent * 100).intValue()} + '%'">15%</div>
+            <div class="disc-right">
+                <div class="disc-title">Member Discount</div>
+                <div class="disc-benefits">
+                    <div th:each="benefit : ${benefitsList}" class="disc-benefit">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span th:text="${benefit}">Benefit</span>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <!-- Details Block -->
-            <div class="verify-details">
-                <div class="detail-row">
-                    <span class="detail-label">Member Name</span>
-                    <span class="detail-value" th:text="${user.name}">Member Name</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Member ID</span>
-                    <span class="detail-value" th:text="${um.memberId}" style="font-family: monospace; letter-spacing: 0.5px;">LLB-P-00001</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Membership Plan</span>
-                    <span class="detail-value gold" th:text="${um.membership.name}">Eva Gold Card</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Membership Status</span>
-                    <span class="detail-value" 
-                          th:classappend="${um.status == 'ACTIVE'} ? 'status-verified' : 'status-expired'" 
-                          th:text="${statusMessage}">VERIFIED MEMBER</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Mobile Number</span>
-                    <span class="detail-value" th:text="${user.mobile}">Mobile Number</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Email</span>
-                    <span class="detail-value" th:text="${user.email ?: 'No Email'}">Email</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Start Date</span>
-                    <span class="detail-value" th:text="${#temporals.format(um.startDate, 'dd-MM-yyyy')}">01-01-2026</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Expiry Date</span>
-                    <span class="detail-value" th:text="${#temporals.format(um.expiryDate, 'dd-MM-yyyy')}">01-01-2027</span>
-                </div>
-            </div>
+        <!-- EXPIRED → Notice -->
+        <div class="expired-notice" th:if="${um.status == 'EXPIRED'}">
+            &#9201; This membership had
+            <strong th:text="${(um.membership.cashbackPercent * 100).intValue()} + '% discount'">discount</strong>
+            benefits. Please renew your membership to continue enjoying member privileges.
+        </div>
 
-            <div class="verify-footer">
-                <i class="bi bi-shield-fill-check text-success me-1"></i> Official L.L. BEAUTY Portal
-                <div class="mt-1" style="opacity:0.5; font-size:0.68rem;">Verified on <span th:text="${#temporals.format(#temporals.createNow(), 'dd MMM yyyy, hh:mm a')}">Date</span></div>
-            </div>
+        <!-- Footer -->
+        <div class="card-footer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            Official L.L. BEAUTY Portal &nbsp;·&nbsp;
+            Verified on <span th:text="${#temporals.format(#temporals.createNow(), 'dd MMM yyyy, hh:mm a')}">Date</span>
         </div>
 
     </div>
+</div>
 
 </body>
 </html>

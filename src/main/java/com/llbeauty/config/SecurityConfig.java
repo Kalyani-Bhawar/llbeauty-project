@@ -27,7 +27,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Disable CSRF for simplified cookie/OTP authentication
+        .csrf(csrf -> csrf
+        	    .ignoringRequestMatchers(
+        	        "/razorpay/webhook",
+        	        "/manual-payment/submit",
+        	        "/checkout/confirm-order",
+        	        "/checkout/place-order",
+        	        "/checkout/cart/**",
+        	        "/auth/resend-otp"
+        	    )
+        	)
             .authorizeHttpRequests(auth -> auth
                 // Allow public access to home page, static resources, and basic pages
             		.requestMatchers(
@@ -56,13 +65,8 @@ public class SecurityConfig {
                 // All other requests require login (like /shop, /cart, /checkout)
                 .anyRequest().authenticated()
             )
-            .logout(logout -> logout
-                .logoutUrl("/auth/logout")
-                .logoutSuccessUrl("/")
-                .deleteCookies("LLB_TOKEN")
-                .permitAll()
-            )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
+        
     }
 }

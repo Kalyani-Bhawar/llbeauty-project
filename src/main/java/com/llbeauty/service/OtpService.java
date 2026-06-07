@@ -50,7 +50,7 @@ public class OtpService {
         emailService.sendOtp(email, code);
         
         log.info("==============================");
-        log.info("📧 OTP sent to email {}: {}", email, code);
+        log.info("📧 OTP sent to email: {}", email);
         log.info("==============================");
     }
 

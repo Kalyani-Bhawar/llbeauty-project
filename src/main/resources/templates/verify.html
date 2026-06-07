@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="_csrf" th:content="${_csrf.token}">
+	<meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title>Verify OTP – L.L. BEAUTY</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -47,6 +49,89 @@
             border-color: var(--gold);
             box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
         }
+
+        /* ── Countdown Timer ── */
+        .otp-timer-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 14px 0 4px;
+        }
+        .otp-timer-ring {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            flex-shrink: 0;
+        }
+        .otp-timer-ring svg { transform: rotate(-90deg); }
+        .bg-circle {
+            fill: none;
+            stroke: #f0e8d4;
+            stroke-width: 4;
+        }
+        .progress-circle {
+            fill: none;
+            stroke: var(--gold, #c9a84c);
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-dasharray: 113.1;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear, stroke 0.4s;
+        }
+        .progress-circle.urgent { stroke: #e05252; }
+        .otp-timer-num {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        .otp-timer-label {
+            font-size: 0.82rem;
+            color: var(--text-muted, #888);
+            line-height: 1.5;
+        }
+        .otp-timer-label strong { color: var(--dark); }
+
+        /* ── Resend OTP ── */
+        .resend-section {
+            text-align: center;
+            margin-top: 18px;
+        }
+        .resend-section p {
+            font-size: 0.82rem;
+            color: var(--text-muted, #888);
+            margin-bottom: 8px;
+        }
+        #resendBtn {
+            background: none;
+            border: 1.5px solid rgba(201, 168, 76, 0.55);
+            color: var(--gold, #c9a84c);
+            font-size: 0.83rem;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 8px 22px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        #resendBtn:hover:not(:disabled) {
+            background: var(--gold, #c9a84c);
+            color: #fff;
+        }
+        #resendBtn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        #resendCooldownText {
+            font-size: 0.78rem;
+            color: var(--text-muted, #888);
+            margin-top: 6px;
+            min-height: 18px;
+        }
     </style>
 </head>
 <body>
@@ -57,37 +142,72 @@
     <div class="auth-container">
         <div class="auth-card-premium animate-fade-up">
             <h2 class="auth-logo brand-font">L.L. <span>BEAUTY</span></h2>
-            <p class="auth-subtitle">Verify OTP sent to <span th:text="${email}" style="font-weight: 600; color: var(--dark);"></span></p>
+            <p class="auth-subtitle">Verify OTP sent to
+                <span th:text="${email}" style="font-weight:600;color:var(--dark);"></span>
+            </p>
 
             <!-- Alerts -->
             <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
-            <div th:if="${info}" class="alert alert-info" role="alert" th:text="${info}"></div>
+            <div th:if="${info}"  class="alert alert-info"   role="alert" th:text="${info}"></div>
 
+            <!-- OTP Verify Form -->
             <form th:action="@{/auth/verify}" method="POST" onsubmit="assembleOtp()">
-                <input type="hidden" name="email" th:value="${email}">
+                <input type="hidden" name="email"    th:value="${email}">
                 <input type="hidden" name="redirect" th:value="${redirect}">
-                
-                <div class="mb-4">
+
+                <div class="mb-2">
                     <label class="form-label d-block text-center mb-3">Enter 6-Digit OTP</label>
                     <div class="otp-inputs mb-3">
-                        <input type="text" class="otp-input" maxlength="1" required pattern="\d" oninput="moveFocus(this, 1)">
-                        <input type="text" class="otp-input" maxlength="1" required pattern="\d" oninput="moveFocus(this, 2)">
-                        <input type="text" class="otp-input" maxlength="1" required pattern="\d" oninput="moveFocus(this, 3)">
-                        <input type="text" class="otp-input" maxlength="1" required pattern="\d" oninput="moveFocus(this, 4)">
-                        <input type="text" class="otp-input" maxlength="1" required pattern="\d" oninput="moveFocus(this, 5)">
-                        <input type="text" class="otp-input" maxlength="1" required pattern="\d" oninput="moveFocus(this, 6)">
+                        <input type="text" class="otp-input" maxlength="1" required pattern="\d" inputmode="numeric" oninput="moveFocus(this,1)">
+                        <input type="text" class="otp-input" maxlength="1" required pattern="\d" inputmode="numeric" oninput="moveFocus(this,2)">
+                        <input type="text" class="otp-input" maxlength="1" required pattern="\d" inputmode="numeric" oninput="moveFocus(this,3)">
+                        <input type="text" class="otp-input" maxlength="1" required pattern="\d" inputmode="numeric" oninput="moveFocus(this,4)">
+                        <input type="text" class="otp-input" maxlength="1" required pattern="\d" inputmode="numeric" oninput="moveFocus(this,5)">
+                        <input type="text" class="otp-input" maxlength="1" required pattern="\d" inputmode="numeric" oninput="moveFocus(this,6)">
                     </div>
-                    <!-- Hidden field to submit combined OTP -->
                     <input type="hidden" name="otp" id="fullOtp">
                 </div>
 
-                <button type="submit" class="btn-gold w-100 py-3" style="border-radius: 12px; font-size: 0.9rem;">
+                <!-- Countdown Timer -->
+                <div class="otp-timer-wrap">
+                    <div class="otp-timer-ring">
+                        <svg viewBox="0 0 48 48" width="48" height="48">
+                            <circle class="bg-circle"      cx="24" cy="24" r="18"/>
+                            <circle class="progress-circle" id="timerCircle" cx="24" cy="24" r="18"/>
+                        </svg>
+                        <div class="otp-timer-num" id="timerNum">5:00</div>
+                    </div>
+                    <div class="otp-timer-label">
+                        OTP valid for <strong id="timerText">5 min</strong><br>
+                        <span id="timerExpiredMsg" style="display:none;color:#e05252;">
+                            OTP expired — please resend
+                        </span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-gold w-100 py-3 mt-3"
+                        style="border-radius:12px;font-size:0.9rem;">
                     Verify &amp; Login &nbsp;→
                 </button>
             </form>
 
+            <!-- Resend OTP — type="button" avoids any form/GET issue -->
+            <div class="resend-section">
+                <p>Didn't receive the OTP?</p>
+                <button type="button" id="resendBtn" disabled onclick="doResend()">
+                    🔄 Resend OTP
+                </button>
+                <div id="resendCooldownText">
+                    Please wait <span id="cooldownSec">30</span>s before resending
+                </div>
+                <!-- hidden values Thymeleaf renders for JS to read -->
+                <span id="userEmail"    th:text="${email}"    style="display:none;"></span>
+                <span id="userRedirect" th:text="${redirect}" style="display:none;"></span>
+            </div>
+
             <div class="text-center mt-4">
-                <a th:href="@{/auth/login(redirect=${redirect})}" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem;">
+                <a th:href="@{/auth/login(redirect=${redirect})}"
+                   style="color:var(--text-muted);text-decoration:none;font-size:0.8rem;">
                     ← Back to Login
                 </a>
             </div>
@@ -99,6 +219,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // ── OTP Input Navigation ──
         function moveFocus(current, index) {
             if (current.value.length === 1 && index < 6) {
                 document.querySelectorAll('.otp-input')[index].focus();
@@ -106,21 +227,138 @@
             assembleOtp();
         }
 
-        // Handle backspace navigation
         document.querySelectorAll('.otp-input').forEach((input, index) => {
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Backspace' && input.value.length === 0 && index > 0) {
                     document.querySelectorAll('.otp-input')[index - 1].focus();
                 }
             });
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pasted = (e.clipboardData || window.clipboardData)
+                    .getData('text').replace(/\D/g, '').slice(0, 6);
+                const inputs = document.querySelectorAll('.otp-input');
+                pasted.split('').forEach((ch, i) => { if (inputs[i]) inputs[i].value = ch; });
+                if (inputs[Math.min(pasted.length, 5)]) inputs[Math.min(pasted.length, 5)].focus();
+                assembleOtp();
+            });
         });
 
         function assembleOtp() {
             let otp = '';
-            document.querySelectorAll('.otp-input').forEach(input => {
-                otp += input.value;
-            });
+            document.querySelectorAll('.otp-input').forEach(i => { otp += i.value; });
             document.getElementById('fullOtp').value = otp;
+        }
+
+        // ── Countdown Timer ──
+        const TOTAL_SEC     = 300;
+        const CIRCUMFERENCE = 2 * Math.PI * 18;
+
+        let remaining    = TOTAL_SEC;
+        let timerInterval = null;   // single declaration here
+
+        const circleEl  = document.getElementById('timerCircle');
+        const numEl     = document.getElementById('timerNum');
+        const textEl    = document.getElementById('timerText');
+        const expiredEl = document.getElementById('timerExpiredMsg');
+        const resendBtn = document.getElementById('resendBtn');
+        const cooldownEl    = document.getElementById('resendCooldownText');
+        const cooldownSecEl = document.getElementById('cooldownSec');
+
+        circleEl.style.strokeDasharray  = CIRCUMFERENCE;
+        circleEl.style.strokeDashoffset = 0;
+
+        function updateTimer() {
+            if (remaining <= 0) {
+                clearInterval(timerInterval);
+                numEl.textContent               = '0:00';
+                textEl.style.display            = 'none';
+                expiredEl.style.display         = 'inline';
+                circleEl.style.strokeDashoffset = CIRCUMFERENCE;
+                circleEl.classList.add('urgent');
+                return;
+            }
+            const mins = Math.floor(remaining / 60);
+            const secs = remaining % 60;
+            numEl.textContent  = mins + ':' + String(secs).padStart(2, '0');
+            textEl.textContent = mins > 0 ? mins + ' min ' + secs + 's' : secs + ' sec';
+            circleEl.style.strokeDashoffset = CIRCUMFERENCE * (1 - remaining / TOTAL_SEC);
+            if (remaining <= 60) circleEl.classList.add('urgent');
+            remaining--;
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        startTimer();
+
+        // ── Initial 30-sec cooldown before Resend enabled ──
+        let initialCooldown = 30;
+        const initialCd = setInterval(() => {
+            initialCooldown--;
+            if (initialCooldown <= 0) {
+                clearInterval(initialCd);
+                resendBtn.disabled     = false;
+                cooldownEl.textContent = '';
+            } else {
+                cooldownSecEl.textContent = initialCooldown;
+            }
+        }, 1000);
+
+        // ── Resend OTP via fetch POST ──
+        function doResend() {
+            const email    = document.getElementById('userEmail').textContent.trim();
+            const redirect = document.getElementById('userRedirect').textContent.trim();
+
+            resendBtn.disabled     = true;
+            cooldownEl.style.color = '';
+            cooldownEl.textContent = 'Sending OTP...';
+
+            const body = new URLSearchParams({ email: email });
+            if (redirect) body.append('redirect', redirect);
+
+            fetch('/auth/resend-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString()
+            })
+            .then(res => {
+                if (res.ok || res.redirected) {
+                    cooldownEl.style.color = 'green';
+                    cooldownEl.textContent = '✅ New OTP sent! Check your email.';
+
+                    // Clear OTP boxes
+                    document.querySelectorAll('.otp-input').forEach(i => i.value = '');
+                    document.getElementById('fullOtp').value = '';
+                    document.querySelectorAll('.otp-input')[0].focus();
+
+                    // Reset timer
+                    remaining = TOTAL_SEC;
+                    textEl.style.display    = 'inline';
+                    expiredEl.style.display = 'none';
+                    circleEl.classList.remove('urgent');
+                    startTimer();
+
+                    // Re-enable resend after 30s
+                    setTimeout(() => {
+                        cooldownEl.style.color = '';
+                        cooldownEl.textContent = '';
+                        resendBtn.disabled     = false;
+                    }, 30000);
+                } else {
+                    cooldownEl.style.color = '#e05252';
+                    cooldownEl.textContent = '❌ Failed to send. Try again.';
+                    resendBtn.disabled = false;
+                }
+            })
+            .catch(() => {
+                cooldownEl.style.color = '#e05252';
+                cooldownEl.textContent = '❌ Network error. Try again.';
+                resendBtn.disabled = false;
+            });
         }
     </script>
 </body>

@@ -63,7 +63,7 @@ public class RazorpayWebhookController {
                                                 @RequestHeader("X-Razorpay-Signature") String signature) {
         try {
             boolean isValid = Utils.verifyWebhookSignature(payload, signature, webhookSecret);
-            if (!isValid && !"dummysecret".equals(webhookSecret)) {
+            if (!isValid) {
                 log.error("Invalid Razorpay Webhook Signature");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid signature");
             }

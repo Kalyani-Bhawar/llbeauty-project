@@ -110,6 +110,24 @@ public class AuthController {
         return "redirect:/";
     }
 
+    // ---- POST RESEND OTP ----
+    @PostMapping("/resend-otp")
+    public String resendOtp(@RequestParam("email") String email,
+                            @RequestParam(value = "redirect", required = false) String redirect,
+                            RedirectAttributes redirectAttributes) {
+        if (email == null || !email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) {
+            redirectAttributes.addFlashAttribute("error", "Invalid email address.");
+            return "redirect:/auth/login";
+        }
+        boolean sent = authService.sendLoginOtp(email);
+        if (!sent) {
+            redirectAttributes.addFlashAttribute("error", "Email not registered. Please sign up first.");
+            return "redirect:/auth/login";
+        }
+        redirectAttributes.addFlashAttribute("info", "New OTP sent! Please check your email.");
+        return "redirect:/auth/verify?email=" + email + (redirect != null ? "&redirect=" + redirect : "");
+    }
+
     // ---- GET ADMIN LOGIN PAGE ----
     @GetMapping("/admin/login")
     public String adminLoginPage() {
@@ -137,5 +155,16 @@ public class AuthController {
         
         log.info("Admin {} successfully logged in.", email);
         return "redirect:/admin/dashboard"; // Redirect to admin dashboard
+    }
+    // ---- GET LOGOUT ----
+    @GetMapping("/logout")
+    public String logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("LLB_TOKEN", null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // Delete the cookie
+        response.addCookie(cookie);
+        log.info("User logged out successfully.");
+        return "redirect:/";
     }
 }

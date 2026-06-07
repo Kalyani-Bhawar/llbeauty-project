@@ -27,6 +27,12 @@ public class RazorpayService {
     @Value("${razorpay.merchant.upi.id:placeholder@upi}")
     private String merchantUpiId;
 
+    private final RazorpayClient razorpayClient;
+
+    public RazorpayService(RazorpayClient razorpayClient) {
+        this.razorpayClient = razorpayClient;
+    }
+
     public String getRazorpayKeyId() {
         return razorpayKeyId;
     }
@@ -36,13 +42,12 @@ public class RazorpayService {
     }
 
     public Order createOrder(Double amount, String receipt) throws RazorpayException {
-        RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
         JSONObject orderRequest = new JSONObject();
         // Razorpay expects amount in paise (1 INR = 100 paise)
         orderRequest.put("amount", (int) Math.round(amount * 100)); 
         orderRequest.put("currency", "INR");
         orderRequest.put("receipt", receipt);
-        return client.orders.create(orderRequest);
+        return razorpayClient.orders.create(orderRequest);
     }
 
     public boolean verifySignature(String orderId, String paymentId, String signature) {
@@ -53,12 +58,13 @@ public class RazorpayService {
             sha256_HMAC.init(secret_key);
             byte[] hash = sha256_HMAC.doFinal(payload.getBytes("UTF-8"));
             
-            Formatter formatter = new Formatter();
-            for (byte b : hash) {
-                formatter.format("%02x", b);
+            try (Formatter formatter = new Formatter()) {
+                for (byte b : hash) {
+                    formatter.format("%02x", b);
+                }
+                String generatedSignature = formatter.toString();
+                return generatedSignature.equals(signature);
             }
-            String generatedSignature = formatter.toString();
-            return generatedSignature.equals(signature);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -66,12 +72,11 @@ public class RazorpayService {
     }
 
     public com.razorpay.Refund refundPayment(String paymentId, Double amount) throws RazorpayException {
-        RazorpayClient client = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
         JSONObject refundRequest = new JSONObject();
         if (amount != null) {
             refundRequest.put("amount", (int) Math.round(amount * 100)); // partial refund
         }
-        return client.payments.refund(paymentId, refundRequest);
+        return razorpayClient.payments.refund(paymentId, refundRequest);
     }
 
     public boolean verifyWebhookSignature(String payload, String signature) {
@@ -81,12 +86,13 @@ public class RazorpayService {
             sha256_HMAC.init(secret_key);
             byte[] hash = sha256_HMAC.doFinal(payload.getBytes("UTF-8"));
             
-            Formatter formatter = new Formatter();
-            for (byte b : hash) {
-                formatter.format("%02x", b);
+            try (Formatter formatter = new Formatter()) {
+                for (byte b : hash) {
+                    formatter.format("%02x", b);
+                }
+                String generatedSignature = formatter.toString();
+                return generatedSignature.equals(signature);
             }
-            String generatedSignature = formatter.toString();
-            return generatedSignature.equals(signature);
         } catch (Exception e) {
             e.printStackTrace();
             return false;

@@ -37,6 +37,10 @@ public class AdminController {
     private final com.llbeauty.repository.MemberProfileRepository memberProfileRepository;
     private final com.llbeauty.repository.ManualPaymentRequestRepository manualPaymentRequestRepository;
     private final com.llbeauty.service.PaymentService paymentService;
+    private final com.llbeauty.service.MembershipService membershipService;
+
+    @org.springframework.beans.factory.annotation.Value("${app.upload.root}")
+    private String projectRoot;
 
     public AdminController(AppointmentRepository appointmentRepository,
                            FranchiseLeadRepository franchiseLeadRepository,
@@ -55,7 +59,8 @@ public class AdminController {
                            com.llbeauty.repository.MembershipHistoryRepository membershipHistoryRepository,
                            com.llbeauty.repository.MemberProfileRepository memberProfileRepository,
                            com.llbeauty.repository.ManualPaymentRequestRepository manualPaymentRequestRepository,
-                           com.llbeauty.service.PaymentService paymentService) {
+                           com.llbeauty.service.PaymentService paymentService,
+                           com.llbeauty.service.MembershipService membershipService) {
         this.appointmentRepository = appointmentRepository;
         this.franchiseLeadRepository = franchiseLeadRepository;
         this.userRepository = userRepository;
@@ -74,6 +79,12 @@ public class AdminController {
         this.memberProfileRepository = memberProfileRepository;
         this.manualPaymentRequestRepository = manualPaymentRequestRepository;
         this.paymentService = paymentService;
+        this.membershipService = membershipService;
+    }
+
+    @GetMapping({"", "/"})
+    public String adminRoot() {
+        return "redirect:/admin/dashboard";
     }
 
     // ==========================================
@@ -145,7 +156,17 @@ public class AdminController {
     }
 
     @PostMapping("/users/{id}/delete")
-    public String deleteUser(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+    public String deleteUser(@PathVariable("id") Long id, 
+                             org.springframework.security.core.Authentication authentication, 
+                             RedirectAttributes redirectAttributes) {
+        if (authentication != null) {
+            String currentEmail = authentication.getName();
+            Optional<User> userToDelete = userRepository.findById(id);
+            if (userToDelete.isPresent() && currentEmail.equals(userToDelete.get().getEmail())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "You cannot delete your own account.");
+                return "redirect:/admin/users";
+            }
+        }
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
             redirectAttributes.addFlashAttribute("successMessage", "User deleted successfully.");
@@ -366,31 +387,35 @@ public class AdminController {
         return "redirect:/admin/salon-info";
     }
 
-    // ==========================================
-    //  DUAL PATH UPLOAD CORE HELPER
-    // ==========================================
+    private static final java.util.List<String> ALLOWED_IMAGE_TYPES = java.util.Arrays.asList("image/jpeg", "image/png", "image/webp", "image/gif");
+
     private String saveUploadedFile(MultipartFile file, String subDir) throws IOException {
         if (file.isEmpty()) return null;
-        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename().replaceAll("\\s+", "_");
         
-        // Absolute project root folder path
-        String projectRoot = "d:/SpringBoot/llbeauty/llbeauty";
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase())) {
+            throw new IOException("Only image files (JPEG, PNG, WEBP, GIF) are allowed!");
+        }
+
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename().replaceAll("\\s+", "_");
+        String root = (this.projectRoot != null && !this.projectRoot.isEmpty()) ? this.projectRoot : ".";
+        byte[] fileBytes = file.getBytes();
         
         // 1. Persist in static uploads source directory
-        Path srcUploadPath = Paths.get(projectRoot, "src/main/resources/static/uploads", subDir);
+        Path srcUploadPath = Paths.get(root, "src/main/resources/static/uploads", subDir);
         if (!Files.exists(srcUploadPath)) {
             Files.createDirectories(srcUploadPath);
         }
         Path srcFilePath = srcUploadPath.resolve(fileName);
-        Files.copy(file.getInputStream(), srcFilePath, StandardCopyOption.REPLACE_EXISTING);
+        Files.write(srcFilePath, fileBytes);
         
         // 2. Persist in classes target folder (so the web app serves it dynamically instantly)
-        Path targetUploadPath = Paths.get(projectRoot, "target/classes/static/uploads", subDir);
+        Path targetUploadPath = Paths.get(root, "target/classes/static/uploads", subDir);
         if (!Files.exists(targetUploadPath)) {
             Files.createDirectories(targetUploadPath);
         }
         Path targetFilePath = targetUploadPath.resolve(fileName);
-        Files.copy(file.getInputStream(), targetFilePath, StandardCopyOption.REPLACE_EXISTING);
+        Files.write(targetFilePath, fileBytes);
         
         return "/uploads/" + subDir + "/" + fileName;
     }

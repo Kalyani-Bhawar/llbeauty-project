@@ -11,7 +11,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 public class MemberVerifyController {
@@ -58,6 +61,14 @@ public class MemberVerifyController {
         } else {
             model.addAttribute("statusMessage", "MEMBERSHIP EXPIRED");
         }
+
+        // Split benefits by \n for clean list rendering
+        String benefits = um.getMembership().getBenefits();
+        List<String> benefitsList = Arrays.stream(benefits.split("\\n"))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .collect(Collectors.toList());
+        model.addAttribute("benefitsList", benefitsList);
 
         return "member_verify";
     }

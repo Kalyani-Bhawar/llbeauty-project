@@ -27,6 +27,9 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
 
+    @org.springframework.beans.factory.annotation.Value("${admin.default.password:admin123}")
+    private String defaultAdminPassword;
+
     public AuthService(UserRepository userRepository,
                        AdminRepository adminRepository,
                        OtpService otpService,
@@ -120,9 +123,9 @@ public class AuthService {
         Admin admin = new Admin();
         admin.setName("L.L. Beauty Admin");
         admin.setEmail("admin@llbeauty.com");
-        admin.setPassword(passwordEncoder.encode("admin123"));
+        admin.setPassword(passwordEncoder.encode(defaultAdminPassword));
         adminRepository.save(admin);
 
-        log.info("Default admin created -> Email: admin@llbeauty.com | Password: admin123");
+        log.info("Default admin created -> Email: admin@llbeauty.com | Password: [CONFIGURED]");
     }
 }
