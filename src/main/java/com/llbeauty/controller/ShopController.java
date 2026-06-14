@@ -22,7 +22,7 @@ public class ShopController {
         String trimmedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
 
         if (trimmedCategory != null || trimmedSearch != null) {
-            products = productRepository.searchProducts(trimmedCategory, trimmedSearch);
+            products = productRepository.searchProductsList(trimmedCategory, trimmedSearch, null);
         } else {
             products = productRepository.findAll();
         }
@@ -34,6 +34,7 @@ public class ShopController {
 
     @java.lang.SuppressWarnings("all")
     
+    @org.springframework.beans.factory.annotation.Autowired
     public ShopController(final ProductRepository productRepository) {
         this.productRepository = productRepository;
     }

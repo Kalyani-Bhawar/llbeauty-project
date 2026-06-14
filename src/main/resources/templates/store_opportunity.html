@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Opportunity – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .opportunity-page {
+            background-color: #0c0c0c;
+            color: #fff;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        
+        .section-header {
+            background: linear-gradient(90deg, #c9a84c 0%, #9e7f2f 100%);
+            color: white;
+            text-align: center;
+            padding: 16px 0;
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            letter-spacing: 2px;
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(201,168,76,0.25);
+        }
+
+        .opportunity-card {
+            background: #141414;
+            border: 1px solid rgba(201,168,76,0.15);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.35s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .opportunity-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(201,168,76,0.4);
+            box-shadow: 0 15px 40px rgba(201,168,76,0.15);
+        }
+
+        .card-visual {
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            color: #fff;
+        }
+
+        .card-visual.red-card {
+            background: linear-gradient(135deg, #a8232c 0%, #701016 100%);
+            border-bottom: 2px solid rgba(255,255,255,0.08);
+        }
+
+        .card-visual.yellow-card {
+            background: linear-gradient(135deg, #c9a84c 0%, #7d5f0b 100%);
+            border-bottom: 2px solid rgba(255,255,255,0.08);
+        }
+
+        .card-crown {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
+        }
+
+        .card-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            line-height: 1;
+        }
+
+        .card-subtitle {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.85;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .card-content {
+            padding: 30px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .benefits-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 30px;
+        }
+
+        .benefits-list li {
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+        }
+
+        .benefits-list li i {
+            color: #c9a84c;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+
+        .deposit-model {
+            background: rgba(201,168,76,0.06);
+            border: 1px dashed rgba(201,168,76,0.25);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .deposit-title {
+            font-weight: 700;
+            color: #c9a84c;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .action-btn-wrap {
+            margin-top: auto;
+        }
+
+        .btn-opportunity {
+            display: block;
+            width: 100%;
+            background: #c9a84c;
+            border: 2px solid #c9a84c;
+            color: #111;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 0.88rem;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-opportunity:hover {
+            background: #e2c26d;
+            border-color: #e2c26d;
+            color: #111;
+            box-shadow: 0 5px 15px rgba(201,168,76,0.4);
+        }
+
+        .btn-opportunity.active-btn {
+            background: #c9a84c;
+            color: #111;
+        }
+
+        .btn-opportunity.active-btn:hover {
+            background: #e2c26d;
+            box-shadow: 0 5px 15px rgba(201,168,76,0.4);
+        }
+    </style>
+</head>
+<body class="opportunity-page">
+
+    <!-- NAVBAR -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="container mt-5">
+        <div class="section-header rounded-top">
+            START YOUR OWN BEAUTY BUSINESS
+        </div>
+        
+        <div class="row g-4 justify-content-center">
+            
+            <!-- RED CARD: EXECUTIVE -->
+            <div class="col-md-6 col-lg-5">
+                <div class="opportunity-card position-relative">
+                    <span th:if="${executiveStatus == 'ACTIVE'}" class="badge bg-success position-absolute top-0 end-0 m-3 z-3 pe-none">ACTIVE</span>
+                    <span th:if="${executiveStatus == 'PENDING'}" class="badge bg-warning text-dark position-absolute top-0 end-0 m-3 z-3 pe-none">PENDING</span>
+                    <span th:if="${executiveStatus == 'NOT_APPLIED'}" class="badge bg-secondary position-absolute top-0 end-0 m-3 z-3 pe-none">NOT APPLIED</span>
+                    <span th:if="${executiveStatus == 'REJECTED'}" class="badge bg-danger position-absolute top-0 end-0 m-3 z-3 pe-none">REJECTED</span>
+                    <div class="card-visual red-card">
+                        <div class="card-crown">❤️</div>
+                        <div class="card-logo">EVA</div>
+                        <div class="card-subtitle">EXECUTIVE</div>
+                    </div>
+                    
+                    <div class="card-content">
+                        <h5 class="brand-font mb-3 text-white">Eva Frontliner Agent</h5>
+                        <p class="text-white-50 small mb-4">
+                            Become a luxury representative for EVA. Build your network, promote premium events, and generate recurring income.
+                        </p>
+                        
+                        <ul class="benefits-list">
+                            <li><i class="bi bi-shield-check"></i> Membership Sales</li>
+                            <li><i class="bi bi-shield-check"></i> Product Sales</li>
+                            <li><i class="bi bi-shield-check"></i> Event Promotion</li>
+                            <li><i class="bi bi-shield-check"></i> Lead Generation</li>
+                            <li><i class="bi bi-shield-check"></i> Commission Earnings</li>
+                        </ul>
+                        
+                        <div class="deposit-model">
+                            <div class="deposit-title">Join as Executive</div>
+                            FREE REGISTRATION or Starter Kit @ ₹10,000 (Includes ID Card, Training, Catalog, Digital Store, and Starter Credits)
+                        </div>
+                        
+                        <div class="action-btn-wrap position-relative z-2">
+                            <a th:if="${executiveStatus == 'NOT_APPLIED'}" href="/store/executive/apply" class="btn-opportunity stretched-link">JOIN AS EXECUTIVE</a>
+                            <a th:if="${executiveStatus == 'PENDING'}" href="/store/executive/application-status" class="btn-opportunity stretched-link">TRACK APPLICATION</a>
+                            <a th:if="${executiveStatus == 'REJECTED'}" href="/store/executive/apply" class="btn-opportunity stretched-link">REAPPLY AS EXECUTIVE</a>
+                            <a th:if="${executiveStatus == 'ACTIVE'}" href="/store/executive/dashboard" class="btn-opportunity active-btn stretched-link">OPEN EXECUTIVE DASHBOARD</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- YELLOW CARD: MERCHANT -->
+            <div class="col-md-6 col-lg-5">
+                <div class="opportunity-card position-relative">
+                    <span th:if="${merchantStatus == 'ACTIVE'}" class="badge bg-success position-absolute top-0 end-0 m-3 z-3 pe-none">ACTIVE</span>
+                    <span th:if="${merchantStatus == 'PENDING'}" class="badge bg-warning text-dark position-absolute top-0 end-0 m-3 z-3 pe-none">PENDING</span>
+                    <span th:if="${merchantStatus == 'NOT_APPLIED'}" class="badge bg-secondary position-absolute top-0 end-0 m-3 z-3 pe-none">NOT APPLIED</span>
+                    <span th:if="${merchantStatus == 'REJECTED'}" class="badge bg-danger position-absolute top-0 end-0 m-3 z-3 pe-none">REJECTED</span>
+                    <div class="card-visual yellow-card">
+                        <div class="card-crown">💛</div>
+                        <div class="card-logo">EVA</div>
+                        <div class="card-subtitle">MERCHANT</div>
+                    </div>
+                    
+                    <div class="card-content">
+                        <h5 class="brand-font mb-3 text-white">Merchant / Reseller Partner</h5>
+                        <p class="text-white-50 small mb-4">
+                            Establish your retail partnership. Sell premium products online and offline, receive dedicated store credits, and maximize your profits.
+                        </p>
+                        
+                        <ul class="benefits-list">
+                            <li><i class="bi bi-shield-check"></i> Wholesale Pricing</li>
+                            <li><i class="bi bi-shield-check"></i> Merchant Wallet</li>
+                            <li><i class="bi bi-shield-check"></i> NXL Credits</li>
+                            <li><i class="bi bi-shield-check"></i> Business Growth</li>
+                        </ul>
+                        
+                        <div class="deposit-model">
+                            <div class="deposit-title">Security Deposit Model</div>
+                            EXAMPLE: Deposit ₹50,000 and get 55,000 NXL credits. Use NXL Credits to order products from the EVA Master Store.
+                        </div>
+                        
+                        <div class="action-btn-wrap position-relative z-2">
+                            <a th:if="${merchantStatus == 'NOT_APPLIED'}" href="/store/merchant/apply" class="btn-opportunity stretched-link">BECOME MERCHANT</a>
+                            <a th:if="${merchantStatus == 'PENDING'}" href="/store/merchant/application-status" class="btn-opportunity stretched-link">TRACK APPLICATION</a>
+                            <a th:if="${merchantStatus == 'REJECTED'}" href="/store/merchant/apply" class="btn-opportunity stretched-link">REAPPLY AS MERCHANT</a>
+                            <a th:if="${merchantStatus == 'ACTIVE'}" href="/store/merchant/dashboard" class="btn-opportunity active-btn stretched-link">OPEN MERCHANT DASHBOARD</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}" class="mt-5"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

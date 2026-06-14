@@ -24,6 +24,9 @@ public class Appointment {
     private Double advancePaid; // Fixed ₹100.0 advanced payment amount
     private String paymentStatus; // PENDING, PAID
     private String token; // Unique queue/booking token e.g., "LL-TKN-4902"
+    
+    private Long beauticianId;
+    private String beauticianName;
 
     @PrePersist
     public void prePersist() {
@@ -258,5 +261,21 @@ public class Appointment {
         public Appointment build() {
             return new Appointment(id, userId, userName, userMobile, serviceName, appointmentDate, timeSlot, status, createdAt, services, advancePaid, paymentStatus, token);
         }
+    }
+
+    public Long getBeauticianId() {
+        return beauticianId;
+    }
+
+    public void setBeauticianId(Long beauticianId) {
+        this.beauticianId = beauticianId;
+    }
+
+    public String getBeauticianName() {
+        return beauticianName;
+    }
+
+    public void setBeauticianName(String beauticianName) {
+        this.beauticianName = beauticianName;
     }
 }

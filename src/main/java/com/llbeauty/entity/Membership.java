@@ -25,20 +25,28 @@ public class Membership {
     @Column(name = "duration_days", nullable = false)
     private Integer durationDays;
 
+    @Column(name = "duration_months", nullable = false, columnDefinition = "INT DEFAULT 1")
+    private Integer durationMonths = 1;
+
     @Column(name = "welcome_credits", nullable = false)
     private Double welcomeCredits;
+
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private Boolean active = true;
 
     public Membership() {
     }
 
-    public Membership(Long id, String name, Double price, Double cashbackPercent, String benefits, Integer durationDays, Double welcomeCredits) {
+    public Membership(Long id, String name, Double price, Double cashbackPercent, String benefits, Integer durationDays, Integer durationMonths, Double welcomeCredits, Boolean active) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.cashbackPercent = cashbackPercent;
         this.benefits = benefits;
         this.durationDays = durationDays;
+        this.durationMonths = durationMonths;
         this.welcomeCredits = welcomeCredits;
+        this.active = active;
     }
 
     // Getters and Setters
@@ -96,5 +104,21 @@ public class Membership {
 
     public void setWelcomeCredits(Double welcomeCredits) {
         this.welcomeCredits = welcomeCredits;
+    }
+
+    public Integer getDurationMonths() {
+        return durationMonths;
+    }
+
+    public void setDurationMonths(Integer durationMonths) {
+        this.durationMonths = durationMonths;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 }

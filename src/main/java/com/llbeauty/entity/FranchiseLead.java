@@ -13,14 +13,23 @@ public class FranchiseLead {
     private String mobile;
     private String email;
     private String city;
+    private String state;
     private String budget;
     private String preferredLocation;
     private String franchiseType; // Kiosk, Studio, Lounge
+    private String businessType;
+    private String experience;
+    private String message;
+    private String status; // NEW, CONTACTED, INTERESTED, CONVERTED, REJECTED
+    private String remarks;
     private LocalDateTime createdAt;
 
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+        if (this.status == null) {
+            this.status = "NEW";
+        }
     }
 
 
@@ -272,8 +281,24 @@ public class FranchiseLead {
         this.franchiseType = franchiseType;
     }
 
-    @java.lang.SuppressWarnings("all")
-    
+    public String getState() { return this.state; }
+    public void setState(String state) { this.state = state; }
+
+    public String getBusinessType() { return this.businessType; }
+    public void setBusinessType(String businessType) { this.businessType = businessType; }
+
+    public String getExperience() { return this.experience; }
+    public void setExperience(String experience) { this.experience = experience; }
+
+    public String getMessage() { return this.message; }
+    public void setMessage(String message) { this.message = message; }
+
+    public String getStatus() { return this.status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getRemarks() { return this.remarks; }
+    public void setRemarks(String remarks) { this.remarks = remarks; }
+
     public void setCreatedAt(final LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }

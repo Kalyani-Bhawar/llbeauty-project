@@ -1,6 +1,7 @@
 package com.llbeauty.config;
 
 import com.llbeauty.security.JwtAuthFilter;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -8,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
 @Configuration
 @EnableWebSecurity
@@ -26,6 +28,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
         .csrf(csrf -> csrf
         	    .ignoringRequestMatchers(
@@ -34,31 +37,41 @@ public class SecurityConfig {
         	        "/checkout/confirm-order",
         	        "/checkout/place-order",
         	        "/checkout/cart/**",
-        	        "/auth/resend-otp"
+
+        	        "/membership/buy",
+        	        "/membership/confirm",
+
+        	        "/store/merchant/pay-initiate",
+        	        "/store/executive/pay-initiate",
+        	        "/store/merchant/apply-confirm",
+        	        "/store/executive/apply-confirm",
+        	        "/api/upload"
         	    )
         	)
+
+            // JWT uses stateless authentication
+//            .sessionManagement(session ->
+//                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//            )
+
             .authorizeHttpRequests(auth -> auth
-                // Allow public access to home page, static resources, and basic pages
-            		.requestMatchers(
-            		        "/",
-            		        "/shop",
-            		        "/products",
-            		        "/product/**",
-            		        "/css/**",
-            		        "/images/**",
-            		        "/js/**",
-            		        "/uploads/**",
-            		        "/about",
-            		        "/contact",
-            		        "/contact/submit",
-            		        "/franchise",
-            		        "/salon",
-            		        "/auth/**",
-            		        "/franchise/apply",
-            		        "/salon/book",
-            		        "/membership",
-            		        "/member/verify/**",
-                            "/razorpay/webhook"
+                .requestMatchers(
+                    "/",
+                    "/shop",
+                    "/products",
+                    "/product/**",
+                    "/css/**",
+                    "/images/**",
+                    "/js/**",
+                    "/uploads/**",
+                    "/about",
+                    "/contact",
+                    "/contact/submit",
+                    "/franchise",
+                    "/salon",
+                    "/auth/**",
+                    "/franchise/apply",
+                    "/salon"
             		).permitAll()
             		// Admin access only
                 .requestMatchers("/admin/**").hasRole("ADMIN")

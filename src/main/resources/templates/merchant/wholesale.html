@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVA Store - Wholesale Catalog</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --eva-gold: #D4AF37;
+            --eva-black: #111111;
+            --eva-dark: #222222;
+        }
+        body {
+            background-color: var(--eva-black);
+            color: #ffffff;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+        .sidebar {
+            background-color: var(--eva-dark);
+            min-height: 100vh;
+            border-right: 1px solid var(--eva-gold);
+        }
+        .nav-link {
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--eva-gold);
+            background-color: rgba(212, 175, 55, 0.1);
+            border-radius: 5px;
+        }
+        .eva-card {
+            background-color: var(--eva-dark);
+            border: 1px solid var(--eva-gold);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(212, 175, 55, 0.2);
+            overflow: hidden;
+        }
+        .eva-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--eva-gold);
+        }
+        .text-gold { color: var(--eva-gold) !important; }
+        .btn-gold {
+            background-color: var(--eva-gold);
+            color: var(--eva-black);
+            font-weight: bold;
+            border: none;
+        }
+        .btn-gold:hover {
+            background-color: #F1C40F;
+            color: var(--eva-black);
+        }
+        .quantity-input {
+            width: 80px;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid var(--eva-gold);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 px-0 sidebar d-none d-md-block">
+                <div class="p-3 text-center">
+                    <h2 class="text-gold fw-bold">EVA</h2>
+                    <p class="small text-muted">Merchant Portal</p>
+                </div>
+                <ul class="nav flex-column px-3">
+                    <li class="nav-item"><a class="nav-link" href="/merchant/dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/merchant/wallet">My Wallet</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/merchant/wholesale">Wholesale Catalog</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/merchant/orders">Order History</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/merchant/profile">Profile & KYC</a></li>
+                    <li class="nav-item mt-5"><a class="nav-link text-danger" href="/logout">Logout</a></li>
+                </ul>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="text-gold mb-0">Wholesale Product Catalog</h3>
+                </div>
+
+                <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+                <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+                <form action="/merchant/orders/bulk-checkout" method="post">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4 col-lg-3" th:each="product : ${products}">
+                            <div class="eva-card h-100 d-flex flex-column">
+                                <img th:src="${product.imageUrl}" alt="Product Image">
+                                <div class="p-3 flex-grow-1">
+                                    <h5 class="text-white mb-1" th:text="${product.name}">Product Name</h5>
+                                    <p class="text-muted small mb-2" th:text="${product.category}">Category</p>
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <div>
+                                            <small class="text-muted text-decoration-line-through">MRP: ₹<span th:text="${product.price}">0</span></small>
+                                            <br>
+                                            <strong class="text-gold">Wholesale: ₹<span th:text="${product.wholesalePrice != null ? product.wholesalePrice : product.price}">0</span></strong>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <label class="me-2 text-muted small">Qty:</label>
+                                        <input type="number" class="form-control form-control-sm quantity-input" th:name="'product_' + ${product.id}" value="0" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="eva-card p-4 sticky-bottom mt-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="text-gold mb-0">Checkout via Single Wallet</h5>
+                                <small class="text-muted">Amount will be deducted directly from your Merchant Wallet.</small>
+                            </div>
+                            <button type="submit" class="btn btn-gold btn-lg px-5">Place Bulk Order</button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

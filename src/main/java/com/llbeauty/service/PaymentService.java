@@ -26,7 +26,9 @@ public class PaymentService {
     @Transactional
     public Payment initiatePayment(User user, Double amount, String paymentFor, String referenceId, String paymentMethod) throws RazorpayException {
         // Create Razorpay Order
-        String receipt = paymentFor.toLowerCase() + "_" + referenceId + "_" + System.currentTimeMillis();
+        String cleanRef = referenceId.replaceAll("[^a-zA-Z0-9]", "");
+        String shortRef = cleanRef.length() > 15 ? cleanRef.substring(cleanRef.length() - 15) : cleanRef;
+        String receipt = "r_" + shortRef + "_" + (System.currentTimeMillis() % 100000000L);
         com.razorpay.Order rzpOrder = razorpayService.createOrder(amount, receipt);
 
         // Create Payment Record
@@ -68,7 +70,9 @@ public class PaymentService {
 
         // Create Razorpay order for the remaining amount (if any). If amountToCharge is zero, we still create a
         // dummy order to keep the flow consistent; the caller can treat the payment as fully wallet‑paid.
-        String receipt = paymentFor.toLowerCase() + "_" + referenceId + "_" + System.currentTimeMillis();
+        String cleanRef = referenceId.replaceAll("[^a-zA-Z0-9]", "");
+        String shortRef = cleanRef.length() > 15 ? cleanRef.substring(cleanRef.length() - 15) : cleanRef;
+        String receipt = "r_" + shortRef + "_" + (System.currentTimeMillis() % 100000000L);
         com.razorpay.Order rzpOrder = null;
         if (amountToCharge > 0) {
             rzpOrder = razorpayService.createOrder(amountToCharge, receipt);

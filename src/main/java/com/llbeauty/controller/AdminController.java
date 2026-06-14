@@ -2,18 +2,30 @@ package com.llbeauty.controller;
 
 import com.llbeauty.entity.*;
 import com.llbeauty.repository.*;
+import com.llbeauty.service.NotificationService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.File;
 import java.nio.file.*;
 import java.util.List;
 import java.util.Optional;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 @Controller
 @RequestMapping("/admin")
@@ -38,6 +50,8 @@ public class AdminController {
     private final com.llbeauty.repository.ManualPaymentRequestRepository manualPaymentRequestRepository;
     private final com.llbeauty.service.PaymentService paymentService;
     private final com.llbeauty.service.MembershipService membershipService;
+    private final NotificationService notificationService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @org.springframework.beans.factory.annotation.Value("${app.upload.root}")
     private String projectRoot;
@@ -60,7 +74,9 @@ public class AdminController {
                            com.llbeauty.repository.MemberProfileRepository memberProfileRepository,
                            com.llbeauty.repository.ManualPaymentRequestRepository manualPaymentRequestRepository,
                            com.llbeauty.service.PaymentService paymentService,
-                           com.llbeauty.service.MembershipService membershipService) {
+                           com.llbeauty.service.MembershipService membershipService,
+                           NotificationService notificationService,
+                           BCryptPasswordEncoder passwordEncoder) {
         this.appointmentRepository = appointmentRepository;
         this.franchiseLeadRepository = franchiseLeadRepository;
         this.userRepository = userRepository;
@@ -80,6 +96,17 @@ public class AdminController {
         this.manualPaymentRequestRepository = manualPaymentRequestRepository;
         this.paymentService = paymentService;
         this.membershipService = membershipService;
+        this.notificationService = notificationService;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.llbeauty.repository.AuditLogRepository auditLogRepository;
+
+    @ModelAttribute
+    public void addCommonAttributes(Model model) {
+        model.addAttribute("notifications", notificationService.getRecentNotifications());
+        model.addAttribute("unreadNotificationCount", notificationService.getUnreadCount());
     }
 
     @GetMapping({"", "/"})
@@ -106,12 +133,43 @@ public class AdminController {
                 .sum();
         model.addAttribute("totalRevenue", totalRevenue);
 
-        List<WalletTransaction> recentTxns = walletTransactionRepository.findAll().stream()
+        LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+        double todayRevenue = paymentRepository.findAll().stream()
+                .filter(p -> p.getCreatedAt() != null && p.getCreatedAt().isAfter(startOfDay))
+                .filter(p -> p.getStatus() != null && "SUCCESS".equalsIgnoreCase(p.getStatus()))
+                .mapToDouble(Payment::getAmount)
+                .sum();
+        model.addAttribute("todayRevenue", todayRevenue);
+
+        LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        double monthlyRevenue = paymentRepository.findAll().stream()
+                .filter(p -> p.getCreatedAt() != null && p.getCreatedAt().isAfter(startOfMonth))
+                .filter(p -> p.getStatus() != null && "SUCCESS".equalsIgnoreCase(p.getStatus()))
+                .mapToDouble(Payment::getAmount)
+                .sum();
+        model.addAttribute("monthlyRevenue", monthlyRevenue);
+
+        double totalWalletBalance = userRepository.findAll().stream()
+                .mapToDouble(u -> u.getWalletBalance() != null ? u.getWalletBalance().doubleValue() : 0.0)
+                .sum();
+        model.addAttribute("totalWalletBalance", totalWalletBalance);
+
+        long pendingBookings = appointmentRepository.countByStatus("PENDING");
+        model.addAttribute("pendingBookings", pendingBookings);
+
+        long activeMembers = userMembershipRepository.countByStatus("ACTIVE");
+        model.addAttribute("activeMembers", activeMembers);
+
+        // Recent lists (top 5)
+        model.addAttribute("recentOrders", orderRepository.findAll().stream()
+                .filter(o -> o.getCreatedAt() != null)
+                .sorted((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()))
+                .limit(5).toList());
+
+        model.addAttribute("recentTransactions", walletTransactionRepository.findAll().stream()
                 .filter(t -> t.getCreatedAt() != null)
                 .sorted((t1, t2) -> t2.getCreatedAt().compareTo(t1.getCreatedAt()))
-                .limit(5)
-                .toList();
-        model.addAttribute("recentTransactions", recentTxns);
+                .limit(5).toList());
 
         model.addAttribute("recentAppointments", appointmentRepository.findAll().stream()
                 .filter(a -> a.getCreatedAt() != null)
@@ -124,19 +182,75 @@ public class AdminController {
                 .limit(5).toList());
 
         model.addAttribute("recentLeads", franchiseLeadRepository.findAll().stream()
+                .filter(l -> l.getCreatedAt() != null)
+                .sorted((l1, l2) -> l2.getCreatedAt().compareTo(l1.getCreatedAt()))
                 .limit(5).toList());
 
         return "admin/dashboard";
     }
 
     // ==========================================
-    //  USERS CRUD
+    //  USERS CRUD & ACTIONS
     // ==========================================
     @GetMapping("/users")
-    public String viewUsers(Model model) {
+    public String viewUsers(@RequestParam(value = "search", required = false) String search,
+                            @RequestParam(value = "blocked", required = false) Boolean blocked,
+                            @RequestParam(value = "page", defaultValue = "0") int page,
+                            @RequestParam(value = "size", defaultValue = "10") int size,
+                            Model model) {
         model.addAttribute("activeTab", "users");
-        model.addAttribute("users", userRepository.findAll());
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> usersPage = userRepository.searchUsers(search, blocked, pageable);
+        
+        model.addAttribute("users", usersPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", usersPage.getTotalPages());
+        model.addAttribute("totalElements", usersPage.getTotalElements());
+        model.addAttribute("search", search);
+        model.addAttribute("blocked", blocked);
         return "admin/users";
+    }
+
+    @PostMapping("/users/{id}/block")
+    public String blockUser(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setIsBlocked(true);
+            userRepository.save(user);
+            redirectAttributes.addFlashAttribute("successMessage", "User " + user.getName() + " blocked successfully.");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "User not found.");
+        }
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("/users/{id}/unblock")
+    public String unblockUser(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setIsBlocked(false);
+            userRepository.save(user);
+            redirectAttributes.addFlashAttribute("successMessage", "User " + user.getName() + " unblocked successfully.");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "User not found.");
+        }
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("/users/{id}/reset-password")
+    public String resetUserPassword(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setPassword(passwordEncoder.encode("123456"));
+            userRepository.save(user);
+            redirectAttributes.addFlashAttribute("successMessage", "Password reset to '123456' for " + user.getName());
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "User not found.");
+        }
+        return "redirect:/admin/users";
     }
 
     @PostMapping("/users/{id}/update-wallet")
@@ -155,21 +269,62 @@ public class AdminController {
         return "redirect:/admin/users";
     }
 
+    @GetMapping("/users/export")
+    public void exportUsers(@RequestParam(value = "search", required = false) String search,
+                            @RequestParam(value = "blocked", required = false) Boolean blocked,
+                            HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=users.csv");
+        PrintWriter writer = response.getWriter();
+        writer.println("ID,Name,Email,Mobile,Wallet Balance,Blocked Status,Created At");
+
+        List<User> users = userRepository.searchUsersList(search, blocked);
+        for (User u : users) {
+            writer.println(String.format("%d,%s,%s,%s,%.2f,%b,%s",
+                u.getId(),
+                u.getName().replace(",", " "),
+                u.getEmail(),
+                u.getMobile() != null ? u.getMobile() : "",
+                u.getWalletBalance() != null ? u.getWalletBalance().doubleValue() : 0.0,
+                u.getIsBlocked() != null ? u.getIsBlocked() : false,
+                u.getCreatedAt()
+            ));
+        }
+    }
+
     @PostMapping("/users/{id}/delete")
     public String deleteUser(@PathVariable("id") Long id, 
                              org.springframework.security.core.Authentication authentication, 
                              RedirectAttributes redirectAttributes) {
-        if (authentication != null) {
-            String currentEmail = authentication.getName();
-            Optional<User> userToDelete = userRepository.findById(id);
-            if (userToDelete.isPresent() && currentEmail.equals(userToDelete.get().getEmail())) {
+        String currentEmail = authentication != null ? authentication.getName() : "admin";
+        Optional<User> userToDelete = userRepository.findById(id);
+        if (userToDelete.isPresent()) {
+            if (currentEmail.equals(userToDelete.get().getEmail())) {
                 redirectAttributes.addFlashAttribute("errorMessage", "You cannot delete your own account.");
                 return "redirect:/admin/users";
             }
+            User user = userToDelete.get();
+            user.setActive(false);
+            userRepository.save(user);
+            
+            AuditLog log = new AuditLog("USER_DELETED", "User " + user.getEmail() + " deleted", currentEmail);
+            auditLogRepository.save(log);
+
+            redirectAttributes.addFlashAttribute("successMessage", "User soft-deleted successfully.");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "User not found.");
         }
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
-            redirectAttributes.addFlashAttribute("successMessage", "User deleted successfully.");
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("/users/{id}/activate")
+    public String activateUser(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setActive(true);
+            userRepository.save(user);
+            redirectAttributes.addFlashAttribute("successMessage", "User activated successfully.");
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "User not found.");
         }
@@ -177,12 +332,24 @@ public class AdminController {
     }
 
     // ==========================================
-    //  APPOINTMENTS CRUD
+    //  APPOINTMENTS (SALON BOOKINGS)
     // ==========================================
     @GetMapping("/appointments")
-    public String viewAppointments(Model model) {
+    public String viewAppointments(@RequestParam(value = "search", required = false) String search,
+                                   @RequestParam(value = "status", required = false) String status,
+                                   @RequestParam(value = "page", defaultValue = "0") int page,
+                                   @RequestParam(value = "size", defaultValue = "10") int size,
+                                   Model model) {
         model.addAttribute("activeTab", "appointments");
-        model.addAttribute("appointments", appointmentRepository.findAll());
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Appointment> appPage = appointmentRepository.searchAppointments(search, status, pageable);
+
+        model.addAttribute("appointments", appPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", appPage.getTotalPages());
+        model.addAttribute("totalElements", appPage.getTotalElements());
+        model.addAttribute("search", search);
+        model.addAttribute("status", status);
         return "admin/appointments";
     }
 
@@ -202,6 +369,32 @@ public class AdminController {
         return "redirect:/admin/appointments";
     }
 
+    @GetMapping("/appointments/export")
+    public void exportAppointments(@RequestParam(value = "search", required = false) String search,
+                                   @RequestParam(value = "status", required = false) String status,
+                                   HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=appointments.csv");
+        PrintWriter writer = response.getWriter();
+        writer.println("Booking ID,Customer Name,Mobile,Service,Date,Time Slot,Advance Paid,Payment Status,Status,Token");
+
+        List<Appointment> apps = appointmentRepository.searchAppointmentsList(search, status);
+        for (Appointment a : apps) {
+            writer.println(String.format("%d,%s,%s,%s,%s,%s,%.2f,%s,%s,%s",
+                a.getId(),
+                a.getUserName() != null ? a.getUserName().replace(",", " ") : "",
+                a.getUserMobile() != null ? a.getUserMobile() : "",
+                a.getServiceName() != null ? a.getServiceName().replace(",", " ") : "",
+                a.getAppointmentDate(),
+                a.getTimeSlot(),
+                a.getAdvancePaid() != null ? a.getAdvancePaid() : 0.0,
+                a.getPaymentStatus() != null ? a.getPaymentStatus() : "",
+                a.getStatus(),
+                a.getToken() != null ? a.getToken() : ""
+            ));
+        }
+    }
+
     @PostMapping("/appointments/{id}/delete")
     public String deleteAppointment(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         if (appointmentRepository.existsById(id)) {
@@ -214,13 +407,75 @@ public class AdminController {
     }
 
     // ==========================================
-    //  FRANCHISE LEADS CRUD
+    //  FRANCHISE LEADS CRUD & ACTIONS
     // ==========================================
     @GetMapping("/franchise-leads")
-    public String viewFranchiseLeads(Model model) {
+    public String viewFranchiseLeads(@RequestParam(value = "search", required = false) String search,
+                                     @RequestParam(value = "status", required = false) String status,
+                                     @RequestParam(value = "page", defaultValue = "0") int page,
+                                     @RequestParam(value = "size", defaultValue = "10") int size,
+                                     Model model) {
         model.addAttribute("activeTab", "franchise-leads");
-        model.addAttribute("leads", franchiseLeadRepository.findAll());
+        Pageable pageable = PageRequest.of(page, size);
+        Page<FranchiseLead> leadsPage = franchiseLeadRepository.searchLeads(search, status, pageable);
+
+        model.addAttribute("leads", leadsPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", leadsPage.getTotalPages());
+        model.addAttribute("totalElements", leadsPage.getTotalElements());
+        model.addAttribute("search", search);
+        model.addAttribute("status", status);
         return "admin/franchise_leads";
+    }
+
+    @PostMapping("/franchise-leads/{id}/status")
+    public String updateFranchiseLeadStatus(@PathVariable("id") Long id,
+                                            @RequestParam("status") String status,
+                                            @RequestParam(value = "remarks", required = false) String remarks,
+                                            RedirectAttributes redirectAttributes) {
+        Optional<FranchiseLead> leadOpt = franchiseLeadRepository.findById(id);
+        if (leadOpt.isPresent()) {
+            FranchiseLead lead = leadOpt.get();
+            lead.setStatus(status);
+            if (remarks != null) {
+                lead.setRemarks(remarks);
+            }
+            franchiseLeadRepository.save(lead);
+            redirectAttributes.addFlashAttribute("successMessage", "Franchise lead status updated to " + status);
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Franchise lead not found.");
+        }
+        return "redirect:/admin/franchise-leads";
+    }
+
+    @GetMapping("/franchise-leads/export")
+    public void exportFranchiseLeads(@RequestParam(value = "search", required = false) String search,
+                                     @RequestParam(value = "status", required = false) String status,
+                                     HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=franchise_leads.csv");
+        PrintWriter writer = response.getWriter();
+        writer.println("ID,Name,Email,Mobile,City,State,Budget,Franchise Type,Business Type,Experience,Message,Status,Remarks,Created At");
+
+        List<FranchiseLead> leads = franchiseLeadRepository.searchLeadsList(search, status);
+        for (FranchiseLead l : leads) {
+            writer.println(String.format("%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
+                l.getId(),
+                l.getName().replace(",", " "),
+                l.getEmail(),
+                l.getMobile(),
+                l.getCity() != null ? l.getCity() : "",
+                l.getState() != null ? l.getState() : "",
+                l.getBudget() != null ? l.getBudget() : "",
+                l.getFranchiseType() != null ? l.getFranchiseType() : "",
+                l.getBusinessType() != null ? l.getBusinessType() : "",
+                l.getExperience() != null ? l.getExperience() : "",
+                l.getMessage() != null ? l.getMessage().replace("\n", " ").replace(",", " ") : "",
+                l.getStatus() != null ? l.getStatus() : "",
+                l.getRemarks() != null ? l.getRemarks().replace("\n", " ").replace(",", " ") : "",
+                l.getCreatedAt()
+            ));
+        }
     }
 
     @PostMapping("/franchise-leads/{id}/delete")
@@ -234,27 +489,46 @@ public class AdminController {
         return "redirect:/admin/franchise-leads";
     }
 
-    @GetMapping("/franchise-leads/new")
-    public String newFranchiseLeadForm(Model model) {
-        model.addAttribute("activeTab", "franchise-leads");
-        model.addAttribute("lead", new FranchiseLead());
-        return "admin/franchise_form";
-    }
-
-    @PostMapping("/franchise-leads/save")
-    public String saveFranchiseLead(@ModelAttribute("lead") FranchiseLead lead, RedirectAttributes redirectAttributes) {
-        franchiseLeadRepository.save(lead);
-        redirectAttributes.addFlashAttribute("successMessage", "Franchise lead added successfully!");
+    @PostMapping("/franchise-leads/{id}/update")
+    public String updateFranchiseLead(@PathVariable("id") Long id, 
+                                      @RequestParam("status") String status, 
+                                      @RequestParam(value = "remarks", required = false) String remarks, 
+                                      RedirectAttributes redirectAttributes) {
+        Optional<FranchiseLead> leadOpt = franchiseLeadRepository.findById(id);
+        if (leadOpt.isPresent()) {
+            FranchiseLead lead = leadOpt.get();
+            lead.setStatus(status);
+            if (remarks != null)
+                lead.setRemarks(remarks);
+            franchiseLeadRepository.save(lead);
+            redirectAttributes.addFlashAttribute("successMessage", "Franchise lead updated successfully.");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Franchise lead not found.");
+        }
         return "redirect:/admin/franchise-leads";
     }
 
     // ==========================================
-    //  PRODUCTS CRUD
+    //  PRODUCTS CRUD & ACTIONS
     // ==========================================
     @GetMapping("/products")
-    public String viewProducts(Model model) {
+    public String viewProducts(@RequestParam(value = "search", required = false) String search,
+                               @RequestParam(value = "category", required = false) String category,
+                               @RequestParam(value = "status", required = false) String status,
+                               @RequestParam(value = "page", defaultValue = "0") int page,
+                               @RequestParam(value = "size", defaultValue = "10") int size,
+                               Model model) {
         model.addAttribute("activeTab", "products");
-        model.addAttribute("products", productRepository.findAll());
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Product> prodPage = productRepository.searchProductsPaged(category, search, status, pageable);
+
+        model.addAttribute("products", prodPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", prodPage.getTotalPages());
+        model.addAttribute("totalElements", prodPage.getTotalElements());
+        model.addAttribute("search", search);
+        model.addAttribute("category", category);
+        model.addAttribute("status", status);
         return "admin/products";
     }
 
@@ -311,6 +585,7 @@ public class AdminController {
             product.setDescription(productDetails.getDescription());
             product.setPrice(productDetails.getPrice());
             product.setStock(productDetails.getStock());
+            product.setStatus(productDetails.getStatus());
             
             try {
                 if (!imageFile.isEmpty()) {
@@ -341,12 +616,11 @@ public class AdminController {
     }
 
     // ==========================================
-    //  SALON INFO CRUD (Dynamic Flagship Details)
+    //  SALON INFO CRUD
     // ==========================================
     @GetMapping("/salon-info")
     public String editSalonInfo(Model model) {
         model.addAttribute("activeTab", "salon-info");
-        // We look for ID 1 (default Flagship branch seeded by DataInitializer)
         Optional<SalonInfo> infoOpt = salonInfoRepository.findById(1L);
         if (infoOpt.isPresent()) {
             model.addAttribute("salonInfo", infoOpt.get());
@@ -363,8 +637,7 @@ public class AdminController {
         Optional<SalonInfo> infoOpt = salonInfoRepository.findById(1L);
         SalonInfo flagship = infoOpt.orElse(salonInfo);
         
-        // Update all values
-        flagship.setId(1L); // always make sure it is 1L
+        flagship.setId(1L);
         flagship.setName(salonInfo.getName());
         flagship.setTagline(salonInfo.getTagline());
         flagship.setDescription(salonInfo.getDescription());
@@ -401,7 +674,6 @@ public class AdminController {
         String root = (this.projectRoot != null && !this.projectRoot.isEmpty()) ? this.projectRoot : ".";
         byte[] fileBytes = file.getBytes();
         
-        // 1. Persist in static uploads source directory
         Path srcUploadPath = Paths.get(root, "src/main/resources/static/uploads", subDir);
         if (!Files.exists(srcUploadPath)) {
             Files.createDirectories(srcUploadPath);
@@ -409,7 +681,6 @@ public class AdminController {
         Path srcFilePath = srcUploadPath.resolve(fileName);
         Files.write(srcFilePath, fileBytes);
         
-        // 2. Persist in classes target folder (so the web app serves it dynamically instantly)
         Path targetUploadPath = Paths.get(root, "target/classes/static/uploads", subDir);
         if (!Files.exists(targetUploadPath)) {
             Files.createDirectories(targetUploadPath);
@@ -421,13 +692,47 @@ public class AdminController {
     }
 
     // ==========================================
-    //  MEMBERSHIPS CRUD & ANALYTICS
+    //  MEMBERSHIPS CRUD & VIP MEMBERS
     // ==========================================
     @GetMapping("/memberships")
     public String viewMemberships(Model model) {
         model.addAttribute("activeTab", "memberships");
         model.addAttribute("memberships", membershipRepository.findAll());
         return "admin/memberships";
+    }
+
+    @GetMapping("/memberships/new")
+    public String newMembershipForm(Model model) {
+        model.addAttribute("activeTab", "memberships");
+        model.addAttribute("membership", new com.llbeauty.entity.Membership());
+        return "admin/membership_form";
+    }
+
+    @GetMapping("/memberships/edit/{id}")
+    public String editMembershipForm(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+        Optional<com.llbeauty.entity.Membership> mOpt = membershipRepository.findById(id);
+        if (mOpt.isPresent()) {
+            model.addAttribute("activeTab", "memberships");
+            model.addAttribute("membership", mOpt.get());
+            return "admin/membership_form";
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Membership plan not found.");
+            return "redirect:/admin/memberships";
+        }
+    }
+
+    @PostMapping("/memberships/delete/{id}")
+    public String deleteMembership(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Optional<com.llbeauty.entity.Membership> mOpt = membershipRepository.findById(id);
+        if (mOpt.isPresent()) {
+            com.llbeauty.entity.Membership m = mOpt.get();
+            m.setActive(false);
+            membershipRepository.save(m);
+            redirectAttributes.addFlashAttribute("successMessage", "Membership plan soft-deleted successfully.");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Membership plan not found.");
+        }
+        return "redirect:/admin/memberships";
     }
 
     @PostMapping("/memberships/save")
@@ -437,101 +742,26 @@ public class AdminController {
         return "redirect:/admin/memberships";
     }
 
-    // ==========================================
-    //  WALLET TRANSACTIONS
-    // ==========================================
-    @GetMapping("/wallet-transactions")
-    public String viewWalletTransactions(Model model) {
-        model.addAttribute("activeTab", "wallet-transactions");
-        model.addAttribute("transactions", walletTransactionRepository.findAll());
-        return "admin/wallet_transactions";
-    }
-
-    // ==========================================
-    //  ORDERS LIST
-    // ==========================================
-    @GetMapping("/orders")
-    public String viewOrders(Model model) {
-        model.addAttribute("activeTab", "orders");
-        model.addAttribute("orders", orderRepository.findAll());
-        return "admin/orders";
-    }
-
-    @PostMapping("/orders/{id}/refund")
-    public String refundOrder(@PathVariable("id") Long id, 
-                              @RequestParam("refundMethod") String refundMethod, 
-                              RedirectAttributes redirectAttributes) {
-        Optional<Order> orderOpt = orderRepository.findById(id);
-        if (orderOpt.isPresent()) {
-            Order order = orderOpt.get();
-            if (!"SUCCESS".equals(order.getStatus())) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Only successful orders can be refunded.");
-                return "redirect:/admin/orders";
-            }
-            
-            String paymentId = order.getPaymentId(); // Note: we need the Razorpay Order ID or we can find by referenceId
-            com.llbeauty.entity.Payment payment = paymentRepository.findAll().stream()
-                .filter(p -> String.valueOf(order.getId()).equals(p.getReferenceId()) && "PRODUCT".equals(p.getPaymentFor()) && "SUCCESS".equals(p.getStatus()))
-                .findFirst().orElse(null);
-
-            boolean refundSuccess = false;
-            
-            // If they paid partially with Wallet, we should probably refund that part to wallet regardless, 
-            // but for simplicity let's just refund the whole amount to the chosen method.
-            if ("WALLET".equalsIgnoreCase(refundMethod)) {
-                walletService.credit(order.getUser(), BigDecimal.valueOf(order.getTotalAmount()), "Refund for Order #" + order.getId(), "REFUND");
-                refundSuccess = true;
-                if (payment != null) {
-                    payment.setStatus("REFUNDED_WALLET");
-                    paymentRepository.save(payment);
-                }
-            } else if ("RAZORPAY".equalsIgnoreCase(refundMethod)) {
-                if (payment != null && payment.getRazorpayOrderId() != null) {
-                    refundSuccess = paymentService.processRefund(payment.getRazorpayOrderId(), "RAZORPAY", null);
-                    if (!refundSuccess) {
-                        redirectAttributes.addFlashAttribute("errorMessage", "Razorpay API refund failed.");
-                        return "redirect:/admin/orders";
-                    }
-                } else {
-                    redirectAttributes.addFlashAttribute("errorMessage", "No Razorpay payment found for this order.");
-                    return "redirect:/admin/orders";
-                }
-            }
-
-            if (refundSuccess) {
-                order.setStatus("REFUNDED");
-                orderRepository.save(order);
-                redirectAttributes.addFlashAttribute("successMessage", "Order refunded successfully via " + refundMethod);
-            }
-        } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "Order not found.");
-        }
-        return "redirect:/admin/orders";
-    }
-
     @GetMapping("/membership-users")
     public String viewMembershipUsers(@RequestParam(value = "search", required = false) String search,
+                                      @RequestParam(value = "status", required = false) String status,
+                                      @RequestParam(value = "planName", required = false) String planName,
+                                      @RequestParam(value = "page", defaultValue = "0") int page,
+                                      @RequestParam(value = "size", defaultValue = "10") int size,
                                       @RequestParam(value = "viewUserId", required = false) Long viewUserId,
                                       Model model) {
         model.addAttribute("activeTab", "membership-users");
         
-        List<UserMembership> userPlans;
-        if (search != null && !search.trim().isEmpty()) {
-            String q = search.trim().toLowerCase();
-            userPlans = userMembershipRepository.findAll().stream()
-                .filter(um -> (um.getUser() != null && (
-                                   um.getUser().getName().toLowerCase().contains(q) ||
-                                   um.getUser().getEmail().toLowerCase().contains(q) ||
-                                   um.getUser().getMobile().toLowerCase().contains(q)
-                               )) || (um.getMemberId() != null && um.getMemberId().toLowerCase().contains(q))
-                )
-                .toList();
-            model.addAttribute("search", search);
-        } else {
-            userPlans = userMembershipRepository.findAll();
-        }
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserMembership> userPlansPage = userMembershipRepository.searchMemberships(search, status, planName, pageable);
         
-        model.addAttribute("userMemberships", userPlans);
+        model.addAttribute("userMemberships", userPlansPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", userPlansPage.getTotalPages());
+        model.addAttribute("totalElements", userPlansPage.getTotalElements());
+        model.addAttribute("search", search);
+        model.addAttribute("status", status);
+        model.addAttribute("planName", planName);
 
         // Compute Membership Analytics
         double pinkRevenue = 0.0;
@@ -540,8 +770,9 @@ public class AdminController {
         long activeCount = 0;
         long expiredCount = 0;
 
-        for (UserMembership um : userPlans) {
-            String planName = um.getMembership().getName();
+        List<UserMembership> allRecords = userMembershipRepository.findAll();
+        for (UserMembership um : allRecords) {
+            String plan = um.getMembership().getName();
             double price = um.getMembership().getPrice();
 
             if ("ACTIVE".equals(um.getStatus())) {
@@ -550,11 +781,11 @@ public class AdminController {
                 expiredCount++;
             }
 
-            if (planName.contains("Pink")) {
+            if (plan.contains("Pink")) {
                 pinkRevenue += price;
-            } else if (planName.contains("Gold")) {
+            } else if (plan.contains("Gold")) {
                 goldRevenue += price;
-            } else if (planName.contains("Black")) {
+            } else if (plan.contains("Black")) {
                 blackRevenue += price;
             }
         }
@@ -590,13 +821,11 @@ public class AdminController {
             um.setStatus("EXPIRED");
             userMembershipRepository.save(um);
             
-            // Sync permanent profile status if present
             memberProfileRepository.findByUser(um.getUser()).ifPresent(p -> {
                 p.setMembershipType("EXPIRED");
                 memberProfileRepository.save(p);
             });
 
-            // Update in MembershipHistory too
             List<MembershipHistory> histories = membershipHistoryRepository.findByUserOrderByStartDateDesc(um.getUser());
             for (MembershipHistory h : histories) {
                 if (h.getPlanName().equalsIgnoreCase(um.getMembership().getName()) && "ACTIVE".equals(h.getStatus())) {
@@ -605,7 +834,7 @@ public class AdminController {
                 }
             }
 
-            redirectAttributes.addFlashAttribute("successMessage", "Membership for " + um.getUser().getName() + " deactivated successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Membership de-activated successfully.");
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Membership not found.");
         }
@@ -621,13 +850,11 @@ public class AdminController {
             um.setExpiryDate(LocalDateTime.now().plusDays(um.getMembership().getDurationDays()));
             userMembershipRepository.save(um);
 
-            // Sync permanent profile status if present
             memberProfileRepository.findByUser(um.getUser()).ifPresent(p -> {
                 p.setMembershipType(um.getMembership().getName());
                 memberProfileRepository.save(p);
             });
 
-            // Activate/create history record
             MembershipHistory history = new MembershipHistory();
             history.setUser(um.getUser());
             history.setPlanName(um.getMembership().getName());
@@ -638,11 +865,239 @@ public class AdminController {
             history.setPaymentId(um.getRazorpayPaymentId() != null ? um.getRazorpayPaymentId() : "ADMIN_MANUAL");
             membershipHistoryRepository.save(history);
 
-            redirectAttributes.addFlashAttribute("successMessage", "Membership for " + um.getUser().getName() + " activated successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Membership activated successfully.");
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Membership not found.");
         }
         return "redirect:/admin/membership-users";
+    }
+
+    @PostMapping("/membership/extend/{id}")
+    public String extendMembership(@PathVariable("id") Long id, 
+                                   @RequestParam("months") int months, 
+                                   RedirectAttributes redirectAttributes) {
+        Optional<UserMembership> umOpt = userMembershipRepository.findById(id);
+        if (umOpt.isPresent()) {
+            UserMembership um = umOpt.get();
+            um.setExpiryDate(um.getExpiryDate().plusMonths(months));
+            userMembershipRepository.save(um);
+
+            redirectAttributes.addFlashAttribute("successMessage", "Membership extended successfully by " + months + " months.");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Membership not found.");
+        }
+        return "redirect:/admin/membership-users";
+    }
+
+    @GetMapping("/membership-users/export")
+    public void exportVIPMembers(@RequestParam(value = "search", required = false) String search,
+                                 @RequestParam(value = "status", required = false) String status,
+                                 @RequestParam(value = "planName", required = false) String planName,
+                                 HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=vip_members.csv");
+        PrintWriter writer = response.getWriter();
+        writer.println("Member ID,User Name,Email,Mobile,Plan Name,Start Date,Expiry Date,DOB,Payment ID,Referral,Status");
+
+        List<UserMembership> members = userMembershipRepository.searchMembershipsList(search, status, planName);
+        for (UserMembership um : members) {
+            writer.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
+                um.getMemberId() != null ? um.getMemberId() : "",
+                um.getUser() != null ? um.getUser().getName().replace(",", " ") : "",
+                um.getUser() != null ? um.getUser().getEmail() : "",
+                um.getUser() != null ? um.getUser().getMobile() : "",
+                um.getMembership().getName(),
+                um.getStartDate(),
+                um.getExpiryDate(),
+                um.getDob() != null ? um.getDob() : "",
+                um.getRazorpayPaymentId() != null ? um.getRazorpayPaymentId() : "",
+                um.getReferralCode() != null ? um.getReferralCode() : "",
+                um.getStatus()
+            ));
+        }
+    }
+
+    // ==========================================
+    //  WALLET TRANSACTIONS (Wallet Ledger)
+    // ==========================================
+    @GetMapping("/wallet-transactions")
+    public String viewWalletTransactions(@RequestParam(value = "search", required = false) String search,
+                                         @RequestParam(value = "type", required = false) String type,
+                                         @RequestParam(value = "page", defaultValue = "0") int page,
+                                         @RequestParam(value = "size", defaultValue = "10") int size,
+                                         Model model) {
+        model.addAttribute("activeTab", "wallet-transactions");
+        Pageable pageable = PageRequest.of(page, size);
+        Page<WalletTransaction> txPage = walletTransactionRepository.searchTransactions(search, type, pageable);
+
+        model.addAttribute("transactions", txPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", txPage.getTotalPages());
+        model.addAttribute("totalElements", txPage.getTotalElements());
+        model.addAttribute("search", search);
+        model.addAttribute("type", type);
+        return "admin/wallet_transactions";
+    }
+
+    @GetMapping("/wallet-transactions/export")
+    public void exportWalletTransactions(@RequestParam(value = "search", required = false) String search,
+                                         @RequestParam(value = "type", required = false) String type,
+                                         HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=wallet_ledger.csv");
+        PrintWriter writer = response.getWriter();
+        writer.println("Transaction ID,Customer Name,Email,Credit,Debit,Description,Reason,Date");
+
+        List<WalletTransaction> txs = walletTransactionRepository.searchTransactionsList(search, type);
+        for (WalletTransaction t : txs) {
+            double amount = t.getAmount() != null ? t.getAmount().doubleValue() : 0.0;
+            String credit = "CREDIT".equalsIgnoreCase(t.getType()) || "REFUND".equalsIgnoreCase(t.getType()) || "TOPUP".equalsIgnoreCase(t.getType()) ? String.format("%.2f", amount) : "0.00";
+            String debit = "DEBIT".equalsIgnoreCase(t.getType()) || "PURCHASE".equalsIgnoreCase(t.getType()) ? String.format("%.2f", amount) : "0.00";
+
+            writer.println(String.format("%d,%s,%s,%s,%s,%s,%s,%s",
+                t.getId(),
+                t.getUser() != null ? t.getUser().getName().replace(",", " ") : "",
+                t.getUser() != null ? t.getUser().getEmail() : "",
+                credit,
+                debit,
+                t.getDescription() != null ? t.getDescription().replace(",", " ") : "",
+                t.getSource() != null ? t.getSource() : "",
+                t.getCreatedAt()
+            ));
+        }
+    }
+
+    // ==========================================
+    //  ORDERS MODULE
+    // ==========================================
+    @GetMapping("/orders")
+    public String viewOrders(@RequestParam(value = "search", required = false) String search,
+                             @RequestParam(value = "status", required = false) String status,
+                             @RequestParam(value = "page", defaultValue = "0") int page,
+                             @RequestParam(value = "size", defaultValue = "10") int size,
+                             Model model) {
+        model.addAttribute("activeTab", "orders");
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Order> orderPage = orderRepository.searchOrders(search, status, pageable);
+
+        model.addAttribute("orders", orderPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", orderPage.getTotalPages());
+        model.addAttribute("totalElements", orderPage.getTotalElements());
+        model.addAttribute("search", search);
+        model.addAttribute("status", status);
+        return "admin/orders";
+    }
+
+    @PostMapping("/orders/{id}/cancel")
+    public String cancelOrder(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Optional<Order> orderOpt = orderRepository.findById(id);
+        if (orderOpt.isPresent()) {
+            Order order = orderOpt.get();
+            if ("SUCCESS".equals(order.getStatus()) || "PENDING".equals(order.getStatus())) {
+                order.setStatus("FAILED"); // cancel is marked as FAILED in status flow
+                orderRepository.save(order);
+                redirectAttributes.addFlashAttribute("successMessage", "Order #" + id + " cancelled successfully.");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Order cannot be cancelled in status: " + order.getStatus());
+            }
+        }
+        return "redirect:/admin/orders";
+    }
+
+    @PostMapping("/orders/{id}/update-status")
+    public String updateOrderStatus(@PathVariable("id") Long id, 
+                                    @RequestParam("orderStatus") String orderStatus, 
+                                    org.springframework.security.core.Authentication authentication,
+                                    RedirectAttributes redirectAttributes) {
+        Optional<Order> orderOpt = orderRepository.findById(id);
+        if (orderOpt.isPresent()) {
+            Order order = orderOpt.get();
+            order.setOrderStatus(orderStatus);
+            orderRepository.save(order);
+            
+            String currentEmail = authentication != null ? authentication.getName() : "admin";
+            AuditLog log = new AuditLog("ORDER_UPDATED", "Order #" + id + " status updated to " + orderStatus, currentEmail);
+            auditLogRepository.save(log);
+
+            redirectAttributes.addFlashAttribute("successMessage", "Order #" + id + " status updated to " + orderStatus);
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Order not found.");
+        }
+        return "redirect:/admin/orders";
+    }
+
+    @PostMapping("/orders/{id}/refund")
+    public String refundOrder(@PathVariable("id") Long id, 
+                              @RequestParam("refundMethod") String refundMethod, 
+                              RedirectAttributes redirectAttributes) {
+        Optional<Order> orderOpt = orderRepository.findById(id);
+        if (orderOpt.isPresent()) {
+            Order order = orderOpt.get();
+            if (!"SUCCESS".equals(order.getStatus())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Only successful orders can be refunded.");
+                return "redirect:/admin/orders";
+            }
+            
+            com.llbeauty.entity.Payment payment = paymentRepository.findAll().stream()
+                .filter(p -> String.valueOf(order.getId()).equals(p.getReferenceId()) && "PRODUCT".equals(p.getPaymentFor()) && "SUCCESS".equals(p.getStatus()))
+                .findFirst().orElse(null);
+
+            boolean refundSuccess = false;
+            
+            if ("WALLET".equalsIgnoreCase(refundMethod)) {
+                walletService.credit(order.getUser(), BigDecimal.valueOf(order.getTotalAmount()), "Refund for Order #" + order.getId(), "REFUND");
+                refundSuccess = true;
+                if (payment != null) {
+                    payment.setStatus("REFUNDED_WALLET");
+                    paymentRepository.save(payment);
+                }
+            } else if ("RAZORPAY".equalsIgnoreCase(refundMethod)) {
+                if (payment != null && payment.getRazorpayPaymentId() != null) {
+                    refundSuccess = paymentService.processRefund(payment.getRazorpayOrderId(), "RAZORPAY", null);
+                    if (!refundSuccess) {
+                        redirectAttributes.addFlashAttribute("errorMessage", "Razorpay API refund failed.");
+                        return "redirect:/admin/orders";
+                    }
+                } else {
+                    redirectAttributes.addFlashAttribute("errorMessage", "No Razorpay payment found for this order.");
+                    return "redirect:/admin/orders";
+                }
+            }
+
+            if (refundSuccess) {
+                order.setStatus("REFUNDED");
+                orderRepository.save(order);
+                redirectAttributes.addFlashAttribute("successMessage", "Order refunded successfully via " + refundMethod);
+            }
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Order not found.");
+        }
+        return "redirect:/admin/orders";
+    }
+
+    @GetMapping("/orders/export")
+    public void exportOrders(@RequestParam(value = "search", required = false) String search,
+                             @RequestParam(value = "status", required = false) String status,
+                             HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=orders.csv");
+        PrintWriter writer = response.getWriter();
+        writer.println("Order ID,Customer Name,Email,Total Amount,Payment ID,Razorpay Order ID,Date,Status");
+
+        List<Order> orders = orderRepository.searchOrdersList(search, status);
+        for (Order o : orders) {
+            writer.println(String.format("%d,%s,%s,%.2f,%s,%s,%s,%s",
+                o.getId(),
+                o.getUser() != null ? o.getUser().getName().replace(",", " ") : "Unknown",
+                o.getUser() != null ? o.getUser().getEmail() : "",
+                o.getTotalAmount(),
+                o.getPaymentId() != null ? o.getPaymentId() : "N/A",
+                o.getRazorpayOrderId() != null ? o.getRazorpayOrderId() : "N/A",
+                o.getCreatedAt(),
+                o.getStatus()
+            ));
+        }
     }
 
     // ==========================================
@@ -738,11 +1193,16 @@ public class AdminController {
     }
 
     @PostMapping("/manual-payments/{id}/approve")
-    public String approveManualPayment(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+    public String approveManualPayment(@PathVariable("id") Long id,
+                                       @RequestParam(value = "remarks", required = false) String remarks,
+                                       RedirectAttributes redirectAttributes) {
         Optional<ManualPaymentRequest> reqOpt = manualPaymentRequestRepository.findById(id);
         if (reqOpt.isPresent()) {
             ManualPaymentRequest req = reqOpt.get();
             req.setStatus("APPROVED");
+            if (remarks != null) {
+                req.setAdminRemarks(remarks);
+            }
             manualPaymentRequestRepository.save(req);
 
             String purpose = req.getPaymentPurpose();
@@ -759,9 +1219,14 @@ public class AdminController {
                     order.setPaymentId("MANUAL_" + req.getUtrNumber());
                     orderRepository.save(order);
                     
-                    Optional<com.llbeauty.entity.UserMembership> activeOpt = com.llbeauty.service.MembershipService.class.isAssignableFrom(walletService.getClass()) ? null : null; // Hack to avoid circular dep if needed, but we can just use walletService here for basic cashback logic or skip it. Let's just do order success.
-                    // Wait, we need MembershipService here to do cashback properly... I'll inject it if needed, or just skip cashback for manual for now. 
-                    // Actually, I can just rely on the controller logic.
+                    Optional<com.llbeauty.entity.UserMembership> activeOpt = membershipService.getActiveMembership(order.getUser());
+                    if (activeOpt.isPresent()) {
+                        double cashbackPercent = activeOpt.get().getMembership().getCashbackPercent();
+                        double cashbackAmount = order.getTotalAmount() * cashbackPercent;
+                        if (cashbackAmount > 0) {
+                            walletService.credit(order.getUser(), BigDecimal.valueOf(cashbackAmount), "Cashback for Order #" + order.getId() + " (" + activeOpt.get().getMembership().getName() + ")", "CASHBACK");
+                        }
+                    }
                 }
             } else if ("SALON_PAYMENT".equals(purpose) && refId != null) {
                 Long appointmentId = Long.parseLong(refId);
@@ -782,16 +1247,37 @@ public class AdminController {
     }
 
     @PostMapping("/manual-payments/{id}/reject")
-    public String rejectManualPayment(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+    public String rejectManualPayment(@PathVariable("id") Long id,
+                                      @RequestParam(value = "remarks", required = false) String remarks,
+                                      RedirectAttributes redirectAttributes) {
         Optional<ManualPaymentRequest> reqOpt = manualPaymentRequestRepository.findById(id);
         if (reqOpt.isPresent()) {
             ManualPaymentRequest req = reqOpt.get();
             req.setStatus("REJECTED");
+            if (remarks != null) {
+                req.setAdminRemarks(remarks);
+            }
             manualPaymentRequestRepository.save(req);
             redirectAttributes.addFlashAttribute("successMessage", "Payment request rejected.");
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Payment request not found.");
         }
         return "redirect:/admin/manual-payments";
+    }
+
+    // ==========================================
+    //  NOTIFICATIONS SYSTEM
+    // ==========================================
+    @PostMapping("/notifications/mark-read/{id}")
+    public String markNotificationRead(@PathVariable("id") Long id, @RequestParam("redirectUrl") String redirectUrl) {
+        notificationService.markAsRead(id);
+        return "redirect:" + (redirectUrl != null && !redirectUrl.isEmpty() ? redirectUrl : "/admin/dashboard");
+    }
+
+    @PostMapping("/notifications/mark-all-read")
+    public String markAllNotificationsRead(RedirectAttributes redirectAttributes) {
+        notificationService.markAllAsRead();
+        redirectAttributes.addFlashAttribute("successMessage", "All notifications marked as read.");
+        return "redirect:/admin/dashboard";
     }
 }

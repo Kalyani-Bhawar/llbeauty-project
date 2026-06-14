@@ -14,6 +14,19 @@
             </a>
         </div>
 
+        <!-- Filters & Search -->
+        <form th:action="@{/admin/membership-users}" method="get" class="mb-4 d-flex gap-2">
+            <input type="text" name="search" th:value="${search}" class="form-control w-25" placeholder="Search by name, email, mobile...">
+            <select name="status" class="form-select w-auto">
+                <option value="">All Status</option>
+                <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">ACTIVE</option>
+                <option value="EXPIRED" th:selected="${status == 'EXPIRED'}">EXPIRED</option>
+                <option value="UPGRADED" th:selected="${status == 'UPGRADED'}">UPGRADED</option>
+            </select>
+            <button type="submit" class="btn btn-gold px-4">Filter</button>
+            <a th:href="@{/admin/membership-users}" class="btn btn-outline-light">Clear</a>
+        </form>
+
         <!-- Revenue Analytics Cards -->
         <div class="row g-4 mb-5">
             <div class="col-md-3">
@@ -41,38 +54,7 @@
                 <div class="stat-card">
                     <div class="stat-icon sapphire"><i class="bi bi-people-fill"></i></div>
                     <div class="stat-label">Total Records</div>
-                    <div class="stat-value" th:text="${userMemberships.size()}">0</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Plan Revenue Breakdown -->
-        <div class="row g-4 mb-5">
-            <div class="col-md-4">
-                <div class="data-card p-4 h-100" style="border-color:rgba(255,117,140,0.2);">
-                    <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); margin-bottom:8px;">Eva Pink Card Revenue</div>
-                    <div style="font-family:'Playfair Display',serif; font-size:1.6rem; color:#ff758c; font-weight:700;">
-                        ₹<span th:text="${#numbers.formatDecimal(pinkRevenue, 1, 0)}">0</span>
-                    </div>
-                    <div style="font-size:0.78rem; color:rgba(255,255,255,0.35); margin-top:4px;">@ ₹2,999/yr per member</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="data-card p-4 h-100" style="border-color:rgba(201,168,76,0.25);">
-                    <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); margin-bottom:8px;">Eva Gold Card Revenue</div>
-                    <div style="font-family:'Playfair Display',serif; font-size:1.6rem; color:#c9a84c; font-weight:700;">
-                        ₹<span th:text="${#numbers.formatDecimal(goldRevenue, 1, 0)}">0</span>
-                    </div>
-                    <div style="font-size:0.78rem; color:rgba(255,255,255,0.35); margin-top:4px;">@ ₹9,999/yr per member</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="data-card p-4 h-100" style="border-color:rgba(212,175,55,0.3);">
-                    <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); margin-bottom:8px;">Eva Black Card Revenue</div>
-                    <div style="font-family:'Playfair Display',serif; font-size:1.6rem; color:#d4af37; font-weight:700;">
-                        ₹<span th:text="${#numbers.formatDecimal(blackRevenue, 1, 0)}">0</span>
-                    </div>
-                    <div style="font-size:0.78rem; color:rgba(255,255,255,0.35); margin-top:4px;">@ ₹24,999/yr per member</div>
+                    <div class="stat-value" th:text="${totalElements}">0</div>
                 </div>
             </div>
         </div>
@@ -81,7 +63,7 @@
         <div class="data-card">
             <div class="data-card-header">
                 <h6><i class="bi bi-card-list me-2" style="color:#c9a84c;"></i>All Membership Records</h6>
-                <span style="font-size:0.78rem;color:rgba(255,255,255,0.4);" th:text="${userMemberships.size()} + ' Records'">0 Records</span>
+                <span style="font-size:0.78rem;color:rgba(255,255,255,0.4);" th:text="${totalElements} + ' Records'">0 Records</span>
             </div>
             <div class="table-responsive">
                 <table class="table mb-0">
@@ -92,10 +74,9 @@
                             <th>Plan</th>
                             <th>Start Date</th>
                             <th>Expiry Date</th>
-                            <th>DOB</th>
                             <th>Payment ID</th>
-                            <th>Referral</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -114,21 +95,61 @@
                                 th:text="${#temporals.format(um.startDate, 'dd-MM-yyyy')}">Date</td>
                             <td style="font-size:0.78rem;color:rgba(255,255,255,0.5);"
                                 th:text="${#temporals.format(um.expiryDate, 'dd-MM-yyyy')}">Date</td>
-                            <td style="font-size:0.78rem;color:rgba(255,255,255,0.5);"
-                                th:text="${um.dob != null and !um.dob.isEmpty() ? um.dob : '-'}">DOB</td>
                             <td style="font-size:0.72rem; font-family:monospace; color:rgba(255,255,255,0.4);"
                                 th:text="${um.razorpayPaymentId ?: 'N/A'}">pay_id</td>
-                            <td style="font-size:0.83rem;color:#c9a84c;"
-                                th:text="${um.referralCode != null and !um.referralCode.isEmpty() ? um.referralCode : '-'}">Referral</td>
                             <td>
                                 <span class="badge-status badge-completed" th:if="${um.status == 'ACTIVE'}">ACTIVE</span>
                                 <span class="badge-status badge-cancelled" th:if="${um.status == 'EXPIRED'}">EXPIRED</span>
                                 <span class="badge-status badge-pending" th:if="${um.status == 'UPGRADED'}">UPGRADED</span>
                                 <span class="badge-status" th:if="${um.status != 'ACTIVE' and um.status != 'EXPIRED' and um.status != 'UPGRADED'}" th:text="${um.status}">Status</span>
                             </td>
+                            <td>
+                                <div class="btn-group" th:if="${um.status == 'ACTIVE'}">
+                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" th:data-bs-target="'#extendModal' + ${um.id}" title="Extend Plan">
+                                        <i class="bi bi-clock"></i> Extend
+                                    </button>
+                                    <form th:action="@{/admin/membership/deactivate/{id}(id=${um.id})}" method="post" onsubmit="return confirm('Cancel this VIP plan?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancel Plan">
+                                            <i class="bi bi-x-circle"></i> Cancel
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="btn-group" th:unless="${um.status == 'ACTIVE'}">
+                                    <form th:action="@{/admin/membership/activate/{id}(id=${um.id})}" method="post" onsubmit="return confirm('Activate this VIP plan?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Activate Plan">
+                                            <i class="bi bi-check-circle"></i> Activate
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
+                        
+                        <!-- Extend Modal per Membership -->
+                        <div th:each="um : ${userMemberships}" th:if="${um.status == 'ACTIVE'}" class="modal fade" th:id="'extendModal' + ${um.id}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form th:action="@{/admin/membership/extend/{id}(id=${um.id})}" method="post">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-dark">Extend VIP Pass for <span th:text="${um.user?.name}"></span></h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-dark">
+                                            <div class="mb-3">
+                                                <label class="form-label">Months to Extend</label>
+                                                <input type="number" name="months" class="form-control" value="1" min="1" max="60" required>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-info">Extend</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
                         <tr th:if="${#lists.isEmpty(userMemberships)}">
-                            <td colspan="11" class="empty-state">
+                            <td colspan="8" class="empty-state">
                                 <i class="bi bi-award"></i>
                                 No membership records yet. Members will appear here after purchase.
                             </td>
@@ -136,6 +157,22 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Pagination -->
+            <nav th:if="${totalPages > 1}" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/membership-users(page=${currentPage - 1}, search=${search}, status=${status})}">Previous</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                        th:classappend="${currentPage == i} ? 'active'">
+                        <a class="page-link" th:href="@{/admin/membership-users(page=${i}, search=${search}, status=${status})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/membership-users(page=${currentPage + 1}, search=${search}, status=${status})}">Next</a>
+                    </li>
+                </ul>
+            </nav>
         </div>
 
     </div>

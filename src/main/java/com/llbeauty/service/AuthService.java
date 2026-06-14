@@ -66,8 +66,14 @@ public class AuthService {
     //  USER — Send OTP for Login (existing user)
     // =========================================================
     public boolean sendLoginOtp(String email) {
-        if (!userRepository.existsByEmail(email)) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
             log.warn("Email not registered: {}", email);
+            return false;
+        }
+        User user = userOpt.get();
+        if (user.getIsBlocked() != null && user.getIsBlocked()) {
+            log.warn("Blocked user tried to send login OTP: {}", email);
             return false;
         }
         otpService.sendOtp(email);
@@ -80,8 +86,16 @@ public class AuthService {
     public String verifyOtpAndLogin(String email, String enteredOtp) {
         boolean valid = otpService.verifyOtp(email, enteredOtp);
         if (!valid) return null;
-        String token = jwtUtil.generateToken(email, "USER");
-        log.info("JWT issued for USER (Email): {}", email);
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent() && userOpt.get().getIsBlocked() != null && userOpt.get().getIsBlocked()) {
+            log.warn("Blocked user tried to login: {}", email);
+            return null;
+        }
+
+        String role = userOpt.map(User::getRole).orElse("USER");
+        String token = jwtUtil.generateToken(email, role);
+        log.info("JWT issued for USER (Email): {} with role: {}", email, role);
         return token;
     }
 

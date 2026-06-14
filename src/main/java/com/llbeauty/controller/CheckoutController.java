@@ -6,6 +6,8 @@ import com.llbeauty.service.MembershipService;
 import com.llbeauty.service.WalletService;
 import com.razorpay.RazorpayClient;
 import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
+
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -317,10 +319,6 @@ public class CheckoutController {
             orderItemRepository.save(oi);
         }
 
-        // Deduct Wallet Balance if applied
-        if (walletRedeemed > 0) {
-            walletService.debit(user, walletRedeemed, "Redeemed for Order #" + savedOrder.getId());
-        }
 
         Map<String, Object> response = new HashMap<>();
         response.put("orderId", savedOrder.getId());
@@ -361,35 +359,80 @@ public class CheckoutController {
     // Verify payment from Razorpay
     @PostMapping("/confirm-order")
     @ResponseBody
-    public ResponseEntity<?> confirmOrderPayment(@RequestParam("orderId") Long orderId,
-                                                 @RequestParam("paymentId") String paymentId,
-                                                 @RequestParam(value = "razorpayOrderId", required = false) String razorpayOrderId,
-                                                 @RequestParam(value = "razorpaySignature", required = false) String razorpaySignature,
-                                                 @RequestParam(value = "directProductId", required = false) Long directProductId,
-                                                 HttpSession session) {
+    @Transactional
+    public ResponseEntity<?> confirmOrderPayment(
+            @RequestParam("orderId") Long orderId,
+            @RequestParam("paymentId") String paymentId,
+            @RequestParam(value = "razorpayOrderId", required = false) String razorpayOrderId,
+            @RequestParam(value = "razorpaySignature", required = false) String razorpaySignature,
+            @RequestParam(value = "useWallet", defaultValue = "false") boolean useWallet,
+            @RequestParam(value = "walletRedeemed", defaultValue = "0") double walletRedeemed,
+            @RequestParam(value = "directProductId", required = false) Long directProductId,
+            HttpSession session) {
+        
         User user = getAuthenticatedUser();
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Login required"));
-        }
-
-        if (razorpayOrderId != null && razorpaySignature != null && !isDummyCredentials()) {
-            try {
-                paymentService.verifyAndProcessPayment(razorpayOrderId, paymentId, razorpaySignature);
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid payment signature"));
-            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                Map.of("message", "Login required"));
         }
 
         Order order = orderRepository.findById(orderId).orElse(null);
         if (order == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Order not found"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                Map.of("message", "Order not found"));
+        }
+
+        // IMPORTANT: Check if already processed
+        if ("SUCCESS".equals(order.getStatus())) {
+            return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "Order already completed",
+                "redirectUrl", "/checkout/success?orderId=" + orderId
+            ));
+        }
+
+        // Verify payment signature for real payments
+        if (!isDummyCredentials()) {
+            if (razorpayOrderId == null || razorpaySignature == null) {
+                order.setStatus("FAILED");
+                orderRepository.save(order);
+                
+                return ResponseEntity.badRequest().body(
+                    Map.of("message", "Payment verification failed - missing signature"));
+            }
+
+            try {
+                paymentService.verifyAndProcessPayment(razorpayOrderId, paymentId, razorpaySignature);
+            } catch (Exception e) {
+                order.setStatus("FAILED");
+                orderRepository.save(order);
+                
+                return ResponseEntity.badRequest().body(
+                    Map.of("message", "Payment verification failed"));
+            }
+        }
+
+        // NOW deduct wallet (AFTER payment verified)
+        if (useWallet && walletRedeemed > 0) {
+            try {
+                walletService.debit(user, walletRedeemed, 
+                    "Wallet redemption for Order #" + orderId);
+            } catch (Exception e) {
+                order.setStatus("FAILED");
+                orderRepository.save(order);
+                
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    Map.of("message", "Failed to process wallet deduction"));
+            }
         }
 
         completeOrder(order, user, paymentId, directProductId == null, session);
 
-        return ResponseEntity.ok(Map.of("status", "success", "redirectUrl", "/checkout/success?orderId=" + order.getId()));
+        return ResponseEntity.ok(Map.of(
+            "status", "success",
+            "redirectUrl", "/checkout/success?orderId=" + orderId
+        ));
     }
-
     // Success Landing Page
     @GetMapping("/success")
     public String orderSuccessPage(@RequestParam("orderId") Long orderId, Model model) {

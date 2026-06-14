@@ -16,12 +16,36 @@ public class User {
     private String password;
     private BigDecimal walletBalance;
     private LocalDateTime createdAt;
+    @Column(name = "role", nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'USER'")
+    private String role = "USER"; // default role
+
+    private Boolean isBlocked = false;
+
+    private Boolean active = true;
+
+    @Column(name = "executive_status", length = 20)
+    private String executiveStatus = "NOT_APPLIED";
+
+    @Column(name = "merchant_status", length = 20)
+    private String merchantStatus = "NOT_APPLIED";
+
+    @Column(name = "membership_status", length = 20)
+    private String membershipStatus = "NOT_APPLIED";
 
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+        if (this.role == null) {
+            this.role = "USER";
+        }
         if (this.walletBalance == null) {
             this.walletBalance = BigDecimal.ZERO;
+        }
+        if (this.isBlocked == null) {
+            this.isBlocked = false;
+        }
+        if (this.active == null) {
+            this.active = true;
         }
     }
 
@@ -230,6 +254,32 @@ public class User {
         this.createdAt = createdAt;
     }
 
+    public Boolean getIsBlocked() {
+        return this.isBlocked;
+    }
+
+    public void setIsBlocked(final Boolean isBlocked) {
+        this.isBlocked = isBlocked;
+    }
+
+    public String getRole() {
+        return this.role;
+    }
+
+    public void setRole(final String role) {
+        this.role = role;
+    }
+
+    public String getExecutiveStatus() { return this.executiveStatus; }
+    public void setExecutiveStatus(String executiveStatus) { this.executiveStatus = executiveStatus; }
+
+    public String getMerchantStatus() { return this.merchantStatus; }
+    public void setMerchantStatus(String merchantStatus) { this.merchantStatus = merchantStatus; }
+
+    public String getMembershipStatus() { return this.membershipStatus; }
+    public void setMembershipStatus(String membershipStatus) { this.membershipStatus = membershipStatus; }
+
+
     @java.lang.Override
     @java.lang.SuppressWarnings("all")
     
@@ -298,13 +348,20 @@ public class User {
         return "User(id=" + this.getId() + ", name=" + this.getName() + ", email=" + this.getEmail() + ", mobile=" + this.getMobile() + ", password=" + this.getPassword() + ", walletBalance=" + this.getWalletBalance() + ", createdAt=" + this.getCreatedAt() + ")";
     }
 
+    public Boolean getActive() {
+        return this.active;
+    }
+
+    public void setActive(final Boolean active) {
+        this.active = active;
+    }
+
+
     @java.lang.SuppressWarnings("all")
     
     public User() {
     }
 
-    @java.lang.SuppressWarnings("all")
-    
     public User(final Long id, final String name, final String email, final String mobile, final String password, final BigDecimal walletBalance, final LocalDateTime createdAt) {
         this.id = id;
         this.name = name;

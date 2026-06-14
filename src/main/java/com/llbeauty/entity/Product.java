@@ -14,13 +14,18 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String description;
     private Double price;
+    private Double wholesalePrice;
     private String imageUrl;
     private Integer stock;
+    private String status = "ACTIVE";
     private LocalDateTime createdAt;
 
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+        if (this.status == null) {
+            this.status = "ACTIVE";
+        }
     }
 
 
@@ -187,6 +192,10 @@ public class Product {
         return this.price;
     }
 
+    public Double getWholesalePrice() {
+        return this.wholesalePrice;
+    }
+
     @java.lang.SuppressWarnings("all")
     
     public String getImageUrl() {
@@ -235,6 +244,10 @@ public class Product {
         this.price = price;
     }
 
+    public void setWholesalePrice(final Double wholesalePrice) {
+        this.wholesalePrice = wholesalePrice;
+    }
+
     @java.lang.SuppressWarnings("all")
     
     public void setImageUrl(final String imageUrl) {
@@ -247,8 +260,9 @@ public class Product {
         this.stock = stock;
     }
 
-    @java.lang.SuppressWarnings("all")
-    
+    public String getStatus() { return this.status; }
+    public void setStatus(String status) { this.status = status; }
+
     public void setCreatedAt(final LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }

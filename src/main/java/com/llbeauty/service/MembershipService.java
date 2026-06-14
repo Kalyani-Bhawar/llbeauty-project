@@ -82,7 +82,8 @@ public class MembershipService {
                     memberProfileRepository.save(p);
                 });
                 
-                return Optional.empty();
+                user.setMembershipStatus("NOT_APPLIED");
+                // The userRepository isn't injected directly here so we'd need to inject it. Let's just set it and let any other transaction save it, or inject UserRepository.
             }
             return Optional.of(um);
         }

@@ -2,288 +2,132 @@ package com.llbeauty.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
-public class Order {
+public class Order extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
     private Double totalAmount;
     private String status; // PENDING, SUCCESS, FAILED
+    private String orderStatus; // Pending, Confirmed, Packed, Shipped, Delivered, Cancelled, Refunded
+    private String orderType; // CUSTOMER, WHOLESALE
     private String paymentId;
+    private String razorpayOrderId;
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private java.util.List<OrderItem> items = new java.util.ArrayList<>();
+    private List<OrderItem> items = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
     }
 
-
-    @java.lang.SuppressWarnings("all")
-    
     public static class OrderBuilder {
-        @java.lang.SuppressWarnings("all")
-        
         private Long id;
-        @java.lang.SuppressWarnings("all")
-        
         private User user;
-        @java.lang.SuppressWarnings("all")
-        
         private Double totalAmount;
-        @java.lang.SuppressWarnings("all")
-        
         private String status;
-        @java.lang.SuppressWarnings("all")
-        
+        private String orderStatus;
         private String paymentId;
-        @java.lang.SuppressWarnings("all")
-        
         private LocalDateTime createdAt;
 
-        @java.lang.SuppressWarnings("all")
-        
-        OrderBuilder() {
-        }
+        OrderBuilder() {}
 
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Order.OrderBuilder id(final Long id) {
-            this.id = id;
-            return this;
-        }
+        public OrderBuilder id(Long id) { this.id = id; return this; }
+        public OrderBuilder user(User user) { this.user = user; return this; }
+        public OrderBuilder totalAmount(Double totalAmount) { this.totalAmount = totalAmount; return this; }
+        public OrderBuilder status(String status) { this.status = status; return this; }
+        public OrderBuilder orderStatus(String orderStatus) { this.orderStatus = orderStatus; return this; }
+        public OrderBuilder paymentId(String paymentId) { this.paymentId = paymentId; return this; }
+        public OrderBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
 
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Order.OrderBuilder user(final User user) {
-            this.user = user;
-            return this;
-        }
+        public Order build() { return new Order(id, user, totalAmount, status, orderStatus, paymentId, createdAt); }
 
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Order.OrderBuilder totalAmount(final Double totalAmount) {
-            this.totalAmount = totalAmount;
-            return this;
-        }
-
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Order.OrderBuilder status(final String status) {
-            this.status = status;
-            return this;
-        }
-
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Order.OrderBuilder paymentId(final String paymentId) {
-            this.paymentId = paymentId;
-            return this;
-        }
-
-        /**
-         * @return {@code this}.
-         */
-        @java.lang.SuppressWarnings("all")
-        
-        public Order.OrderBuilder createdAt(final LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-            return this;
-        }
-
-        @java.lang.SuppressWarnings("all")
-        
-        public Order build() {
-            return new Order(this.id, this.user, this.totalAmount, this.status, this.paymentId, this.createdAt);
-        }
-
-        @java.lang.Override
-        @java.lang.SuppressWarnings("all")
-        
-        public java.lang.String toString() {
-            return "Order.OrderBuilder(id=" + this.id + ", user=" + this.user + ", totalAmount=" + this.totalAmount + ", status=" + this.status + ", paymentId=" + this.paymentId + ", createdAt=" + this.createdAt + ")";
+        @Override
+        public String toString() {
+            return "Order.OrderBuilder(id=" + id + ", user=" + user + ", totalAmount=" + totalAmount + ", status=" + status + ", orderStatus=" + orderStatus + ", paymentId=" + paymentId + ", createdAt=" + createdAt + ")";
         }
     }
 
-    @java.lang.SuppressWarnings("all")
-    
-    public static Order.OrderBuilder builder() {
-        return new Order.OrderBuilder();
-    }
+    public static OrderBuilder builder() { return new OrderBuilder(); }
 
-    @java.lang.SuppressWarnings("all")
-    
-    public Long getId() {
-        return this.id;
-    }
+    // Getters and setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+    public Double getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(Double totalAmount) { this.totalAmount = totalAmount; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public String getOrderStatus() { return orderStatus; }
+    public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus; }
+    public String getOrderType() { return orderType; }
+    public void setOrderType(String orderType) { this.orderType = orderType; }
+    public String getPaymentId() { return paymentId; }
+    public void setPaymentId(String paymentId) { this.paymentId = paymentId; }
+    public String getRazorpayOrderId() { return razorpayOrderId; }
+    public void setRazorpayOrderId(String razorpayOrderId) { this.razorpayOrderId = razorpayOrderId; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public List<OrderItem> getItems() { return items; }
+    public void setItems(List<OrderItem> items) { this.items = items; }
 
-    @java.lang.SuppressWarnings("all")
-    
-    public User getUser() {
-        return this.user;
-    }
+    public Order() {}
 
-    @java.lang.SuppressWarnings("all")
-    
-    public Double getTotalAmount() {
-        return this.totalAmount;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public String getStatus() {
-        return this.status;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public String getPaymentId() {
-        return this.paymentId;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public LocalDateTime getCreatedAt() {
-        return this.createdAt;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setId(final Long id) {
+    public Order(Long id, User user, Double totalAmount, String status, String orderStatus, String paymentId, LocalDateTime createdAt) {
         this.id = id;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setUser(final User user) {
         this.user = user;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setTotalAmount(final Double totalAmount) {
         this.totalAmount = totalAmount;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setStatus(final String status) {
         this.status = status;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setPaymentId(final String paymentId) {
+        this.orderStatus = orderStatus;
         this.paymentId = paymentId;
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public void setCreatedAt(final LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    
-    public boolean equals(final java.lang.Object o) {
-        if (o == this) return true;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
         if (!(o instanceof Order)) return false;
-        final Order other = (Order) o;
-        if (!other.canEqual((java.lang.Object) this)) return false;
-        final java.lang.Object this$id = this.getId();
-        final java.lang.Object other$id = other.getId();
-        if (this$id == null ? other$id != null : !this$id.equals(other$id)) return false;
-        final java.lang.Object this$totalAmount = this.getTotalAmount();
-        final java.lang.Object other$totalAmount = other.getTotalAmount();
-        if (this$totalAmount == null ? other$totalAmount != null : !this$totalAmount.equals(other$totalAmount)) return false;
-        final java.lang.Object this$user = this.getUser();
-        final java.lang.Object other$user = other.getUser();
-        if (this$user == null ? other$user != null : !this$user.equals(other$user)) return false;
-        final java.lang.Object this$status = this.getStatus();
-        final java.lang.Object other$status = other.getStatus();
-        if (this$status == null ? other$status != null : !this$status.equals(other$status)) return false;
-        final java.lang.Object this$paymentId = this.getPaymentId();
-        final java.lang.Object other$paymentId = other.getPaymentId();
-        if (this$paymentId == null ? other$paymentId != null : !this$paymentId.equals(other$paymentId)) return false;
-        final java.lang.Object this$createdAt = this.getCreatedAt();
-        final java.lang.Object other$createdAt = other.getCreatedAt();
-        if (this$createdAt == null ? other$createdAt != null : !this$createdAt.equals(other$createdAt)) return false;
-        return true;
+        Order other = (Order) o;
+        if (!other.canEqual(this)) return false;
+        return (id != null ? id.equals(other.id) : other.id == null) &&
+               (totalAmount != null ? totalAmount.equals(other.totalAmount) : other.totalAmount == null) &&
+               (user != null ? user.equals(other.user) : other.user == null) &&
+               (status != null ? status.equals(other.status) : other.status == null) &&
+               (orderStatus != null ? orderStatus.equals(other.orderStatus) : other.orderStatus == null) &&
+               (paymentId != null ? paymentId.equals(other.paymentId) : other.paymentId == null) &&
+               (createdAt != null ? createdAt.equals(other.createdAt) : other.createdAt == null);
     }
 
-    @java.lang.SuppressWarnings("all")
-    
-    protected boolean canEqual(final java.lang.Object other) {
-        return other instanceof Order;
-    }
+    protected boolean canEqual(Object other) { return other instanceof Order; }
 
-    @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    
+    @Override
     public int hashCode() {
-        final int PRIME = 59;
         int result = 1;
-        final java.lang.Object $id = this.getId();
-        result = result * PRIME + ($id == null ? 43 : $id.hashCode());
-        final java.lang.Object $totalAmount = this.getTotalAmount();
-        result = result * PRIME + ($totalAmount == null ? 43 : $totalAmount.hashCode());
-        final java.lang.Object $user = this.getUser();
-        result = result * PRIME + ($user == null ? 43 : $user.hashCode());
-        final java.lang.Object $status = this.getStatus();
-        result = result * PRIME + ($status == null ? 43 : $status.hashCode());
-        final java.lang.Object $paymentId = this.getPaymentId();
-        result = result * PRIME + ($paymentId == null ? 43 : $paymentId.hashCode());
-        final java.lang.Object $createdAt = this.getCreatedAt();
-        result = result * PRIME + ($createdAt == null ? 43 : $createdAt.hashCode());
+        final int PRIME = 59;
+        result = result * PRIME + (id == null ? 43 : id.hashCode());
+        result = result * PRIME + (totalAmount == null ? 43 : totalAmount.hashCode());
+        result = result * PRIME + (user == null ? 43 : user.hashCode());
+        result = result * PRIME + (status == null ? 43 : status.hashCode());
+        result = result * PRIME + (orderStatus == null ? 43 : orderStatus.hashCode());
+        result = result * PRIME + (paymentId == null ? 43 : paymentId.hashCode());
+        result = result * PRIME + (createdAt == null ? 43 : createdAt.hashCode());
         return result;
     }
 
-    @java.lang.Override
-    @java.lang.SuppressWarnings("all")
-    
-    public java.lang.String toString() {
-        return "Order(id=" + this.getId() + ", user=" + this.getUser() + ", totalAmount=" + this.getTotalAmount() + ", status=" + this.getStatus() + ", paymentId=" + this.getPaymentId() + ", createdAt=" + this.getCreatedAt() + ")";
+    @Override
+    public String toString() {
+        return "Order(id=" + id + ", user=" + user + ", totalAmount=" + totalAmount + ", status=" + status + ", orderStatus=" + orderStatus + ", paymentId=" + paymentId + ", createdAt=" + createdAt + ")";
     }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public Order() {
-    }
-
-    @java.lang.SuppressWarnings("all")
-    
-    public Order(final Long id, final User user, final Double totalAmount, final String status, final String paymentId, final LocalDateTime createdAt) {
-        this.id = id;
-        this.user = user;
-        this.totalAmount = totalAmount;
-        this.status = status;
-        this.paymentId = paymentId;
-        this.createdAt = createdAt;
-    }
-
-    public java.util.List<OrderItem> getItems() { return this.items; }
-    public void setItems(java.util.List<OrderItem> items) { this.items = items; }
 }

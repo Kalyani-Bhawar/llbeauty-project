@@ -7,23 +7,18 @@
         <div class="d-flex justify-content-between align-items-start mb-5">
             <div>
                 <h1 class="page-title mb-1">Dashboard Overview</h1>
-                <div class="page-subtitle">Welcome back, Admin · L.L. BEAUTY Control Center</div>
-            </div>
-            <div class="d-flex gap-2">
-                <a href="/" class="btn btn-sm" style="background:rgba(201,168,76,0.1);color:#c9a84c;border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:8px 16px;font-size:0.8rem;">
-                    <i class="bi bi-eye me-1"></i> View Live Site
-                </a>
+                <div class="page-subtitle">Welcome back, Admin · EVA Control Center</div>
             </div>
         </div>
 
-        <!-- KPI Cards Row -->
-        <div class="row g-4 mb-5">
+        <!-- KPI Cards Row 1 -->
+        <div class="row g-4 mb-4">
             <div class="col-xl-3 col-md-6">
                 <div class="stat-card">
-                    <div class="stat-icon gold"><i class="bi bi-calendar-check-fill"></i></div>
-                    <div class="stat-label">Total Bookings</div>
-                    <div class="stat-value" th:text="${totalAppointments}">0</div>
-                    <div style="font-size:0.75rem;color:#2ecc71;margin-top:8px;"><i class="bi bi-arrow-up-short"></i> Salon Appointments</div>
+                    <div class="stat-icon gold"><i class="bi bi-currency-rupee"></i></div>
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(totalRevenue, 1, 0)}">0</span></div>
+                    <div style="font-size:0.75rem;color:#c9a84c;margin-top:8px;"><i class="bi bi-graph-up-arrow"></i> Lifetime Revenue</div>
                 </div>
             </div>
             <div class="col-xl-3 col-md-6">
@@ -31,12 +26,48 @@
                     <div class="stat-icon emerald"><i class="bi bi-people-fill"></i></div>
                     <div class="stat-label">Registered Users</div>
                     <div class="stat-value" th:text="${totalUsers}">0</div>
-                    <div style="font-size:0.75rem;color:#2ecc71;margin-top:8px;"><i class="bi bi-arrow-up-short"></i> Active Members</div>
+                    <div style="font-size:0.75rem;color:#2ecc71;margin-top:8px;"><i class="bi bi-person-check"></i> <span th:text="${activeMembers}">0</span> Active Memberships</div>
                 </div>
             </div>
             <div class="col-xl-3 col-md-6">
                 <div class="stat-card">
-                    <div class="stat-icon ruby"><i class="bi bi-building-fill"></i></div>
+                    <div class="stat-icon ruby"><i class="bi bi-box-seam"></i></div>
+                    <div class="stat-label">Pending Orders</div>
+                    <div class="stat-value" th:text="${totalOrders}">0</div>
+                    <div style="font-size:0.75rem;color:#e74c3c;margin-top:8px;"><i class="bi bi-clock-history"></i> To Be Shipped</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon sapphire"><i class="bi bi-calendar-check-fill"></i></div>
+                    <div class="stat-label">Total Bookings</div>
+                    <div class="stat-value" th:text="${totalAppointments}">0</div>
+                    <div style="font-size:0.75rem;color:#3498db;margin-top:8px;"><i class="bi bi-dot"></i> <span th:text="${pendingBookings}">0</span> Pending</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Cards Row 2 -->
+        <div class="row g-4 mb-5">
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon gold" style="background:rgba(46,204,113,0.15); color:#2ecc71;"><i class="bi bi-cash-coin"></i></div>
+                    <div class="stat-label">Today's Revenue</div>
+                    <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(todayRevenue, 1, 0)}">0</span></div>
+                    <div style="font-size:0.75rem;color:#2ecc71;margin-top:8px;"><i class="bi bi-graph-up"></i> Daily Performance</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon emerald" style="background:rgba(52,152,219,0.15); color:#3498db;"><i class="bi bi-wallet2"></i></div>
+                    <div class="stat-label">Total Wallet Balance</div>
+                    <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(totalWalletBalance, 1, 0)}">0</span></div>
+                    <div style="font-size:0.75rem;color:#3498db;margin-top:8px;"><i class="bi bi-piggy-bank"></i> User Wallet Credits</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon ruby" style="background:rgba(243,156,18,0.15); color:#f39c12;"><i class="bi bi-building-fill"></i></div>
                     <div class="stat-label">Franchise Leads</div>
                     <div class="stat-value" th:text="${totalLeads}">0</div>
                     <div style="font-size:0.75rem;color:#f39c12;margin-top:8px;"><i class="bi bi-dot"></i> Pending Review</div>
@@ -44,10 +75,10 @@
             </div>
             <div class="col-xl-3 col-md-6">
                 <div class="stat-card">
-                    <div class="stat-icon sapphire"><i class="bi bi-bag-heart-fill"></i></div>
+                    <div class="stat-icon sapphire" style="background:rgba(155,89,182,0.15); color:#9b59b6;"><i class="bi bi-bag-heart-fill"></i></div>
                     <div class="stat-label">Total Products</div>
                     <div class="stat-value" th:text="${totalProducts}">0</div>
-                    <div style="font-size:0.75rem;color:#3498db;margin-top:8px;"><i class="bi bi-dot"></i> In Catalog</div>
+                    <div style="font-size:0.75rem;color:#9b59b6;margin-top:8px;"><i class="bi bi-dot"></i> In Catalog</div>
                 </div>
             </div>
         </div>

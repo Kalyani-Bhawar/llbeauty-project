@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="_csrf" th:content="${_csrf.token}">
 	<meta name="_csrf_header" th:content="${_csrf.headerName}">
-    <title>Verify OTP – L.L. BEAUTY</title>
+    <title>Verify OTP – EVA</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="/css/style.css" rel="stylesheet">
@@ -133,6 +133,7 @@
             min-height: 18px;
         }
     </style>
+    <link rel="icon" type="image/png" href="/images/eva-logo.png">
 </head>
 <body>
 
@@ -141,7 +142,7 @@
 
     <div class="auth-container">
         <div class="auth-card-premium animate-fade-up">
-            <h2 class="auth-logo brand-font">L.L. <span>BEAUTY</span></h2>
+            <img src="/images/eva-logo.png" alt="EVA Logo" style="height: 60px; display: block; margin: 0 auto 15px;">
             <p class="auth-subtitle">Verify OTP sent to
                 <span th:text="${email}" style="font-weight:600;color:var(--dark);"></span>
             </p>

@@ -122,35 +122,40 @@ public class DataInitializer implements CommandLineRunner {
             membershipRepository.deleteAll();
 
             Membership pink = new Membership(
-                null,
-                "Eva Pink Card",
-                2999.0,
-                0.05,
-                "5% Discount\nEarly Access to Sales & Events\nExclusive Birthday Offers\nReward Points Earning\nStandard Member Support",
-                365,
-                300.0
-            );
+            	    null,
+            	    "Eva Pink Card",
+            	    2999.0,
+            	    0.05,
+            	    "5% Discount\nEarly Access to Sales & Events\nExclusive Birthday Offers\nReward Points Earning\nStandard Member Support",
+            	    365,
+            	    12,
+            	    300.0,
+            	    true
+            	);
 
-            Membership gold = new Membership(
-                null,
-                "Eva Gold Card",
-                9999.0,
-                0.15,
-                "15% Discount\nFree Delivery on All Orders\nVIP Launch Access\nDouble Reward Points\nEvent Invitations",
-                365,
-                1000.0
-            );
+            	Membership gold = new Membership(
+            	    null,
+            	    "Eva Gold Card",
+            	    9999.0,
+            	    0.15,
+            	    "15% Discount\nFree Delivery on All Orders\nVIP Launch Access\nDouble Reward Points\nEvent Invitations",
+            	    365,
+            	    12,
+            	    1000.0,
+            	    true
+            	);
 
-            Membership black = new Membership(
-                null,
-                "Eva Black Card",
-                24999.0,
-                0.25,
-                "25% Discount\nConcierge Support\nLuxury Gifts on Signup\nTriple Reward Points\nVIP Lounge Access",
-                365,
-                3000.0
-            );
-
+            	Membership black = new Membership(
+            	    null,
+            	    "Eva Black Card",
+            	    24999.0,
+            	    0.25,
+            	    "25% Discount\nConcierge Support\nLuxury Gifts on Signup\nTriple Reward Points\nVIP Lounge Access",
+            	    365,
+            	    12,
+            	    3000.0,
+            	    true
+            	);
             membershipRepository.saveAll(List.of(pink, gold, black));
             log.info("Database seeded with Eva Pink, Gold, and Black membership cards.");
         }

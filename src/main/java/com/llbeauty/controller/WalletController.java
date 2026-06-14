@@ -80,6 +80,9 @@ public class WalletController {
             return "redirect:/auth/login?redirect=/dashboard";
         }
 
+        // Allow all roles to access the User/Membership Dashboard
+
+
         // Fetch wallet details
         BigDecimal balance = walletService.getBalance(user);
         List<WalletTransaction> transactions = walletService.getTransactionHistory(user);

@@ -23,6 +23,9 @@ public class SalonInfo {
     private String timings;
     private String imageUrl;
 
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean deleted = false;
+
     public SalonInfo() {}
 
     // Getters and Setters
@@ -96,5 +99,13 @@ public class SalonInfo {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
     }
 }

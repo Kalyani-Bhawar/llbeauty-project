@@ -18,9 +18,8 @@ public class ManualPaymentRequest {
     private Double amount;
     private String utrNumber;
     private String screenshotPath;
-
-    // PENDING, APPROVED, REJECTED
     private String status;
+    private String adminRemarks;
 
     // WALLET_TOPUP, CHECKOUT, SALON_PAYMENT
     private String paymentPurpose;
@@ -61,6 +60,9 @@ public class ManualPaymentRequest {
     
     public String getReferenceId() { return referenceId; }
     public void setReferenceId(String referenceId) { this.referenceId = referenceId; }
+    
+    public String getAdminRemarks() { return adminRemarks; }
+    public void setAdminRemarks(String adminRemarks) { this.adminRemarks = adminRemarks; }
     
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
