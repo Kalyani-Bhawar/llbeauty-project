@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}">
+<body>
+    <div class="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0" th:text="${product.id != null ? 'Edit Product' : 'Add New Product'}">Product Form</h2>
+            <a href="/admin/products" class="btn btn-outline-secondary btn-sm px-4">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+        
+        <div class="card data-card p-4 mx-auto" style="max-width: 800px;">
+            <form th:action="${product.id != null ? '/admin/products/update/' + product.id : '/admin/products/save'}" method="POST" enctype="multipart/form-data">
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-white">Product Name</label>
+                        <input type="text" class="form-control" name="name" th:value="${product.name}" required>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-white">Category</label>
+                        <select class="form-select bg-dark text-white border-secondary" name="category" required>
+                            <option value="Perfumes" th:selected="${product.category == 'Perfumes'}">Perfumes</option>
+                            <option value="Skincare" th:selected="${product.category == 'Skincare'}">Skincare</option>
+                            <option value="Haircare" th:selected="${product.category == 'Haircare'}">Haircare</option>
+                            <option value="Spa" th:selected="${product.category == 'Spa'}">Spa/Detox</option>
+                            <option value="Accessories" th:selected="${product.category == 'Accessories'}">Accessories</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-white">Description</label>
+                    <textarea class="form-control" name="description" rows="3" th:text="${product.description}" required></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-white">Price (₹)</label>
+                        <input type="number" step="0.01" class="form-control" name="price" th:value="${product.price}" required>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-white">Stock Quantity</label>
+                        <input type="number" class="form-control" name="stock" th:value="${product.stock}" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-white">Product Image</label>
+                    <div th:if="${product.imageUrl != null}" class="mb-2">
+                        <img th:src="${product.imageUrl}" alt="Current Image" class="rounded" style="width: 80px; height: 80px; object-fit: cover; border: 1px solid #c9a84c;">
+                        <div class="small text-muted mt-1">Current Image</div>
+                    </div>
+                    <input class="form-control bg-dark text-white border-secondary" type="file" name="imageFile" accept="image/*" th:required="${product.id == null}">
+                    <div class="form-text text-muted">Recommended: Square image (600x600px). Uploading a new file will replace the existing image.</div>
+                </div>
+
+                <button type="submit" class="btn btn-gold w-100 py-2">
+                    <i class="bi bi-check-lg"></i> <span th:text="${product.id != null ? 'Update Product' : 'Save Product'}"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

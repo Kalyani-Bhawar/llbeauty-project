@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::main})}">
+<body>
+<main>
+    <div class="mb-4">
+        <a href="/admin/store-management" class="btn btn-sm btn-outline-gold mb-3"><i class="bi bi-arrow-left"></i> Back to Applications</a>
+        <h1 class="page-title">Application Dossier</h1>
+        <p class="page-subtitle">Review applicant credentials and details before approving or rejecting.</p>
+    </div>
+
+    <div class="row g-4 animate-fade-up">
+        
+        <!-- Applicant Profile Card -->
+        <div class="col-lg-8">
+            <div class="data-card p-4">
+                <h5 class="font-serif mb-4" style="color: #c9a84c;">Submission Details</h5>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="text-white-50 small uppercase d-block">Applicant Name</label>
+                        <span class="fs-6 fw-bold" th:text="${app.user.name}">Name</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-white-50 small uppercase d-block">Application Type</label>
+                        <span class="badge bg-danger" th:if="${app.type.name() == 'EXECUTIVE'}">EXECUTIVE</span>
+                        <span class="badge bg-warning text-dark" th:if="${app.type.name() == 'MERCHANT'}">MERCHANT</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="text-white-50 small uppercase d-block">Contact Email</label>
+                        <span class="fs-6" th:text="${app.contactEmail}">Email</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-white-50 small uppercase d-block">Contact Phone</label>
+                        <span class="fs-6" th:text="${app.contactPhone}">Phone</span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="text-white-50 small uppercase d-block">Business Name / shop Name</label>
+                        <span class="fs-6" th:text="${app.businessName}">Name</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-white-50 small uppercase d-block">Submission Date</label>
+                        <span class="fs-6" th:text="${#temporals.format(app.createdAt, 'dd MMM yyyy, hh:mm a')}">Date</span>
+                    </div>
+
+                    <div class="col-md-12">
+                        <hr class="border-secondary">
+                        <h6 class="font-serif mb-3" style="color: #c9a84c;">Application Fields Data</h6>
+                        <pre class="bg-dark text-white p-3 rounded border border-secondary" style="font-family: 'Inter', sans-serif; white-space: pre-line; font-size: 0.9rem;" th:text="${app.details}">Details...</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Control Panel -->
+        <div class="col-lg-4">
+            <div class="data-card p-4">
+                <h5 class="font-serif mb-4" style="color: #c9a84c;">Application Actions</h5>
+                
+                <div class="mb-4">
+                    <label class="text-white-50 small uppercase d-block mb-1">Current Status</label>
+                    <span class="badge-status badge-pending" th:if="${app.status.name() == 'PENDING'}">PENDING</span>
+                    <span class="badge-status badge-completed" th:if="${app.status.name() == 'APPROVED'}">APPROVED</span>
+                    <span class="badge-status badge-cancelled" th:if="${app.status.name() == 'REJECTED'}">REJECTED</span>
+                </div>
+
+                <div th:if="${app.status.name() == 'PENDING'}">
+                    <!-- Approve Button -->
+                    <form th:action="@{/admin/store/application/{id}/approve(id=${app.id})}" method="post" class="mb-3">
+                        <button type="submit" class="btn btn-gold w-100 py-3 uppercase fw-bold" style="font-size:0.82rem; letter-spacing:1px; border-radius:50px;">
+                            <i class="bi bi-patch-check-fill me-1"></i> Approve Application
+                        </button>
+                    </form>
+
+                    <!-- Reject Button + Textbox -->
+                    <hr class="border-secondary my-4">
+                    
+                    <form th:action="@{/admin/store/application/{id}/reject(id=${app.id})}" method="post">
+                        <div class="mb-3">
+                            <label for="remarks" class="form-label text-white-50 small uppercase">Rejection Remarks</label>
+                            <textarea name="remarks" id="remarks" rows="3" class="form-control bg-dark text-white border-secondary" placeholder="Enter comments to explain rejection decision..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-outline-danger w-100 py-2 uppercase fw-bold" style="font-size:0.8rem; letter-spacing:1px; border-radius:50px;">
+                            <i class="bi bi-x-circle me-1"></i> Reject Application
+                        </button>
+                    </form>
+                </div>
+
+                <div th:unless="${app.status.name() == 'PENDING'}" class="text-white-50 small">
+                    This application has already been processed and finalized.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+</body>
+</html>

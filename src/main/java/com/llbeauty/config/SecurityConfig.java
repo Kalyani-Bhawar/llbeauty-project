@@ -42,9 +42,9 @@ public class SecurityConfig {
         	        "/membership/confirm",
 
         	        "/store/merchant/pay-initiate",
-        	        "/store/executive/pay-initiate",
+        	        "/store/agent/pay-initiate",
         	        "/store/merchant/apply-confirm",
-        	        "/store/executive/apply-confirm",
+        	        "/store/agent/apply-confirm",
         	        "/api/upload"
         	    )
         	)
@@ -57,9 +57,15 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/",
+                    "/auth/login/**",
+                    "/auth/register/**",
                     "/shop",
                     "/products",
                     "/product/**",
+                    "/store",
+                    "/store/**",
+                    "/membership",
+                    "/membership/**",
                     "/css/**",
                     "/images/**",
                     "/js/**",

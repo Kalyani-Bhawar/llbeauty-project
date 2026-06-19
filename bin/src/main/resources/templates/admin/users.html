@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div class="content">
+        <h2 class="mb-4">Registered Users</h2>
+
+        <!-- Filters & Search -->
+        <form th:action="@{/admin/users}" method="get" class="mb-4 d-flex gap-2">
+            <input type="text" name="search" th:value="${search}" class="form-control w-25" placeholder="Search by name, email, mobile...">
+            <select name="blocked" class="form-select w-auto">
+                <option value="">All Status</option>
+                <option value="true" th:selected="${blocked != null and blocked == true}">Blocked</option>
+                <option value="false" th:selected="${blocked != null and blocked == false}">Active</option>
+            </select>
+            <button type="submit" class="btn btn-gold px-4">Filter</button>
+            <a th:href="@{/admin/users}" class="btn btn-outline-light">Clear</a>
+        </form>
+
+        <div class="card p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Mobile</th>
+                            <th>Email</th>
+                            <th>Wallet Balance</th>
+                            <th>Status</th>
+                            <th>Joined At</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="user : ${users}">
+                            <td th:text="${user.id}">1</td>
+                            <td th:text="${user.name}">John Doe</td>
+                            <td th:text="${user.mobile}">9876543210</td>
+                            <td th:text="${user.email}">john@example.com</td>
+                            <td class="text-success font-weight-bold">₹<span th:text="${#numbers.formatDecimal(user.walletBalance, 1, 0)}">0</span></td>
+                            <td>
+                                <span class="badge bg-success" th:if="${user.active}">Active</span>
+                                <span class="badge bg-secondary" th:unless="${user.active}">Deleted</span>
+                                <span class="badge bg-danger" th:if="${user.isBlocked}">Blocked</span>
+                            </td>
+                            <td th:text="${#temporals.format(user.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-info py-1 px-2 text-white" 
+                                            data-bs-toggle="modal" th:data-bs-target="'#viewUserModal' + ${user.id}" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    
+                                    <form th:if="${user.active}" th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post" class="d-inline"
+                                          onsubmit="return confirm('Are you sure you want to soft delete user \'' + /*[[${user.name}]]*/ '' + '\'?');">
+                                        <button type="submit" class="btn btn-sm btn-warning py-1 px-2" title="Soft Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                    
+                                    <form th:unless="${user.active}" th:action="@{/admin/users/{id}/activate(id=${user.id})}" method="post" class="d-inline"
+                                          onsubmit="return confirm('Activate user \'' + /*[[${user.name}]]*/ '' + '\'?');">
+                                        <button type="submit" class="btn btn-sm btn-success py-1 px-2" title="Activate">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(users)}">
+                            <td colspan="8" class="text-center py-4 text-muted">No users found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav th:if="${totalPages > 1}" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/users(page=${currentPage - 1}, search=${search}, blocked=${blocked})}">Previous</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                        th:classappend="${currentPage == i} ? 'active'">
+                        <a class="page-link" th:href="@{/admin/users(page=${i}, search=${search}, blocked=${blocked})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/users(page=${currentPage + 1}, search=${search}, blocked=${blocked})}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- View Modals -->
+        <div th:each="user : ${users}" class="modal fade text-dark" th:id="'viewUserModal' + ${user.id}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">User Details: <span th:text="${user.name}"></span></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>ID:</strong> <span th:text="${user.id}"></span></p>
+                        <p><strong>Name:</strong> <span th:text="${user.name}"></span></p>
+                        <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+                        <p><strong>Mobile:</strong> <span th:text="${user.mobile}"></span></p>
+                        <p><strong>Wallet Balance:</strong> ₹<span th:text="${user.walletBalance}"></span></p>
+                        <p><strong>Active:</strong> <span th:text="${user.active}"></span></p>
+                        <p><strong>Blocked:</strong> <span th:text="${user.isBlocked}"></span></p>
+                        <p><strong>Joined:</strong> <span th:text="${#temporals.format(user.createdAt, 'dd-MM-yyyy HH:mm')}"></span></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

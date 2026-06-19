@@ -16,6 +16,34 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `admin_notifications`
+--
+
+DROP TABLE IF EXISTS `admin_notifications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `admin_notifications` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime(6) DEFAULT NULL,
+  `is_read` bit(1) NOT NULL,
+  `link_url` varchar(255) DEFAULT NULL,
+  `message` varchar(255) DEFAULT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `type` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `admin_notifications`
+--
+
+LOCK TABLES `admin_notifications` WRITE;
+/*!40000 ALTER TABLE `admin_notifications` DISABLE KEYS */;
+/*!40000 ALTER TABLE `admin_notifications` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `admins`
 --
 
@@ -29,7 +57,7 @@ CREATE TABLE `admins` (
   `name` varchar(255) DEFAULT NULL,
   `password` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=147 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=237 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -38,8 +66,41 @@ CREATE TABLE `admins` (
 
 LOCK TABLES `admins` WRITE;
 /*!40000 ALTER TABLE `admins` DISABLE KEYS */;
-INSERT INTO `admins` VALUES (146,'2026-06-06 19:32:04.622219','admin@llbeauty.com','L.L. Beauty Admin','$2a$10$OkXCuTasrv/YCbecYReiPOQIZVZURzjL9fJtGPT3iirsAIWiupkTW');
+INSERT INTO `admins` VALUES (236,'2026-06-19 15:19:42.886750','admin@llbeauty.com','L.L. Beauty Admin','$2a$10$JCmsptiLaKpigjgHV4d5EeidMzkT1NfobHeAq2KLgT7n3Ij9t2biK');
 /*!40000 ALTER TABLE `admins` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `agent_profiles`
+--
+
+DROP TABLE IF EXISTS `agent_profiles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `agent_profiles` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime(6) NOT NULL,
+  `agent_id` varchar(255) NOT NULL,
+  `referral_code` varchar(255) DEFAULT NULL,
+  `status` varchar(255) NOT NULL,
+  `user_id` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UKk6sn7budpmjnn8dposhoe5d0` (`agent_id`),
+  UNIQUE KEY `UKmdpwfv3egvqq4q9oqx1wc9t88` (`user_id`),
+  UNIQUE KEY `agent_id` (`agent_id`),
+  UNIQUE KEY `UKsg482o9ihm083y4t5nn3ypk17` (`referral_code`),
+  CONSTRAINT `FK9w9b1ollcdraeirmj2i55kxrx` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `agent_profiles`
+--
+
+LOCK TABLES `agent_profiles` WRITE;
+/*!40000 ALTER TABLE `agent_profiles` DISABLE KEYS */;
+INSERT INTO `agent_profiles` VALUES (7,'2026-06-19 08:52:21.519069','LLB-EXE-12','REF12361','ACTIVE',12);
+/*!40000 ALTER TABLE `agent_profiles` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -63,8 +124,11 @@ CREATE TABLE `appointments` (
   `payment_status` varchar(255) DEFAULT NULL,
   `services` varchar(1000) DEFAULT NULL,
   `token` varchar(255) DEFAULT NULL,
+  `beautician_id` bigint DEFAULT NULL,
+  `beautician_name` varchar(255) DEFAULT NULL,
+  `referral_code` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -73,8 +137,91 @@ CREATE TABLE `appointments` (
 
 LOCK TABLES `appointments` WRITE;
 /*!40000 ALTER TABLE `appointments` DISABLE KEYS */;
-INSERT INTO `appointments` VALUES (1,'2026-05-28','2026-05-27 06:08:21.939780','Luxury Hair Spa','COMPLETED','10:00 AM',8,'9975149793','pooja ',100,'PAID','Luxury Hair Spa','LL-SLOT-6436'),(2,'2026-05-28','2026-05-27 08:02:46.567587','Hair Styling & Cut','PAYMENT_PENDING','10:00 AM',13,'8877996655','shradhha',100,'PENDING','Hair Styling & Cut,Luxury Hair Spa',NULL),(3,'2026-05-28','2026-05-27 08:24:59.237154','Hair Styling & Cut','PAYMENT_PENDING','10:00 AM',13,'8877996655','shradhha',100,'PENDING','Hair Styling & Cut,Luxury Hair Spa',NULL),(4,'2026-05-28','2026-05-27 08:35:24.762311','Hair Styling & Cut','PAYMENT_PENDING','10:00 AM',13,'8877996655','shradhha',100,'PENDING','Hair Styling & Cut',NULL),(5,'2026-05-28','2026-05-27 12:32:19.523429','Hair Styling & Cut','CONFIRMED','01:00 PM',9,'9096472249','pooja',100,'PAID','Hair Styling & Cut,Luxury Hair Spa','LL-SLOT-9326'),(6,'2026-05-29','2026-05-27 16:45:12.076164','Hair Styling & Cut','CONFIRMED','11:30 AM',9,'9096472249','pooja',100,'PAID','Hair Styling & Cut,Gold Glow Facial','LL-SLOT-9659'),(7,'2026-05-31','2026-05-28 05:45:27.332852','Luxury Hair Spa','PAYMENT_PENDING','07:00 AM',6,'9876543210','vaishnavi shingare',100,'PENDING','Luxury Hair Spa',NULL),(8,'2026-05-30','2026-05-28 06:01:41.728871','Luxury Hair Spa','CONFIRMED','05:00 PM',6,'9876543210','vaishnavi shingare',100,'PAID','Luxury Hair Spa','LL-SLOT-9161'),(9,'2026-05-29','2026-05-28 06:06:57.189414','Bridal Makeover','PAYMENT_PENDING','09:00 AM',6,'9876543210','vaishnavi shingare',100,'PENDING','Bridal Makeover',NULL),(10,'2026-05-29','2026-05-28 06:34:27.548745','Hair Styling & Cut','CONFIRMED','09:00 PM',6,'9876543210','vaishnavi shingare',100,'PAID','Hair Styling & Cut','LL-SLOT-7393'),(11,'2026-05-29','2026-05-28 06:46:15.372304','Hair Styling & Cut','PAYMENT_PENDING','01:00 PM',6,'9876543210','vaishnavi shingare',100,'PENDING','Hair Styling & Cut',NULL),(12,'2026-06-02','2026-05-28 06:51:19.480521','Hair Styling & Cut','CONFIRMED','05:00 PM',9,'9096472249','pooja',100,'PAID','Hair Styling & Cut,Luxury Hair Spa','LL-SLOT-9524'),(13,'2026-05-29','2026-05-28 06:51:54.733832','Hair Styling & Cut','PAYMENT_PENDING','11:00 AM',9,'9096472249','pooja',100,'PENDING','Hair Styling & Cut',NULL),(14,'2026-05-29','2026-05-28 07:18:36.241221','Hair Styling & Cut','PAYMENT_PENDING','11:00 AM',9,'9096472249','pooja',100,'PENDING','Hair Styling & Cut,Gold Glow Facial,Bridal Makeover',NULL),(15,'2026-05-29','2026-05-28 09:21:46.057906','Hair Styling & Cut','PAYMENT_PENDING','10:00 AM',9,'9096472249','pooja',100,'PENDING','Hair Styling & Cut',NULL),(16,'2026-05-29','2026-05-28 09:37:38.687100','Hair Styling & Cut','PAYMENT_PENDING','10:00 AM',9,'9096472249','pooja',100,'PENDING','Hair Styling & Cut',NULL),(17,'2026-05-29','2026-05-28 09:45:17.547709','Hair Styling & Cut','PAYMENT_PENDING','05:00 PM',9,'9096472249','pooja',100,'PENDING','Hair Styling & Cut',NULL),(18,'2026-05-29','2026-05-28 09:50:14.557033','Hair Styling & Cut','PAYMENT_PENDING','04:00 PM',9,'9096472249','pooja',100,'PENDING','Hair Styling & Cut',NULL),(19,'2026-05-29','2026-05-28 09:55:22.265429','Hair Styling & Cut','PAYMENT_PENDING','09:00 PM',9,'9096472249','pooja',100,'PENDING','Hair Styling & Cut',NULL),(20,'2026-05-29','2026-05-28 10:14:09.793928','Hair Styling & Cut','PAYMENT_PENDING','09:00 AM',14,'9898989898','Shruti',100,'PENDING','Hair Styling & Cut',NULL),(21,'2026-05-30','2026-05-28 20:06:31.875279','Hair Styling & Cut','PAYMENT_PENDING','07:00 PM',14,'9898989898','Shruti',100,'PENDING','Hair Styling & Cut',NULL),(22,'2026-06-02','2026-05-29 06:13:54.516422','Luxury Hair Spa','CONFIRMED','04:00 PM',14,'9898989898','Shruti',100,'PAID','Luxury Hair Spa','LL-SLOT-8830'),(23,'2026-06-02','2026-05-29 06:44:36.768454','Hair Styling & Cut','CONFIRMED','01:00 PM',15,'9322806345','pratvii',100,'PAID','Hair Styling & Cut,Luxury Hair Spa','LL-SLOT-8054'),(24,'2026-05-30','2026-05-29 07:27:32.918799','Hair Styling & Cut','PAYMENT_PENDING','05:00 PM',15,'9322806345','pratvii',100,'PENDING','Hair Styling & Cut',NULL),(25,'2026-06-06','2026-06-05 11:24:15.681221','Hair Styling & Cut','CONFIRMED','10:00 AM',17,'9172051078','Kalyani Bhawar',100,'PAID','Hair Styling & Cut,Luxury Hair Spa','LL-SLOT-1931'),(26,'2026-06-06','2026-06-05 13:02:01.568992','Hair Styling & Cut','PAYMENT_PENDING','08:00 AM',17,'9172051078','Kalyani Bhawar',100,'PENDING','Hair Styling & Cut,Bridal Makeover',NULL),(27,'2026-06-07','2026-06-06 07:26:33.203328','Hair Styling & Cut','PAYMENT_PENDING','08:00 AM',17,'9172051078','Kalyani Bhawar',100,'PENDING','Hair Styling & Cut,Bridal Makeover',NULL),(28,'2026-06-07','2026-06-06 08:45:08.489419','Hair Styling & Cut','PAYMENT_PENDING','11:00 AM',17,'9172051078','Kalyani Bhawar',100,'PENDING','Hair Styling & Cut',NULL),(29,'2026-06-07','2026-06-06 09:58:08.469049','Hair Styling & Cut','PAYMENT_PENDING','12:00 PM',17,'9172051078','Kalyani Bhawar',100,'PENDING','Hair Styling & Cut',NULL),(30,'2026-06-07','2026-06-06 10:33:45.483009','Hair Styling & Cut','PAYMENT_PENDING','12:00 PM',17,'9172051078','Kalyani Bhawar',100,'PENDING','Hair Styling & Cut',NULL),(31,'2026-06-07','2026-06-06 10:38:19.287906','Hair Styling & Cut','PAYMENT_PENDING','03:00 PM',17,'9172051078','Kalyani Bhawar',100,'PENDING','Hair Styling & Cut',NULL),(32,'2026-06-07','2026-06-06 10:43:10.091271','Hair Styling & Cut','PAYMENT_PENDING','11:00 AM',17,'9172051078','Kalyani Bhawar',100,'PENDING','Hair Styling & Cut',NULL),(33,'2026-06-07','2026-06-06 10:43:10.752212','Hair Styling & Cut','PAYMENT_PENDING','11:00 AM',17,'9172051078','Kalyani Bhawar',100,'PENDING','Hair Styling & Cut',NULL),(34,'2026-06-07','2026-06-06 10:47:53.206937','Hair Styling & Cut','PAYMENT_PENDING','07:00 AM',17,'9172051078','Kalyani Bhawar',100,'PENDING','Hair Styling & Cut',NULL),(35,'2026-06-07','2026-06-06 10:59:27.394801','Hair Styling & Cut','PAYMENT_PENDING','07:00 PM',17,'9172051078','Kalyani Bhawar',100,'PENDING','Hair Styling & Cut',NULL),(36,'2026-06-07','2026-06-06 11:32:32.082013','Hair Styling & Cut','PAYMENT_PENDING','07:00 PM',17,'9172051078','Kalyani Bhawar',100,'PENDING','Hair Styling & Cut',NULL),(37,'2026-06-07','2026-06-06 12:34:04.244821','Hair Styling & Cut','PAYMENT_PENDING','08:00 AM',17,'9172051078','Kalyani Bhawar',100,'PENDING','Hair Styling & Cut,Bridal Makeover',NULL),(38,'2026-06-07','2026-06-06 12:42:02.818114','Hair Styling & Cut','PAYMENT_PENDING','06:00 PM',17,'9172051078','Kalyani Bhawar',100,'PENDING','Hair Styling & Cut',NULL);
+INSERT INTO `appointments` VALUES (4,'2026-06-20','2026-06-19 14:22:39.647360','Hair Styling & Cut','PAYMENT_PENDING','03:00 PM',14,'9898989898','Kalyani',100,'PENDING','Hair Styling & Cut',NULL,NULL,NULL,NULL),(5,'2026-06-20','2026-06-19 14:43:32.731552','Hair Styling & Cut','PAYMENT_PENDING','12:00 PM',14,'9898989898','Kalyani',100,'PENDING','Hair Styling & Cut',NULL,NULL,NULL,NULL),(6,'2026-06-20','2026-06-19 15:24:19.067703','Hair Styling & Cut','PAYMENT_PENDING','10:00 AM',14,'9898989898','Kalyani',100,'PENDING','Hair Styling & Cut',NULL,NULL,NULL,'REF12361'),(7,'2026-06-20','2026-06-19 16:25:50.325830','Hair Styling & Cut','PAYMENT_PENDING','12:00 PM',14,'9898989898','Kalyani',100,'PENDING','Hair Styling & Cut',NULL,NULL,NULL,'REF12361');
 /*!40000 ALTER TABLE `appointments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `audit_logs`
+--
+
+DROP TABLE IF EXISTS `audit_logs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `audit_logs` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `action` varchar(255) DEFAULT NULL,
+  `details` varchar(255) DEFAULT NULL,
+  `performed_by` varchar(255) DEFAULT NULL,
+  `timestamp` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `audit_logs`
+--
+
+LOCK TABLES `audit_logs` WRITE;
+/*!40000 ALTER TABLE `audit_logs` DISABLE KEYS */;
+INSERT INTO `audit_logs` VALUES (1,'USER_DELETED','User prachi@gmail.com deleted','admin@llbeauty.com','2026-06-12 06:58:33.838013'),(2,'ORDER_UPDATED','Order #7 status updated to PENDING','admin@llbeauty.com','2026-06-12 07:01:35.556558'),(3,'ORDER_UPDATED','Order #7 status updated to CANCELLED','admin@llbeauty.com','2026-06-12 07:01:45.507683'),(4,'ORDER_UPDATED','Order #1 status updated to DELIVERED','admin@llbeauty.com','2026-06-12 15:53:41.742164'),(5,'USER_DELETED','User kalyanibhawar465@gmail.com deleted','admin@llbeauty.com','2026-06-12 15:54:08.937870'),(6,'USER_DELETED','User kalyanibhawar3@gmail.com deleted','admin@llbeauty.com','2026-06-12 15:54:16.535249'),(7,'USER_DELETED','User kalyanibhawar465@gmail.com deleted','admin@llbeauty.com','2026-06-12 16:01:32.801028'),(8,'USER_DELETED','User kalyanibhawar465@gmail.com deleted','admin@llbeauty.com','2026-06-13 14:30:15.754252'),(9,'USER_DELETED','User kalyanibhawar3@gmail.com deleted','admin@llbeauty.com','2026-06-13 14:30:19.188424'),(10,'USER_DELETED','User kalyanibhawar465@gmail.com deleted','admin@llbeauty.com','2026-06-13 14:30:27.066677'),(11,'USER_DELETED','User kalyanibhawar465@gmail.com deleted','admin@llbeauty.com','2026-06-15 04:59:28.996369'),(12,'ORDER_UPDATED','Order #2 status updated to DELIVERED','admin@llbeauty.com','2026-06-15 07:19:09.628175'),(13,'USER_DELETED','User kalyanibhawar465@gmail.com deleted','admin@llbeauty.com','2026-06-16 06:50:33.051562'),(14,'ORDER_UPDATED','Order #2 status updated to DELIVERED','admin@llbeauty.com','2026-06-16 06:51:43.065182'),(15,'ORDER_UPDATED','Order #1 status updated to DELIVERED','admin@llbeauty.com','2026-06-17 05:06:47.268993'),(16,'ORDER_UPDATED','Order #7 status updated to DELIVERED','admin@llbeauty.com','2026-06-17 05:07:05.330722'),(17,'USER_DELETED','User kalyanibhawar465@gmail.com deleted','admin@llbeauty.com','2026-06-17 12:41:36.230978'),(18,'ORDER_UPDATED','Order #2 status updated to SHIPPED','admin@llbeauty.com','2026-06-17 12:47:58.610835'),(19,'USER_DELETED','User kalyanibhawar465@gmail.com deleted','admin@llbeauty.com','2026-06-17 16:21:33.643428'),(20,'USER_DELETED','User kalyanibhawar465@gmail.com deleted','admin@llbeauty.com','2026-06-17 16:22:24.877788'),(21,'ORDER_UPDATED','Order #6 status updated to DELIVERED','admin@llbeauty.com','2026-06-17 20:02:51.131155');
+/*!40000 ALTER TABLE `audit_logs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `beauticians`
+--
+
+DROP TABLE IF EXISTS `beauticians`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `beauticians` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `contact` varchar(255) DEFAULT NULL,
+  `name` varchar(255) NOT NULL,
+  `specialization` varchar(255) DEFAULT NULL,
+  `status` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `beauticians`
+--
+
+LOCK TABLES `beauticians` WRITE;
+/*!40000 ALTER TABLE `beauticians` DISABLE KEYS */;
+/*!40000 ALTER TABLE `beauticians` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `commissions`
+--
+
+DROP TABLE IF EXISTS `commissions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `commissions` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `amount` decimal(10,2) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `status` varchar(255) NOT NULL,
+  `agent_profile_id` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK74o51v4w0wquckjqtc2j19n9r` (`agent_profile_id`),
+  CONSTRAINT `FK74o51v4w0wquckjqtc2j19n9r` FOREIGN KEY (`agent_profile_id`) REFERENCES `agent_profiles` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `commissions`
+--
+
+LOCK TABLES `commissions` WRITE;
+/*!40000 ALTER TABLE `commissions` DISABLE KEYS */;
+INSERT INTO `commissions` VALUES (3,50.00,'2026-06-19 08:56:01.378114','User Registration Referral','APPROVED',7),(4,147.44,'2026-06-19 11:24:11.771257','Product Order #10','APPROVED',7),(5,50.00,'2026-06-19 16:03:58.501586','User Registration Referral','APPROVED',7),(6,29.50,'2026-06-19 16:05:40.001304','Product Order #14','APPROVED',7);
+/*!40000 ALTER TABLE `commissions` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -93,7 +240,7 @@ CREATE TABLE `contact_messages` (
   `phone` varchar(255) DEFAULT NULL,
   `subject` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -102,7 +249,6 @@ CREATE TABLE `contact_messages` (
 
 LOCK TABLES `contact_messages` WRITE;
 /*!40000 ALTER TABLE `contact_messages` DISABLE KEYS */;
-INSERT INTO `contact_messages` VALUES (1,'2026-06-02 09:13:21.557174','kalyanibhawar465@gmail.com','give me information about memberships?','Kalyani Vilas Bhawar','9172051078',NULL),(2,'2026-06-04 08:28:32.935680','kalyanibhawar465@gmail.com','card information.','Kalyani Vilas Bhawar','9898989898',NULL),(3,'2026-06-05 05:24:59.757992','kalyanibhawar465@gmail.com','Product information','Kalyani Vilas Bhawar','9172051078',NULL),(4,'2026-06-05 05:27:38.149088','neharesapana2@gmail.com','Product Information','Prachi Nehare','9898989898',NULL),(5,'2026-06-05 05:52:27.315701','kalyanibhawar465@gmail.com','Information about membership.','Kalyani Vilas Bhawar','9172051078',NULL);
 /*!40000 ALTER TABLE `contact_messages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -123,8 +269,14 @@ CREATE TABLE `franchise_leads` (
   `mobile` varchar(255) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `preferred_location` varchar(255) DEFAULT NULL,
+  `business_type` varchar(255) DEFAULT NULL,
+  `experience` varchar(255) DEFAULT NULL,
+  `message` varchar(255) DEFAULT NULL,
+  `remarks` varchar(255) DEFAULT NULL,
+  `state` varchar(255) DEFAULT NULL,
+  `status` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -133,8 +285,102 @@ CREATE TABLE `franchise_leads` (
 
 LOCK TABLES `franchise_leads` WRITE;
 /*!40000 ALTER TABLE `franchise_leads` DISABLE KEYS */;
-INSERT INTO `franchise_leads` VALUES (1,'₹5L - ₹10L','PUNE','2026-06-02 13:54:02.985870','kalyanibhawar465@gmail.com','Kiosk','9172051078','Kalyani Vilas Bhawar','Bhagwan Nagar, Wkad, Pimpri-Chinchwad, Pune');
 /*!40000 ALTER TABLE `franchise_leads` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `home_banners`
+--
+
+DROP TABLE IF EXISTS `home_banners`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `home_banners` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `display_order` int DEFAULT NULL,
+  `image_url` varchar(255) NOT NULL,
+  `link_url` varchar(255) DEFAULT NULL,
+  `sub_title` varchar(255) DEFAULT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `home_banners`
+--
+
+LOCK TABLES `home_banners` WRITE;
+/*!40000 ALTER TABLE `home_banners` DISABLE KEYS */;
+/*!40000 ALTER TABLE `home_banners` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `invoices`
+--
+
+DROP TABLE IF EXISTS `invoices`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `invoices` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `bulk_discounts` double NOT NULL,
+  `date` datetime(6) NOT NULL,
+  `final_payable_amount` double NOT NULL,
+  `invoice_number` varchar(50) NOT NULL,
+  `order_number` varchar(50) NOT NULL,
+  `product_discounts` double NOT NULL,
+  `razorpay_amount_paid` double NOT NULL,
+  `subtotal` double NOT NULL,
+  `total_savings` double NOT NULL,
+  `wallet_amount_used` double NOT NULL,
+  `merchant_order_id` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UKl1x55mfsay7co0r3m9ynvipd5` (`invoice_number`),
+  UNIQUE KEY `UK965ary9nbroujw1vxp2uxlt3` (`merchant_order_id`),
+  CONSTRAINT `FKqw6i0wh2lurru2fhej4acdqb5` FOREIGN KEY (`merchant_order_id`) REFERENCES `merchant_orders` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `invoices`
+--
+
+LOCK TABLES `invoices` WRITE;
+/*!40000 ALTER TABLE `invoices` DISABLE KEYS */;
+/*!40000 ALTER TABLE `invoices` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `leads`
+--
+
+DROP TABLE IF EXISTS `leads`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `leads` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime(6) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `mobile` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `remarks` text,
+  `status` varchar(255) NOT NULL,
+  `agent_user_id` bigint DEFAULT NULL,
+  `executive_user_id` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKpy9tbjgo1o2wvtaxqtum1ucaa` (`agent_user_id`),
+  CONSTRAINT `FKpy9tbjgo1o2wvtaxqtum1ucaa` FOREIGN KEY (`agent_user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `leads`
+--
+
+LOCK TABLES `leads` WRITE;
+/*!40000 ALTER TABLE `leads` DISABLE KEYS */;
+/*!40000 ALTER TABLE `leads` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -154,10 +400,11 @@ CREATE TABLE `manual_payment_requests` (
   `status` varchar(255) DEFAULT NULL,
   `utr_number` varchar(255) DEFAULT NULL,
   `user_id` bigint DEFAULT NULL,
+  `admin_remarks` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `FKa21xe1jlgfj4f5528j5lqupj8` (`user_id`),
   CONSTRAINT `FKa21xe1jlgfj4f5528j5lqupj8` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -166,6 +413,7 @@ CREATE TABLE `manual_payment_requests` (
 
 LOCK TABLES `manual_payment_requests` WRITE;
 /*!40000 ALTER TABLE `manual_payment_requests` DISABLE KEYS */;
+INSERT INTO `manual_payment_requests` VALUES (1,100,'2026-06-15 07:02:18.302575','SALON_PAYMENT','1',NULL,'APPROVED','862544333221',1,NULL),(2,100,'2026-06-16 06:38:54.133421','SALON_PAYMENT','2',NULL,'PENDING','567885432187',2,NULL),(3,100,'2026-06-17 12:14:45.617167','SALON_PAYMENT','3',NULL,'PENDING','654321789065',3,NULL),(4,100,'2026-06-19 14:22:56.358781','SALON_PAYMENT','4',NULL,'PENDING','862544333221',14,NULL),(5,100,'2026-06-19 14:43:56.838537','SALON_PAYMENT','5',NULL,'PENDING','862544333221',14,NULL),(6,100,'2026-06-19 15:24:26.321620','SALON_PAYMENT','6',NULL,'PENDING','862544333221',14,NULL),(7,100,'2026-06-19 16:25:59.524414','SALON_PAYMENT','7',NULL,'PENDING','862544333221',14,NULL);
 /*!40000 ALTER TABLE `manual_payment_requests` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -188,7 +436,7 @@ CREATE TABLE `member_profiles` (
   UNIQUE KEY `UKiad47gmdf6bkeoq4xluvhs95g` (`uuid`),
   UNIQUE KEY `UK824ab3o0rnt46qxa83t9fiy51` (`user_id`),
   CONSTRAINT `FKju65j2qvdc95e6jqssqmvdti7` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -197,7 +445,7 @@ CREATE TABLE `member_profiles` (
 
 LOCK TABLES `member_profiles` WRITE;
 /*!40000 ALTER TABLE `member_profiles` DISABLE KEYS */;
-INSERT INTO `member_profiles` VALUES (1,'2026-05-27 16:40:13.541926','LLB-B-00001','Eva Black Card','6aa2ee87-aa4d-4e59-ba8f-6a95f96ed395',9),(2,'2026-05-27 16:52:48.951539','LLB-P-00001','Eva Pink Card','89e57497-9a53-4498-9882-42e10f13beb6',3),(3,'2026-05-28 10:05:19.342342','LLB-P-00002','Eva Pink Card','e6e4fb83-9147-4532-a09b-ae5331957108',14),(4,'2026-05-29 06:43:06.622921','LLB-G-00002','Eva Gold Card','4f80ef8f-69fd-4200-a01b-cda2f86cdc62',15),(5,'2026-06-02 09:20:12.172630','LLB-P-00003','Eva Pink Card','34ed3e33-07a6-4eed-96c5-a602949d45b0',17),(6,'2026-06-04 06:04:50.066313','LLB-G-00004','Eva Gold Card','aef49120-cd7b-4354-8bfc-fc8ec27ce00e',18);
+INSERT INTO `member_profiles` VALUES (1,'2026-06-15 07:04:10.309671','LLB-B-00001','Eva Black Card','4b3f6d3c-0670-46d6-8a6e-c39ed5e167f3',1),(2,'2026-06-16 06:40:55.455248','LLB-G-00002','Eva Gold Card','f689bab4-b9cf-465c-9c16-58e5ed0815ec',2),(3,'2026-06-17 12:18:25.570012','LLB-G-00003','Eva Gold Card','d27fb75b-5545-475e-898d-b4d31739def1',3);
 /*!40000 ALTER TABLE `member_profiles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -220,7 +468,7 @@ CREATE TABLE `membership_history` (
   PRIMARY KEY (`id`),
   KEY `FKsm0g6hnrstu5briti90pxdtsq` (`user_id`),
   CONSTRAINT `FKsm0g6hnrstu5briti90pxdtsq` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -229,7 +477,7 @@ CREATE TABLE `membership_history` (
 
 LOCK TABLES `membership_history` WRITE;
 /*!40000 ALTER TABLE `membership_history` DISABLE KEYS */;
-INSERT INTO `membership_history` VALUES (1,'2027-05-29 06:43:06.622921','pay_Sv5KIocA26Gj0n','Eva Gold Card',9999.00,'2026-05-29 06:43:06.622921','EXPIRED',15),(2,'2027-05-29 06:52:31.430326','pay_Sv5UDamNvU4dea','Eva Black Card',24999.00,'2026-05-29 06:52:31.430326','ACTIVE',15),(3,'2027-06-02 09:20:12.172630','pay_Swi8l2N9hZsgiu','Eva Pink Card',2999.00,'2026-06-02 09:20:12.172630','EXPIRED',17),(4,'2027-06-02 11:28:05.430315','pay_SwkJqXS0MVpiqB','Eva Gold Card',9999.00,'2026-06-02 11:28:05.429801','ACTIVE',17),(5,'2027-06-04 06:04:50.066313','pay_SxRsWRskbl4ZKZ','Eva Pink Card',2999.00,'2026-06-04 06:04:50.066313','EXPIRED',18),(6,'2027-06-04 07:54:00.187578','pay_SxTjwa1yLRiEI5','Eva Gold Card',9999.00,'2026-06-04 07:54:00.187578','ACTIVE',18);
+INSERT INTO `membership_history` VALUES (1,'2027-06-15 07:04:10.275879','pay_T1olaXmAxQxf4X','Eva Pink Card',2999.00,'2026-06-15 07:04:10.275879','EXPIRED',1),(2,'2027-06-15 07:05:39.718695','pay_T1onAqSgAKpsih','Eva Pink Card',2999.00,'2026-06-15 07:05:39.718695','EXPIRED',1),(3,'2027-06-15 07:08:31.146856','pay_T1oqBtpQPeFQjj','Eva Gold Card',9999.00,'2026-06-15 07:08:31.146856','EXPIRED',1),(4,'2027-06-15 07:09:16.981579','pay_T1oqwGvcZW8Cik','Eva Gold Card',9999.00,'2026-06-15 07:09:16.981579','EXPIRED',1),(5,'2027-06-16 06:40:55.409833','pay_T2CuA3BwVlRBqq','Eva Gold Card',9999.00,'2026-06-16 06:40:55.409833','ACTIVE',2),(6,'2027-06-16 07:01:25.945758','pay_T2DFqKa6xJEtGf','Eva Black Card',24999.00,'2026-06-16 07:01:25.945758','ACTIVE',1),(7,'2027-06-17 12:18:25.529107','pay_T2hBoDsNWW2304','Eva Gold Card',9999.00,'2026-06-17 12:18:25.529107','ACTIVE',3);
 /*!40000 ALTER TABLE `membership_history` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -254,7 +502,7 @@ CREATE TABLE `membership_purchases` (
   KEY `FKnj6n4f9owayr6woedspjtq9bn` (`user_id`),
   CONSTRAINT `FKjybu0kog9cr36br9ny793sss5` FOREIGN KEY (`membership_id`) REFERENCES `memberships` (`id`),
   CONSTRAINT `FKnj6n4f9owayr6woedspjtq9bn` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -263,7 +511,7 @@ CREATE TABLE `membership_purchases` (
 
 LOCK TABLES `membership_purchases` WRITE;
 /*!40000 ALTER TABLE `membership_purchases` DISABLE KEYS */;
-INSERT INTO `membership_purchases` VALUES (1,11798.82,'2026-05-28 05:02:40.671441','order_Suf5N9K61lfC77',NULL,'PENDING',5,6),(2,11798.82,'2026-05-28 05:10:09.702546','order_SufDHKWJxs3uRP',NULL,'PENDING',5,6),(3,11798.82,'2026-05-28 05:11:54.317385','order_SufF7W4yY3JT8v',NULL,'PENDING',5,6),(4,11798.82,'2026-05-28 06:09:01.062349','order_SugDRqp2w6VzHY',NULL,'PENDING',5,6),(5,11798.82,'2026-05-28 06:09:01.062349','order_SugDRquazOQpyP',NULL,'PENDING',5,6),(6,3538.8199999999997,'2026-05-28 10:03:58.270497','order_SukDdexBOutvvk','pay_SukEmluKsxSavR','SUCCESS',4,14),(7,25960,'2026-05-28 10:10:59.754449','order_SukL3kdFY7R784',NULL,'PENDING',6,14),(8,8260,'2026-05-28 10:15:55.840051','order_SukQGy0ncrqtDb','pay_SukQa6wHK4ELFE','SUCCESS',5,14),(9,11798.82,'2026-05-29 06:42:08.591528','order_Sv5JYHW2GsqIjr','pay_Sv5KIocA26Gj0n','SUCCESS',5,15),(10,17700,'2026-05-29 06:45:36.426645','order_Sv5NDG80egHj1V',NULL,'PENDING',6,15),(11,17700,'2026-05-29 06:52:05.643365','order_Sv5U46MIs54Yko','pay_Sv5UDamNvU4dea','SUCCESS',6,15),(12,11798.82,'2026-06-02 09:19:06.335878','order_Swi7rqfFe4Jzpy',NULL,'PENDING',5,17),(13,3538.8199999999997,'2026-06-02 09:19:38.984455','order_Swi8Rc4kyMmW7w','pay_Swi8l2N9hZsgiu','SUCCESS',4,17),(14,8260,'2026-06-02 11:27:32.399542','order_SwkJXR3g6kBMqD','pay_SwkJqXS0MVpiqB','SUCCESS',5,17),(15,3538.8199999999997,'2026-06-04 06:04:17.307958','order_SxRsIBxGIPFut4','pay_SxRsWRskbl4ZKZ','SUCCESS',4,18),(16,8260,'2026-06-04 07:53:37.335421','order_SxTjnrJ0wdFZn6','pay_SxTjwa1yLRiEI5','SUCCESS',5,18),(17,17764.65106849315,'2026-06-05 10:34:51.232463','order_Sxv1DLcZMx2VZL',NULL,'PENDING',6,17),(18,17764.65106849315,'2026-06-05 11:22:36.841465','order_SxvpfOhdWGN4tp',NULL,'PENDING',6,17),(19,17796.976602739724,'2026-06-05 13:01:28.075813','order_SxxW5auXX2IkrW',NULL,'PENDING',6,17),(20,17796.976602739724,'2026-06-06 08:44:30.698914','order_SyHfmj1kZkj3DS',NULL,'PENDING',6,17),(21,17796.976602739724,'2026-06-06 09:59:50.651199','order_SyIxLy8Y0E5Idx',NULL,'PENDING',6,17),(22,17796.976602739724,'2026-06-06 10:04:10.822505','order_SyJ1vwyvJHfD4H',NULL,'PENDING',6,17),(23,17796.976602739724,'2026-06-06 10:37:50.634623','order_SyJbUUL2szyqFF',NULL,'PENDING',6,17),(24,17796.976602739724,'2026-06-06 10:59:07.156332','order_SyJxxoRzdfqMHn',NULL,'PENDING',6,17),(25,17829.302136986298,'2026-06-06 12:41:29.439337','order_SyLi783cuu3ovw',NULL,'PENDING',6,17),(26,17829.302136986298,'2026-06-06 19:32:40.365723','order_SySiTlfsEMhnrf',NULL,'PENDING',6,17);
+INSERT INTO `membership_purchases` VALUES (1,3538.8199999999997,'2026-06-15 07:03:49.157209','order_T1olUiX2cZy8c9','pay_T1olaXmAxQxf4X','SUCCESS',4,1),(2,3538.8199999999997,'2026-06-15 07:04:23.323766','order_T1om6N2dwpo3jZ','pay_T1onAqSgAKpsih','SUCCESS',4,1),(3,8260,'2026-06-15 07:08:09.964496','order_T1oq5OwvbAUjm3','pay_T1oqBtpQPeFQjj','SUCCESS',5,1),(4,11798.82,'2026-06-15 07:08:51.762388','order_T1oqoypy6sACtC','pay_T1oqwGvcZW8Cik','SUCCESS',5,1),(5,11798.82,'2026-06-16 06:39:58.278281','order_T2CtSItyy8NOiY','pay_T2CuA3BwVlRBqq','SUCCESS',5,2),(6,17700,'2026-06-16 07:01:01.801812','order_T2DFgH4WD6MuRS','pay_T2DFqKa6xJEtGf','SUCCESS',6,1),(7,11798.82,'2026-06-17 12:18:00.351576','order_T2hBe74WJ0AGzt',NULL,'PENDING',5,3),(8,11798.82,'2026-06-17 12:18:00.581338','order_T2hBeHEJSvFwz7','pay_T2hBoDsNWW2304','SUCCESS',5,3),(9,3538.8199999999997,'2026-06-17 12:18:30.728145','order_T2hCB0HkKEPFZE',NULL,'PENDING',4,3),(10,29498.82,'2026-06-17 12:26:55.155678','order_T2hL3dEm7sLh3z',NULL,'PENDING',6,1);
 /*!40000 ALTER TABLE `membership_purchases` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -282,7 +530,7 @@ CREATE TABLE `membership_qrcodes` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK23m81x57b5pamonhttw1f03x` (`user_membership_id`),
   CONSTRAINT `FKh0scaqc71qip2rxaj4o91d7hw` FOREIGN KEY (`user_membership_id`) REFERENCES `user_memberships` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -291,7 +539,7 @@ CREATE TABLE `membership_qrcodes` (
 
 LOCK TABLES `membership_qrcodes` WRITE;
 /*!40000 ALTER TABLE `membership_qrcodes` DISABLE KEYS */;
-INSERT INTO `membership_qrcodes` VALUES (1,'2026-06-04 07:38:31.981572','/member/verify/6aa2ee87-aa4d-4e59-ba8f-6a95f96ed395',8),(2,'2026-06-04 07:38:32.022263','/member/verify/89e57497-9a53-4498-9882-42e10f13beb6',9),(3,'2026-06-04 07:38:32.055479','/member/verify/e6e4fb83-9147-4532-a09b-ae5331957108',10),(4,'2026-06-04 07:38:32.083890','/member/verify/2946ab49-02e5-47bb-9571-06b0c2598813',11),(5,'2026-06-04 07:38:32.114268','/member/verify/4f80ef8f-69fd-4200-a01b-cda2f86cdc62',12),(6,'2026-06-04 07:38:32.140475','/member/verify/64de7899-f106-45d5-8440-7142b45bc91d',13),(7,'2026-06-04 07:38:32.167724','/member/verify/34ed3e33-07a6-4eed-96c5-a602949d45b0',14),(8,'2026-06-04 07:38:32.191039','/member/verify/836e2c71-2dad-4a80-9d2c-59d61b49313b',15),(9,'2026-06-04 07:38:32.219112','/member/verify/aef49120-cd7b-4354-8bfc-fc8ec27ce00e',16),(10,'2026-06-04 07:54:00.204582','/member/verify/020690a9-926f-4931-848f-c2f2d3a43bf9',17);
+INSERT INTO `membership_qrcodes` VALUES (1,'2026-06-15 07:04:10.320234','/member/verify/4b3f6d3c-0670-46d6-8a6e-c39ed5e167f3',1),(2,'2026-06-15 07:05:39.733310','/member/verify/7faa1204-3b7e-4cca-a72f-c11e24f68a69',2),(3,'2026-06-15 07:08:31.160391','/member/verify/1cbb9ed6-a0fe-4468-94b5-60d7501dd2a6',3),(4,'2026-06-15 07:09:16.987085','/member/verify/e2d27b58-f173-48e6-b1dd-d5f4bcbe8587',4),(5,'2026-06-16 06:40:55.470374','/member/verify/f689bab4-b9cf-465c-9c16-58e5ed0815ec',5),(6,'2026-06-16 07:01:25.950280','/member/verify/9b0877b1-baad-42df-82e4-b0e1c50fbffa',6),(7,'2026-06-17 12:18:25.581902','/member/verify/d27fb75b-5545-475e-898d-b4d31739def1',7);
 /*!40000 ALTER TABLE `membership_qrcodes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -310,6 +558,8 @@ CREATE TABLE `memberships` (
   `name` varchar(255) NOT NULL,
   `price` double NOT NULL,
   `welcome_credits` double NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `duration_months` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -320,8 +570,226 @@ CREATE TABLE `memberships` (
 
 LOCK TABLES `memberships` WRITE;
 /*!40000 ALTER TABLE `memberships` DISABLE KEYS */;
-INSERT INTO `memberships` VALUES (4,'5% Discount\nEarly Access to Sales & Events\nExclusive Birthday Offers\nReward Points Earning\nStandard Member Support',0.05,365,'Eva Pink Card',2999,300),(5,'15% Discount\nFree Delivery on All Orders\nVIP Launch Access\nDouble Reward Points\nEvent Invitations',0.15,365,'Eva Gold Card',9999,1000),(6,'25% Discount\nConcierge Support\nLuxury Gifts on Signup\nTriple Reward Points\nVIP Lounge Access',0.25,365,'Eva Black Card',24999,2500);
+INSERT INTO `memberships` VALUES (4,'5% Discount\r\nEarly Access to Sales & Events\r\nExclusive Birthday Offers\r\nReward Points Earning\r\nStandard Member Support',0.05,365,'Eva Pink Card',2999,300,1,1),(5,'15% Discount\nFree Delivery on All Orders\nVIP Launch Access\nDouble Reward Points\nEvent Invitations',0.15,365,'Eva Gold Card',9999,1000,1,1),(6,'25% Discount\nConcierge Support\nLuxury Gifts on Signup\nTriple Reward Points\nVIP Lounge Access',0.25,365,'Eva Black Card',24999,2500,1,1);
 /*!40000 ALTER TABLE `memberships` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `merchant_applications`
+--
+
+DROP TABLE IF EXISTS `merchant_applications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `merchant_applications` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `aadhar_document_url` varchar(255) NOT NULL,
+  `aadhar_number` varchar(255) NOT NULL,
+  `address` varchar(255) NOT NULL,
+  `business_type` varchar(255) NOT NULL,
+  `city` varchar(255) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `email_address` varchar(255) NOT NULL,
+  `gst_document_url` varchar(255) DEFAULT NULL,
+  `gst_number` varchar(255) DEFAULT NULL,
+  `mobile_number` varchar(255) NOT NULL,
+  `owner_name` varchar(255) NOT NULL,
+  `pan_document_url` varchar(255) NOT NULL,
+  `pan_number` varchar(255) NOT NULL,
+  `state` varchar(255) NOT NULL,
+  `status` enum('APPROVED','PENDING','REJECTED') NOT NULL,
+  `updated_at` datetime(6) DEFAULT NULL,
+  `user_id` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKdwsh342l02isqf1u5q9rgst2b` (`user_id`),
+  CONSTRAINT `FKdwsh342l02isqf1u5q9rgst2b` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `merchant_applications`
+--
+
+LOCK TABLES `merchant_applications` WRITE;
+/*!40000 ALTER TABLE `merchant_applications` DISABLE KEYS */;
+/*!40000 ALTER TABLE `merchant_applications` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `merchant_customers`
+--
+
+DROP TABLE IF EXISTS `merchant_customers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `merchant_customers` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime(6) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `mobile` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `merchant_user_id` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK6jv8tosa8c1d50ijqju4id62r` (`merchant_user_id`),
+  CONSTRAINT `FK6jv8tosa8c1d50ijqju4id62r` FOREIGN KEY (`merchant_user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `merchant_customers`
+--
+
+LOCK TABLES `merchant_customers` WRITE;
+/*!40000 ALTER TABLE `merchant_customers` DISABLE KEYS */;
+/*!40000 ALTER TABLE `merchant_customers` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `merchant_inventories`
+--
+
+DROP TABLE IF EXISTS `merchant_inventories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `merchant_inventories` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `stock` int NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
+  `merchant_user_id` bigint NOT NULL,
+  `product_id` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UK23g9o4kuuttrrdn428d8d0xnt` (`merchant_user_id`,`product_id`),
+  KEY `FKnj80x7vgnlqr6xd8t9jpfovkk` (`product_id`),
+  CONSTRAINT `FKal3okxvblhp0kjpid2ipgifkn` FOREIGN KEY (`merchant_user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `FKnj80x7vgnlqr6xd8t9jpfovkk` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `merchant_inventories`
+--
+
+LOCK TABLES `merchant_inventories` WRITE;
+/*!40000 ALTER TABLE `merchant_inventories` DISABLE KEYS */;
+/*!40000 ALTER TABLE `merchant_inventories` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `merchant_order_items`
+--
+
+DROP TABLE IF EXISTS `merchant_order_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `merchant_order_items` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `bulk_discount_percent` double NOT NULL,
+  `final_price` double NOT NULL,
+  `merchant_discount_percent` double NOT NULL,
+  `merchant_price` double NOT NULL,
+  `mrp` double NOT NULL,
+  `quantity` int NOT NULL,
+  `merchant_order_id` bigint NOT NULL,
+  `product_id` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKilhcbd2f4bvnwqlrvis7ln88b` (`merchant_order_id`),
+  KEY `FKxoosrywlx60wlm6i88kdofjn` (`product_id`),
+  CONSTRAINT `FKilhcbd2f4bvnwqlrvis7ln88b` FOREIGN KEY (`merchant_order_id`) REFERENCES `merchant_orders` (`id`),
+  CONSTRAINT `FKxoosrywlx60wlm6i88kdofjn` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `merchant_order_items`
+--
+
+LOCK TABLES `merchant_order_items` WRITE;
+/*!40000 ALTER TABLE `merchant_order_items` DISABLE KEYS */;
+/*!40000 ALTER TABLE `merchant_order_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `merchant_orders`
+--
+
+DROP TABLE IF EXISTS `merchant_orders`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `merchant_orders` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `bulk_discounts` double NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `final_amount` double NOT NULL,
+  `order_status` varchar(20) NOT NULL,
+  `product_discounts` double NOT NULL,
+  `razorpay_amount_paid` double NOT NULL,
+  `razorpay_order_id` varchar(255) DEFAULT NULL,
+  `razorpay_payment_id` varchar(255) DEFAULT NULL,
+  `razorpay_signature` varchar(255) DEFAULT NULL,
+  `subtotal` double NOT NULL,
+  `total_savings` double NOT NULL,
+  `wallet_amount_used` double NOT NULL,
+  `user_id` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKn9xkqknkx6ru1yo5s9sfyioe3` (`user_id`),
+  CONSTRAINT `FKn9xkqknkx6ru1yo5s9sfyioe3` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `merchant_orders`
+--
+
+LOCK TABLES `merchant_orders` WRITE;
+/*!40000 ALTER TABLE `merchant_orders` DISABLE KEYS */;
+/*!40000 ALTER TABLE `merchant_orders` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `merchant_profiles`
+--
+
+DROP TABLE IF EXISTS `merchant_profiles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `merchant_profiles` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `address` varchar(255) NOT NULL,
+  `business_type` varchar(255) DEFAULT NULL,
+  `city` varchar(255) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `gst_number` varchar(255) DEFAULT NULL,
+  `merchant_id` varchar(255) NOT NULL,
+  `mobile` varchar(255) NOT NULL,
+  `offline_selling` bit(1) DEFAULT NULL,
+  `online_selling` bit(1) DEFAULT NULL,
+  `owner_name` varchar(255) NOT NULL,
+  `pan_number` varchar(255) DEFAULT NULL,
+  `state` varchar(255) NOT NULL,
+  `status` varchar(255) NOT NULL,
+  `user_id` bigint NOT NULL,
+  `aadhar_document_url` varchar(255) DEFAULT NULL,
+  `aadhar_number` varchar(255) DEFAULT NULL,
+  `gst_document_url` varchar(255) DEFAULT NULL,
+  `pan_document_url` varchar(255) DEFAULT NULL,
+  `bank_account_holder_name` varchar(255) DEFAULT NULL,
+  `bank_account_number` varchar(255) DEFAULT NULL,
+  `ifsc_code` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UKr77afogh8o46a4e1wwfx00vfk` (`merchant_id`),
+  UNIQUE KEY `UKp8boa8pxwwkh88crtbxna5xbe` (`user_id`),
+  CONSTRAINT `FKnhhri67wse4kb68qv43blyokr` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `merchant_profiles`
+--
+
+LOCK TABLES `merchant_profiles` WRITE;
+/*!40000 ALTER TABLE `merchant_profiles` DISABLE KEYS */;
+/*!40000 ALTER TABLE `merchant_profiles` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -339,7 +807,7 @@ CREATE TABLE `merchants` (
   `name` varchar(255) DEFAULT NULL,
   `status` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -348,8 +816,101 @@ CREATE TABLE `merchants` (
 
 LOCK TABLES `merchants` WRITE;
 /*!40000 ALTER TABLE `merchants` DISABLE KEYS */;
-INSERT INTO `merchants` VALUES (1,'+91 99999 88888','2026-05-24 19:00:28.500751','Aundh, Pune','L.L. Beauty Flagship Spa','ACTIVE'),(2,'+91 98888 77777','2026-05-24 19:00:28.506988','Koregaon Park, Pune','L.L. Beauty Lounge','ACTIVE');
+INSERT INTO `merchants` VALUES (5,'+91 99999 88888','2026-06-18 16:33:09.097211','Aundh, Pune','L.L. Beauty Flagship Spa','ACTIVE'),(6,'+91 98888 77777','2026-06-18 16:33:09.107205','Koregaon Park, Pune','L.L. Beauty Lounge','ACTIVE');
 /*!40000 ALTER TABLE `merchants` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `notifications`
+--
+
+DROP TABLE IF EXISTS `notifications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `notifications` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime(6) NOT NULL,
+  `is_read` bit(1) NOT NULL,
+  `message` text NOT NULL,
+  `read_at` datetime(6) DEFAULT NULL,
+  `title` varchar(255) NOT NULL,
+  `type` enum('ERROR','INFO','SUCCESS','WARNING') NOT NULL,
+  `user_id` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_notif_user` (`user_id`),
+  KEY `idx_notif_read` (`is_read`),
+  CONSTRAINT `FK9y21adhxn0ayjhfocscqox7bh` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `notifications`
+--
+
+LOCK TABLES `notifications` WRITE;
+/*!40000 ALTER TABLE `notifications` DISABLE KEYS */;
+INSERT INTO `notifications` VALUES (1,'2026-06-17 05:06:15.948098',_binary '\0','Congratulations! Your Executive application has been approved. You can now access your executive dashboard.',NULL,'Application Approved','SUCCESS',3);
+/*!40000 ALTER TABLE `notifications` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `nxl_wallet_transactions`
+--
+
+DROP TABLE IF EXISTS `nxl_wallet_transactions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `nxl_wallet_transactions` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `amount` decimal(12,2) NOT NULL,
+  `balance_after` decimal(12,2) NOT NULL,
+  `date_time` datetime(6) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `transaction_id` varchar(255) NOT NULL,
+  `type` varchar(10) NOT NULL,
+  `user_id` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UKl7dm5wrgkj60m428lyw02hmh9` (`transaction_id`),
+  KEY `FKgnjxfdftmhslc82h8bd9g3gg4` (`user_id`),
+  CONSTRAINT `FKgnjxfdftmhslc82h8bd9g3gg4` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `nxl_wallet_transactions`
+--
+
+LOCK TABLES `nxl_wallet_transactions` WRITE;
+/*!40000 ALTER TABLE `nxl_wallet_transactions` DISABLE KEYS */;
+INSERT INTO `nxl_wallet_transactions` VALUES (1,1000.00,1000.00,'2026-06-16 06:40:55.587626','Welcome credit for Eva Gold Card activation','NXL-TXN-1781592055585-595','CREDIT',2),(2,2500.00,5100.00,'2026-06-16 07:01:25.974268','Welcome credit for Eva Black Card activation','NXL-TXN-1781593285974-658','CREDIT',1),(3,1106.03,6206.03,'2026-06-16 07:03:12.330779','Cashback for Order #4 (Eva Black Card)','NXL-TXN-1781593392330-710','CREDIT',1),(4,2322.46,8528.49,'2026-06-16 07:12:39.950352','Cashback for Order #7 (Eva Black Card)','NXL-TXN-1781593959950-882','CREDIT',1);
+/*!40000 ALTER TABLE `nxl_wallet_transactions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `nxl_wallets`
+--
+
+DROP TABLE IF EXISTS `nxl_wallets`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `nxl_wallets` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `balance` decimal(12,2) NOT NULL,
+  `user_id` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UKjkm5kadbwo8rrx9htnfcgrqiq` (`user_id`),
+  CONSTRAINT `FKk7ltkgqfibvqkd9s3cldvcpu5` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `nxl_wallets`
+--
+
+LOCK TABLES `nxl_wallets` WRITE;
+/*!40000 ALTER TABLE `nxl_wallets` DISABLE KEYS */;
+INSERT INTO `nxl_wallets` VALUES (1,8528.49,1),(2,1000.00,2),(3,0.00,3);
+/*!40000 ALTER TABLE `nxl_wallets` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -370,7 +931,7 @@ CREATE TABLE `order_items` (
   KEY `FKocimc7dtr037rh4ls4l95nlfi` (`product_id`),
   CONSTRAINT `FKbioxgbv59vetrxe0ejfubep1w` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`),
   CONSTRAINT `FKocimc7dtr037rh4ls4l95nlfi` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -379,7 +940,7 @@ CREATE TABLE `order_items` (
 
 LOCK TABLES `order_items` WRITE;
 /*!40000 ALTER TABLE `order_items` DISABLE KEYS */;
-INSERT INTO `order_items` VALUES (1,2499,1,8,1),(2,2499,1,9,1),(3,2499,1,10,1),(4,3499,1,11,4),(5,3499,1,12,4),(6,3499,1,13,4),(7,3499,1,14,4),(8,3499,1,15,4),(9,800,1,16,7),(10,4999,1,17,2),(11,4999,1,18,2),(12,4999,1,19,2),(13,4999,1,20,2),(14,4999,1,21,2),(15,4999,1,22,2),(16,2499,1,23,1),(17,2499,1,24,1),(18,3499,1,25,4),(19,3499,1,26,4),(20,800,1,27,7),(21,4999,1,28,2),(22,800,1,29,7),(23,800,1,30,7),(24,800,1,31,7);
+INSERT INTO `order_items` VALUES (1,2499,1,1,1),(2,2499,1,2,1),(3,4999,1,3,2),(4,4999,1,4,2),(5,3499,3,5,4),(6,3499,3,6,4),(7,3499,3,7,4),(8,4999,1,8,2),(9,4999,1,9,2),(10,2499,1,10,1),(11,500,1,11,10),(12,500,1,12,10),(13,500,1,13,10),(14,500,1,14,10),(15,700,1,15,12);
 /*!40000 ALTER TABLE `order_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -397,10 +958,15 @@ CREATE TABLE `orders` (
   `status` varchar(255) DEFAULT NULL,
   `total_amount` double DEFAULT NULL,
   `user_id` bigint DEFAULT NULL,
+  `razorpay_order_id` varchar(255) DEFAULT NULL,
+  `updated_at` datetime(6) DEFAULT NULL,
+  `order_status` varchar(255) DEFAULT NULL,
+  `order_type` varchar(255) DEFAULT NULL,
+  `referral_code` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `FK32ql8ubntj5uh44ph9659tiih` (`user_id`),
   CONSTRAINT `FK32ql8ubntj5uh44ph9659tiih` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -409,7 +975,7 @@ CREATE TABLE `orders` (
 
 LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
-INSERT INTO `orders` VALUES (1,'2026-05-27 06:05:50.072478','pay_upi_order_7sa0lut7','SUCCESS',2499,8),(2,'2026-05-27 06:07:20.979040','pay_upi_order_yydktf9i','SUCCESS',1299,8),(3,'2026-05-27 07:16:13.553858','pay_upi_order_fpwj0n8d','SUCCESS',8797,13),(4,'2026-05-27 10:17:47.041681','pay_upi_order_k8j4cc86','SUCCESS',4999,9),(5,'2026-05-27 16:22:43.738457','pay_upi_order_d6doojkp','SUCCESS',800,9),(6,'2026-05-27 16:47:57.966868','pay_upi_order_293kfcyc','SUCCESS',3749.25,9),(7,'2026-05-27 17:26:41.879632','pay_upi_order_f5ohk8c8','SUCCESS',2374.05,3),(8,'2026-05-28 04:37:21.350502','pay_upi_order_pvfjusqg','SUCCESS',2499,6),(9,'2026-05-28 05:03:57.049308',NULL,'PENDING',2948.82,6),(10,'2026-05-28 05:04:57.781189','pay_Suf8t8ybmQeqdU','SUCCESS',2948.82,6),(11,'2026-05-28 05:06:42.731657',NULL,'PENDING',4128.82,6),(12,'2026-05-28 05:06:56.989097',NULL,'PENDING',4128.82,6),(13,'2026-05-28 05:23:31.533230',NULL,'PENDING',3922.3790000000004,3),(14,'2026-05-28 05:23:53.904184',NULL,'PENDING',3922.3790000000004,3),(15,'2026-05-28 05:24:04.476327',NULL,'PENDING',3922.3790000000004,3),(16,'2026-05-28 10:14:45.999852',NULL,'PENDING',896.8,14),(17,'2026-05-28 10:19:36.853895',NULL,'PENDING',5013.996999999999,14),(18,'2026-05-29 05:14:55.392863','pay_Sv3qAYjlIucxzu','SUCCESS',5013.996999999999,14),(19,'2026-05-29 06:10:26.528297','pay_Sv4mLew6C0JwQc','SUCCESS',5013.996999999999,14),(20,'2026-05-29 07:04:07.603046',NULL,'PENDING',4424.115,15),(21,'2026-06-05 05:55:48.932512',NULL,'PENDING',5013.996999999999,17),(22,'2026-06-06 06:32:49.136122',NULL,'PENDING',5013.996999999999,17),(23,'2026-06-06 06:48:44.673612',NULL,'PENDING',2506.4970000000003,17),(24,'2026-06-06 07:05:21.022184',NULL,'PENDING',2506.4970000000003,17),(25,'2026-06-06 07:26:00.201978',NULL,'PENDING',3509.4970000000003,17),(26,'2026-06-06 09:52:31.061506',NULL,'PENDING',3509.4970000000003,17),(27,'2026-06-06 09:59:09.180229',NULL,'PENDING',802.4,17),(28,'2026-06-06 11:32:07.941154',NULL,'PENDING',5013.996999999999,17),(29,'2026-06-06 12:47:23.909832',NULL,'PENDING',802.4,17),(30,'2026-06-06 13:03:03.730102',NULL,'PENDING',802.4,17),(31,'2026-06-06 13:03:04.026863',NULL,'PENDING',802.4,17);
+INSERT INTO `orders` VALUES (10,'2026-06-19 11:23:41.939296','pay_T3TKk9gRSNtDbj','SUCCESS',2948.82,14,NULL,'2026-06-19 11:24:11.815780',NULL,NULL,'REF12361'),(11,'2026-06-19 16:04:48.527824',NULL,'PENDING',590,15,NULL,'2026-06-19 16:04:48.527824',NULL,NULL,'REF12361'),(12,'2026-06-19 16:04:48.477194',NULL,'PENDING',590,15,NULL,'2026-06-19 16:04:48.477194',NULL,NULL,'REF12361'),(13,'2026-06-19 16:05:06.993012',NULL,'PENDING',590,15,NULL,'2026-06-19 16:05:06.993012',NULL,NULL,'REF12361'),(14,'2026-06-19 16:05:07.233381','pay_T3Y85fKpSwRQIu','SUCCESS',590,15,NULL,'2026-06-19 16:05:40.028286',NULL,NULL,'REF12361'),(15,'2026-06-19 17:16:41.112262',NULL,'PENDING',826,14,NULL,'2026-06-19 17:16:41.111300',NULL,NULL,NULL);
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -428,7 +994,7 @@ CREATE TABLE `otps` (
   `used` bit(1) NOT NULL,
   `email` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -437,7 +1003,7 @@ CREATE TABLE `otps` (
 
 LOCK TABLES `otps` WRITE;
 /*!40000 ALTER TABLE `otps` DISABLE KEYS */;
-INSERT INTO `otps` VALUES (2,'1234','2026-05-27 06:54:34.518698','9637825621',_binary '',''),(3,'1234','2026-05-27 07:21:05.987208','8877996655',_binary '',''),(9,'1234','2026-05-27 17:58:09.124459','9975149793',_binary '',''),(11,'1234','2026-05-28 05:32:30.298817','7776654433',_binary '',''),(12,'1234','2026-05-28 05:53:38.988727','9876543210',_binary '',''),(13,'1234','2026-05-28 07:00:44.496351','9096472249',_binary '',''),(19,'1234','2026-05-29 06:50:38.213593','9322806345',_binary '',''),(20,'1234','2026-05-29 10:39:51.975827','9898989898',_binary '',''),(21,'1234','2026-05-29 13:49:58.352591','8888888888',_binary '',''),(43,'452321','2026-06-03 05:53:09.543938',NULL,_binary '','pansarepriti09@gmail.com'),(45,'470358','2026-06-04 06:07:31.418985',NULL,_binary '','kalyanibhawar3@gmail.com'),(58,'612063','2026-06-05 05:31:17.552997',NULL,_binary '','neharesapana2@gmail.com'),(61,'486174','2026-06-06 06:36:28.443038',NULL,_binary '','kalyanibhawar465@gmail.com');
+INSERT INTO `otps` VALUES (22,'186338','2026-06-19 06:30:27.450572',NULL,_binary '','nehereprachi1@gmail.com'),(23,'200256','2026-06-19 06:41:29.125411',NULL,_binary '','nehareprachi2@gmail.com'),(41,'368272','2026-06-19 16:08:58.571585',NULL,_binary '','neharesapana2@gmail.com'),(42,'756948','2026-06-19 16:10:55.665459',NULL,_binary '','kalyanibhawar465@gmail.com'),(43,'685990','2026-06-19 16:17:06.550916',NULL,_binary '','kalyanibhawar3@gmail.com');
 /*!40000 ALTER TABLE `otps` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -467,7 +1033,7 @@ CREATE TABLE `payments` (
   PRIMARY KEY (`id`),
   KEY `FKj94hgy9v5fw1munb90tar2eje` (`user_id`),
   CONSTRAINT `FKj94hgy9v5fw1munb90tar2eje` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -476,8 +1042,40 @@ CREATE TABLE `payments` (
 
 LOCK TABLES `payments` WRITE;
 /*!40000 ALTER TABLE `payments` DISABLE KEYS */;
-INSERT INTO `payments` VALUES (1,11798.82,'2026-05-28 05:02:40.647986','RAZORPAY','MEMBERSHIP','order_Suf5N9K61lfC77',NULL,NULL,'PENDING',6,NULL,NULL,NULL,NULL,NULL),(2,2948.82,'2026-05-28 05:03:57.168797','RAZORPAY','ORDER','order_Suf6ihsJimUKyh',NULL,NULL,'PENDING',6,NULL,NULL,NULL,NULL,NULL),(3,2948.82,'2026-05-28 05:04:57.865752','RAZORPAY','ORDER','order_Suf7mxqw9aa8QP','pay_Suf8t8ybmQeqdU','4ca0e04f9484a6984009c37e7feccd1d27ebe6ae5fb4bba04421d2b00aa1f60d','SUCCESS',6,NULL,NULL,NULL,NULL,NULL),(4,4128.82,'2026-05-28 05:06:42.810897','RAZORPAY','ORDER','order_Suf9dW1j56mhfH',NULL,NULL,'PENDING',6,NULL,NULL,NULL,NULL,NULL),(5,4128.82,'2026-05-28 05:06:57.084672','RAZORPAY','ORDER','order_Suf9t50mW0WTG8',NULL,NULL,'PENDING',6,NULL,NULL,NULL,NULL,NULL),(6,11798.82,'2026-05-28 05:10:09.697556','RAZORPAY','MEMBERSHIP','order_SufDHKWJxs3uRP',NULL,NULL,'PENDING',6,NULL,NULL,NULL,NULL,NULL),(7,11798.82,'2026-05-28 05:11:54.303450','RAZORPAY','MEMBERSHIP','order_SufF7W4yY3JT8v',NULL,NULL,'PENDING',6,NULL,NULL,NULL,NULL,NULL),(8,3922.3790000000004,'2026-05-28 05:23:31.765482','RAZORPAY','ORDER','order_SufROpfVVfD8mm',NULL,NULL,'PENDING',3,NULL,NULL,NULL,NULL,NULL),(9,3922.3790000000004,'2026-05-28 05:23:54.271169','RAZORPAY','ORDER','order_SufRnLd2PlnwFu',NULL,NULL,'PENDING',3,NULL,NULL,NULL,NULL,NULL),(10,3922.3790000000004,'2026-05-28 05:24:04.567304','RAZORPAY','ORDER','order_SufRydmxickYne',NULL,NULL,'PENDING',3,NULL,NULL,NULL,NULL,NULL),(11,11798.82,'2026-05-28 06:09:01.033906','RAZORPAY','MEMBERSHIP','order_SugDRqp2w6VzHY',NULL,NULL,'PENDING',6,NULL,NULL,NULL,NULL,NULL),(12,11798.82,'2026-05-28 06:09:01.032703','RAZORPAY','MEMBERSHIP','order_SugDRquazOQpyP',NULL,NULL,'PENDING',6,NULL,NULL,NULL,NULL,NULL),(13,3538.8199999999997,'2026-05-28 10:03:58.246257','RAZORPAY','MEMBERSHIP','order_SukDdexBOutvvk','pay_SukEmluKsxSavR','81bcd1f26bd7b77c67d49b12fa7546ef0c7dfa99cd5d9b4b21067283b75a8279','SUCCESS',14,NULL,NULL,NULL,NULL,NULL),(14,25960,'2026-05-28 10:10:59.740109','RAZORPAY','MEMBERSHIP','order_SukL3kdFY7R784',NULL,NULL,'PENDING',14,NULL,NULL,NULL,NULL,NULL),(15,896.8,'2026-05-28 10:14:46.146501','RAZORPAY','ORDER','order_SukP2tTgr2OrUx',NULL,NULL,'PENDING',14,NULL,NULL,NULL,NULL,NULL),(16,8260,'2026-05-28 10:15:55.833048','RAZORPAY','MEMBERSHIP','order_SukQGy0ncrqtDb','pay_SukQa6wHK4ELFE','5e405cc4782b0803c587d1f4c1ef14c6b4f2339d159bf5457f07a9a7f7b786e6','SUCCESS',14,NULL,NULL,NULL,NULL,NULL),(17,5013.996999999999,'2026-05-28 10:19:36.941428','RAZORPAY','ORDER','order_SukUAJgc2MjugC',NULL,NULL,'PENDING',14,NULL,NULL,NULL,NULL,NULL),(18,100,'2026-05-28 20:06:33.909823','RAZORPAY','SALON_DEPOSIT','order_SuuUBJatBQfu06',NULL,NULL,'PENDING',14,NULL,NULL,NULL,NULL,NULL),(19,5013.996999999999,'2026-05-29 05:14:55.941138','RAZORPAY','ORDER','order_Sv3pQj5y16cfDb','pay_Sv3qAYjlIucxzu','fc804a0f9c6da60ea6258e330b949c3622bbd2b66b44bd711938ef367252aa8e','SUCCESS',14,NULL,NULL,NULL,NULL,NULL),(20,5013.996999999999,'2026-05-29 06:10:26.744920','RAZORPAY','ORDER','order_Sv4m4Rfr3JUPuK','pay_Sv4mLew6C0JwQc','3ab52b6b10111dac558de7a3c2f60844d9cac07c603057e662b5f066216c8350','SUCCESS',14,NULL,NULL,NULL,NULL,NULL),(21,100,'2026-05-29 06:13:54.732485','RAZORPAY','SALON_DEPOSIT','order_Sv4pjTsLGh3ZVK',NULL,NULL,'PENDING',14,NULL,NULL,NULL,NULL,NULL),(22,11798.82,'2026-05-29 06:42:08.567139','RAZORPAY','MEMBERSHIP','order_Sv5JYHW2GsqIjr','pay_Sv5KIocA26Gj0n','04e8e46b3633130e5de652f974bf4c551b2e0376baf3760b626cfc75c540541c','SUCCESS',15,NULL,NULL,NULL,NULL,NULL),(23,100,'2026-05-29 06:44:37.029911','RAZORPAY','SALON_DEPOSIT','order_Sv5MAOj5b6YiTJ',NULL,NULL,'PENDING',15,NULL,NULL,NULL,NULL,NULL),(24,17700,'2026-05-29 06:45:36.418657','RAZORPAY','MEMBERSHIP','order_Sv5NDG80egHj1V',NULL,NULL,'PENDING',15,NULL,NULL,NULL,NULL,NULL),(25,17700,'2026-05-29 06:52:05.630320','RAZORPAY','MEMBERSHIP','order_Sv5U46MIs54Yko','pay_Sv5UDamNvU4dea','eb1a786449da316cceb76811c7ca6f73795ad8b457d72a9e1126a31b4407889e','SUCCESS',15,NULL,NULL,NULL,NULL,NULL),(26,4424.115,'2026-05-29 07:04:07.817150','RAZORPAY','ORDER','order_Sv5gmOtdO1HN2Z',NULL,NULL,'PENDING',15,NULL,NULL,NULL,NULL,NULL),(27,100,'2026-05-29 07:27:33.076632','RAZORPAY','SALON_DEPOSIT','order_Sv65WIPdktiXi4',NULL,NULL,'PENDING',15,NULL,NULL,NULL,NULL,NULL),(28,11798.82,'2026-06-02 09:19:06.259714','RAZORPAY','MEMBERSHIP','order_Swi7rqfFe4Jzpy',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(29,3538.8199999999997,'2026-06-02 09:19:38.969998','RAZORPAY','MEMBERSHIP','order_Swi8Rc4kyMmW7w','pay_Swi8l2N9hZsgiu','0a55d48a4c56fc3524aa32f5005c248c3550fbdd432f24858266672981a452d0','SUCCESS',17,NULL,NULL,NULL,NULL,NULL),(30,8260,'2026-06-02 11:27:32.376499','RAZORPAY','MEMBERSHIP','order_SwkJXR3g6kBMqD','pay_SwkJqXS0MVpiqB','3cb4b961ebfc05a1071e80bd572f3f0ed92b200ff67c865f49649da85fa8adae','SUCCESS',17,NULL,NULL,NULL,NULL,NULL),(31,3538.8199999999997,'2026-06-04 06:04:17.282496','RAZORPAY','MEMBERSHIP','order_SxRsIBxGIPFut4','pay_SxRsWRskbl4ZKZ','514e6fc8d49ab72be2c86f62e51acc85e782a07afa815657ccb7835ffc39b0d9','SUCCESS',18,NULL,NULL,NULL,NULL,NULL),(32,8260,'2026-06-04 07:53:37.323634','RAZORPAY','MEMBERSHIP','order_SxTjnrJ0wdFZn6','pay_SxTjwa1yLRiEI5','d379269d45e22726e9699b76ed2455d257a7e739754a156ccef911162d456fb6','SUCCESS',18,NULL,NULL,NULL,NULL,NULL),(33,5013.996999999999,'2026-06-05 05:55:49.207225','RAZORPAY','ORDER','order_SxqGSstJLOnx7S',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(34,17764.65106849315,'2026-06-05 10:34:51.216154','RAZORPAY','MEMBERSHIP','order_Sxv1DLcZMx2VZL',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(35,17764.65106849315,'2026-06-05 11:22:36.790523','RAZORPAY','MEMBERSHIP','order_SxvpfOhdWGN4tp',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(36,100,'2026-06-05 11:24:16.040101','RAZORPAY','SALON_DEPOSIT','order_SxvrPkmIkFPqhk',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(37,17796.976602739724,'2026-06-05 13:01:28.047803','RAZORPAY','MEMBERSHIP','order_SxxW5auXX2IkrW',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(38,100,'2026-06-05 13:02:01.903222','RAZORPAY','SALON_DEPOSIT','order_SxxWgXpjLmIuFM',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(39,5013.996999999999,'2026-06-06 06:32:49.324718','RAZORPAY','ORDER','order_SyFQfuAvUDxq5t',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(40,2506.4970000000003,'2026-06-06 06:48:44.784872','RAZORPAY','ORDER','order_SyFhUqYBXDUB0I',NULL,NULL,'PENDING',17,'23',NULL,NULL,NULL,NULL),(41,2506.4970000000003,'2026-06-06 07:05:21.446820','RAZORPAY','ORDER','order_SyFz2cCVWeJgap',NULL,NULL,'PENDING',17,'24',NULL,NULL,NULL,NULL),(42,3509.4970000000003,'2026-06-06 07:26:00.608299','RAZORPAY','ORDER','order_SyGKrE5gQfa0qv',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(43,100,'2026-06-06 07:26:33.574826','RAZORPAY','SALON_DEPOSIT','order_SyGLREZtdv6eP6',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(44,17796.976602739724,'2026-06-06 08:44:30.673330','RAZORPAY','MEMBERSHIP','order_SyHfmj1kZkj3DS',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(45,100,'2026-06-06 08:45:08.895186','RAZORPAY','SALON_DEPOSIT','order_SyHgSNqxEgDcTQ',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(46,3509.4970000000003,'2026-06-06 09:52:31.210121','RAZORPAY','ORDER','order_SyIpc7XwyvSOXo',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(47,100,'2026-06-06 09:58:28.521938','RAZORPAY',NULL,'order_SyIvu8UX5xickW',NULL,NULL,'CREATED',17,'29','INR','SALON_DEPOSIT',NULL,NULL),(48,100,'2026-06-06 09:58:34.752477','RAZORPAY',NULL,'order_SyIw0xArYNB01K',NULL,NULL,'CREATED',17,'29','INR','SALON_DEPOSIT',NULL,NULL),(49,100,'2026-06-06 09:58:41.832108','RAZORPAY',NULL,'order_SyIw8g0CK1skM1',NULL,NULL,'CREATED',17,'29','INR','SALON_DEPOSIT',NULL,NULL),(50,802.4,'2026-06-06 09:59:09.323848','RAZORPAY',NULL,'order_SyIwcgkglEvvw4',NULL,NULL,'CREATED',17,'27','INR','PRODUCT',NULL,NULL),(51,17796.976602739724,'2026-06-06 09:59:50.811880','RAZORPAY',NULL,'order_SyIxLy8Y0E5Idx',NULL,NULL,'CREATED',17,'21','INR','MEMBERSHIP',NULL,NULL),(52,17796.976602739724,'2026-06-06 10:04:10.979884','RAZORPAY',NULL,'order_SyJ1vwyvJHfD4H',NULL,NULL,'CREATED',17,'22','INR','MEMBERSHIP',NULL,NULL),(53,17796.976602739724,'2026-06-06 10:37:50.621646','RAZORPAY','MEMBERSHIP','order_SyJbUUL2szyqFF',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(54,100,'2026-06-06 10:38:19.461656','RAZORPAY','SALON_DEPOSIT','order_SyJbzyCahw1dr6',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(55,100,'2026-06-06 10:43:11.635100','RAZORPAY','SALON_DEPOSIT','order_SyJh8qHx6WQm5D',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(56,100,'2026-06-06 10:43:11.655126','RAZORPAY','SALON_DEPOSIT','order_SyJh8tDGEwQMdC',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(57,100,'2026-06-06 10:48:19.532756','RAZORPAY',NULL,'order_SyJmYvFVgpht29',NULL,NULL,'CREATED',17,'34','INR','SALON_DEPOSIT',NULL,0),(58,17796.976602739724,'2026-06-06 10:59:07.134298','RAZORPAY','MEMBERSHIP','order_SyJxxoRzdfqMHn',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(59,100,'2026-06-06 10:59:27.627024','RAZORPAY','SALON_DEPOSIT','order_SyJyKDGKpF25w9',NULL,NULL,'PENDING',17,NULL,NULL,NULL,NULL,NULL),(60,5013.996999999999,'2026-06-06 11:32:09.828214','RAZORPAY',NULL,'order_SyKWrvfcHLxpNh',NULL,NULL,'CREATED',17,'28','INR','PRODUCT',NULL,0),(61,100,'2026-06-06 11:33:02.310157','RAZORPAY',NULL,'order_SyKXnGG9VTNrOV',NULL,NULL,'CREATED',17,'36','INR','SALON_DEPOSIT',NULL,0),(62,17829.302136986298,'2026-06-06 12:41:30.090831','RAZORPAY',NULL,'order_SyLi783cuu3ovw',NULL,NULL,'CREATED',17,'25','INR','MEMBERSHIP',NULL,0),(63,802.4,'2026-06-06 12:47:24.158316','RAZORPAY',NULL,'order_SyLoLduBib4ezo',NULL,NULL,'CREATED',17,'29','INR','PRODUCT',NULL,0),(64,802.4,'2026-06-06 13:03:04.086162','RAZORPAY',NULL,'order_SyM4tcI2nX4FkE',NULL,NULL,'CREATED',17,'30','INR','PRODUCT',NULL,0),(65,802.4,'2026-06-06 13:03:04.185579','RAZORPAY',NULL,'order_SyM4thx4Wy3E77',NULL,NULL,'CREATED',17,'31','INR','PRODUCT',NULL,0),(66,17829.302136986298,'2026-06-06 19:32:41.104415','RAZORPAY',NULL,'order_SySiTlfsEMhnrf',NULL,NULL,'CREATED',17,'26','INR','MEMBERSHIP',NULL,0);
+INSERT INTO `payments` VALUES (1,2948.82,'2026-06-15 07:00:21.153019','RAZORPAY',NULL,'order_T1ohpSPnzluhMW',NULL,NULL,'CREATED',1,'1','INR','PRODUCT',NULL,0),(2,2948.82,'2026-06-15 07:00:21.153019','RAZORPAY',NULL,'order_T1ohpSXO5cwqIL','pay_T1ohzzWezWhhJN','81ade6efff80940c5d5368add6074384db13f48b51a5660ac81c9c1f894ddc8a','REFUNDED_WALLET',1,'2','INR','PRODUCT',NULL,0),(3,3538.8199999999997,'2026-06-15 07:03:49.312283','RAZORPAY',NULL,'order_T1olUiX2cZy8c9','pay_T1olaXmAxQxf4X','e52550ea769caf3b2fdf2231701853482f689cd5497996fbb7178bc0b0a7d6b7','SUCCESS',1,'1','INR','MEMBERSHIP',NULL,0),(4,3538.8199999999997,'2026-06-15 07:04:23.786877','RAZORPAY',NULL,'order_T1om6N2dwpo3jZ','pay_T1onAqSgAKpsih','43b334b1546c823625c025c39bbe35def894159ea4c33e001b992773d344ff72','SUCCESS',1,'2','INR','MEMBERSHIP',NULL,0),(5,8260,'2026-06-15 07:08:10.085262','RAZORPAY',NULL,'order_T1oq5OwvbAUjm3','pay_T1oqBtpQPeFQjj','bcc89252679dd7b80f170898bb281a122154bfe5f62d164a34781d683675eda2','SUCCESS',1,'3','INR','MEMBERSHIP',NULL,0),(6,11798.82,'2026-06-15 07:08:51.837313','RAZORPAY',NULL,'order_T1oqoypy6sACtC','pay_T1oqwGvcZW8Cik','3eb4b5a4ec039185eb1e904514a77dfdc40bff31fccf7e659d417bfc0da111cb','SUCCESS',1,'4','INR','MEMBERSHIP',NULL,0),(7,50000,'2026-06-15 07:16:23.613742','RAZORPAY',NULL,'order_T1oym4dWJAx9Ke','pay_T1oytci2hpIOkP','40213ddaf61b55fc2d9f1febf8c164b88ecbc16cc7b555f15be68ee4480bcc50','SUCCESS',1,'merch_dep_1781507783453','INR','MERCHANT_DEPOSIT',NULL,0),(8,50000,'2026-06-15 14:04:54.939506','RAZORPAY',NULL,'order_T1vwK3uBtknKEB','pay_T1vwkgtcFe9isy','ebdd1eba052e3eda743e1c932eef3982d01559d3f11c07a01fea67a614dd1b45','SUCCESS',2,'merch_dep_1781532294597','INR','MERCHANT_DEPOSIT',NULL,0),(9,11798.82,'2026-06-16 06:39:59.555067','RAZORPAY',NULL,'order_T2CtSItyy8NOiY','pay_T2CuA3BwVlRBqq','1e9749e64e94e1433fc14401b173c23903b5e718918c54a7d87755bcb47a90f1','SUCCESS',2,'5','INR','MEMBERSHIP',NULL,0),(10,17700,'2026-06-16 07:01:01.923389','RAZORPAY',NULL,'order_T2DFgH4WD6MuRS','pay_T2DFqKa6xJEtGf','754e3bf02d0fc0529e5e6e81640acb66e1e44ee938f341c76abb57835181758c','SUCCESS',1,'6','INR','MEMBERSHIP',NULL,0),(11,4424.115,'2026-06-16 07:02:42.052380','RAZORPAY',NULL,'order_T2DHRaJklHDA9K',NULL,NULL,'CREATED',1,'3','INR','PRODUCT',NULL,0),(12,4424.115,'2026-06-16 07:02:50.854908','RAZORPAY',NULL,'order_T2DHbC4XLhfv83','pay_T2DHi6H5Ys6Feh','d5f842f3eaf1e039dd805f463d7d1eabe768fb4b02e303fa1d56742273ffa001','SUCCESS',1,'4','INR','PRODUCT',NULL,0),(13,9289.845,'2026-06-16 07:11:31.597335','RAZORPAY',NULL,'order_T2DQlbdlBnJ1Hw',NULL,NULL,'CREATED',1,'5','INR','PRODUCT',NULL,0),(14,9289.845,'2026-06-16 07:11:31.745454','RAZORPAY',NULL,'order_T2DQlkwBGZXPop',NULL,NULL,'CREATED',1,'6','INR','PRODUCT',NULL,0),(15,9289.845,'2026-06-16 07:12:16.408099','RAZORPAY',NULL,'order_T2DRYVrbxzrnEI','pay_T2DRf6ESQ3k2gJ','07198480d1d7b1967b5284b49a4fa5a2d0ae99f0914ab8629db32206094dc13b','SUCCESS',1,'7','INR','PRODUCT',NULL,0),(16,10000,'2026-06-17 05:04:08.952730','RAZORPAY',NULL,'order_T2ZnLk1LIG99H5','pay_T2ZnaiynA5AlIZ','0a737f5e54f6ce8f53ca99bd83159f107986f93e055ed6eeca0f9a881ef73ee2','SUCCESS',3,'exe_start_1781672648142','INR','EXECUTIVE_STARTER',NULL,0),(17,5898.82,'2026-06-17 12:11:43.147660','RAZORPAY',NULL,'order_T2h4zrHxRcmXVz',NULL,NULL,'CREATED',3,'8','INR','PRODUCT',NULL,0),(18,5898.82,'2026-06-17 12:11:43.147660','RAZORPAY',NULL,'order_T2h4zr4ZKfD35o','pay_T2h5I30Wczpg4I','57959eb90efec6253bedd6035ee1bf4fd1726eac33647cf4c0a5b814333ec282','SUCCESS',3,'9','INR','PRODUCT',NULL,0),(19,11798.82,'2026-06-17 12:18:00.813619','RAZORPAY',NULL,'order_T2hBe74WJ0AGzt',NULL,NULL,'CREATED',3,'7','INR','MEMBERSHIP',NULL,0),(20,11798.82,'2026-06-17 12:18:00.993035','RAZORPAY',NULL,'order_T2hBeHEJSvFwz7','pay_T2hBoDsNWW2304','410ceb5ebdc181288d138a633fbada24beadb3b4b3e779069a226434f0023e25','SUCCESS',3,'8','INR','MEMBERSHIP',NULL,0),(21,3538.8199999999997,'2026-06-17 12:18:30.950473','RAZORPAY',NULL,'order_T2hCB0HkKEPFZE',NULL,NULL,'CREATED',3,'9','INR','MEMBERSHIP',NULL,0),(22,29498.82,'2026-06-17 12:26:55.381721','RAZORPAY',NULL,'order_T2hL3dEm7sLh3z',NULL,NULL,'CREATED',1,'10','INR','MEMBERSHIP',NULL,0),(23,2948.82,'2026-06-19 11:23:42.849124','RAZORPAY',NULL,'order_T3TKWXYvTdcX1i','pay_T3TKk9gRSNtDbj','30cbe17de17303488fb4af15512f7f900d9f75ad938b45c9daf7dc320c26f905','SUCCESS',14,'10','INR','PRODUCT',NULL,0),(24,590,'2026-06-19 16:04:50.558931','RAZORPAY',NULL,'order_T3Y7Uepgikz8Ys',NULL,NULL,'CREATED',15,'12','INR','PRODUCT',NULL,0),(25,590,'2026-06-19 16:04:50.786272','RAZORPAY',NULL,'order_T3Y7UzDR8ZKeyf',NULL,NULL,'CREATED',15,'11','INR','PRODUCT',NULL,0),(26,590,'2026-06-19 16:05:07.138836','RAZORPAY',NULL,'order_T3Y7mpHGyTFdx2',NULL,NULL,'CREATED',15,'13','INR','PRODUCT',NULL,0),(27,590,'2026-06-19 16:05:07.373346','RAZORPAY',NULL,'order_T3Y7n6m4DoFrrL','pay_T3Y85fKpSwRQIu','4fef3d2c0226313e2d607adfcea5e54cfad91a5082fb915475182a69c35783e1','SUCCESS',15,'14','INR','PRODUCT',NULL,0),(28,826,'2026-06-19 17:16:41.741331','RAZORPAY',NULL,'order_T3ZLOYXcv3DiCa',NULL,NULL,'CREATED',14,'15','INR','PRODUCT',NULL,0);
 /*!40000 ALTER TABLE `payments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `product_reviews`
+--
+
+DROP TABLE IF EXISTS `product_reviews`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `product_reviews` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime(6) NOT NULL,
+  `rating` int NOT NULL,
+  `review_text` text,
+  `status` varchar(255) NOT NULL,
+  `product_id` bigint NOT NULL,
+  `user_id` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK35kxxqe2g9r4mww80w9e3tnw9` (`product_id`),
+  KEY `FK58i39bhws2hss3tbcvdmrm60f` (`user_id`),
+  CONSTRAINT `FK35kxxqe2g9r4mww80w9e3tnw9` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
+  CONSTRAINT `FK58i39bhws2hss3tbcvdmrm60f` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `product_reviews`
+--
+
+LOCK TABLES `product_reviews` WRITE;
+/*!40000 ALTER TABLE `product_reviews` DISABLE KEYS */;
+/*!40000 ALTER TABLE `product_reviews` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -496,8 +1094,11 @@ CREATE TABLE `products` (
   `name` varchar(255) DEFAULT NULL,
   `price` double DEFAULT NULL,
   `stock` int DEFAULT NULL,
+  `status` varchar(255) DEFAULT NULL,
+  `wholesale_price` double DEFAULT NULL,
+  `merchant_discount` double NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -506,7 +1107,7 @@ CREATE TABLE `products` (
 
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (1,'Skincare','2026-05-23 05:31:29.422435','Advanced anti-aging serum with pure rose extract and gold particles.','/images/skincare.png','Rose Gold Elixir',2499,100),(2,'Perfumes','2026-05-23 05:31:29.442728','Exclusive oriental fragrance with deep oud, amber and musk notes.','/images/perfume.png','Oud Majestic',4999,50),(3,'Haircare','2026-05-23 05:31:29.450627','Salon-grade keratin formula for silky, frizz-free hair every day.','/images/haircare.png','Keratin Pro Shampoo',1299,150),(4,'Spa / Detox','2026-05-23 05:31:29.459188','Complete spa kit with essential oils, detox mask, and aromatherapy candles.','/images/spa.png','Luxury Detox Kit',3499,30),(7,'Skincare','2026-05-25 07:19:13.429453','Create a smooth, hydrated makeup base with our lightweight primer that minimizes pores, controls oil, and keeps makeup fresh all day.','/uploads/products/1779693553389_images.jfif','Primer',800,5);
+INSERT INTO `products` VALUES (1,'Skincare','2026-05-23 05:31:29.422435','Advanced anti-aging serum with pure rose extract and gold particles.','/images/skincare.png','Rose Gold Elixir',2499,100,'ACTIVE',2124.15,15),(2,'Perfumes','2026-05-23 05:31:29.442728','Exclusive oriental fragrance with deep oud, amber and musk notes.','/images/perfume.png','Oud Majestic',4999,50,'ACTIVE',4249.15,15),(3,'Haircare','2026-05-23 05:31:29.450627','Salon-grade keratin formula for silky, frizz-free hair every day.','/images/haircare.png','Keratin Pro Shampoo',1299,150,NULL,NULL,0),(4,'Spa / Detox','2026-05-23 05:31:29.459188','Complete spa kit with essential oils, detox mask, and aromatherapy candles.','/images/spa.png','Luxury Detox Kit',3499,30,NULL,NULL,0),(7,'Skincare','2026-05-25 07:19:13.429453','Create a smooth, hydrated makeup base with our lightweight primer that minimizes pores, controls oil, and keeps makeup fresh all day.','/uploads/products/1779693553389_images.jfif','Primer',1000,5,'ACTIVE',NULL,0),(10,'Perfumes','2026-06-18 06:51:29.950288','Best perfumes','/uploads/products/1781765489934_gettyimages-637623730-612x612.jpg','Skinn by Titan',500,60,'ACTIVE',450,10),(11,'Haircare','2026-06-19 05:13:35.364463','Ayurvedic herbal oils are therapeutic blends of pure plant base oils (such as sesame or coconut) slowly infused with plant extracts, roots, and leaves. ','/uploads/products/1781846015339_Ayurvedic_Herb_Oil.png','Ayurvedik Herb Oil',500,50,'ACTIVE',450,10),(12,'Spa','2026-06-19 05:24:36.704608','Nivea lotions are dermatologically tested moisturizers formulated to deeply hydrate, nourish, and protect the skin. ','/uploads/products/1781846676692_nivea-body-milk-body-lotion.png','Nivea ',700,30,'ACTIVE',595,15);
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -526,7 +1127,7 @@ CREATE TABLE `qr_codes` (
   PRIMARY KEY (`id`),
   KEY `FKh5fv8mndmjgo3dhp89ukflnld` (`merchant_id`),
   CONSTRAINT `FKh5fv8mndmjgo3dhp89ukflnld` FOREIGN KEY (`merchant_id`) REFERENCES `merchants` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -535,6 +1136,7 @@ CREATE TABLE `qr_codes` (
 
 LOCK TABLES `qr_codes` WRITE;
 /*!40000 ALTER TABLE `qr_codes` DISABLE KEYS */;
+INSERT INTO `qr_codes` VALUES (1,'2026-06-18 16:33:09.118211','/wallet/redeem?merchantId=5','ACTIVE',5),(2,'2026-06-18 16:33:09.132664','/wallet/redeem?merchantId=6','ACTIVE',6);
 /*!40000 ALTER TABLE `qr_codes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -554,7 +1156,7 @@ CREATE TABLE `reward_points` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK5402qxjmo5rx73gqmovh0p3es` (`user_id`),
   CONSTRAINT `FKovyxai0u4f1lfi8brc9kovumt` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -563,7 +1165,6 @@ CREATE TABLE `reward_points` (
 
 LOCK TABLES `reward_points` WRITE;
 /*!40000 ALTER TABLE `reward_points` DISABLE KEYS */;
-INSERT INTO `reward_points` VALUES (1,2,0,2,17),(2,0,0,0,18);
 /*!40000 ALTER TABLE `reward_points` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -584,7 +1185,7 @@ CREATE TABLE `reward_transactions` (
   PRIMARY KEY (`id`),
   KEY `FK2qgkqf0r6hmvgqq40t8daay6d` (`user_id`),
   CONSTRAINT `FK2qgkqf0r6hmvgqq40t8daay6d` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -593,7 +1194,7 @@ CREATE TABLE `reward_transactions` (
 
 LOCK TABLES `reward_transactions` WRITE;
 /*!40000 ALTER TABLE `reward_transactions` DISABLE KEYS */;
-INSERT INTO `reward_transactions` VALUES (1,'2026-06-05 11:24:40.116108','Earned reward points on purchase of value ₹100.00',2,'CREDIT',17);
+INSERT INTO `reward_transactions` VALUES (1,'2026-06-16 07:03:12.341805','Earned reward points on purchase of value ₹4424.12',132,'CREDIT',1),(2,'2026-06-16 07:12:39.961843','Earned reward points on purchase of value ₹9289.85',276,'CREDIT',1);
 /*!40000 ALTER TABLE `reward_transactions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -614,6 +1215,7 @@ CREATE TABLE `salon_info` (
   `name` varchar(255) DEFAULT NULL,
   `tagline` varchar(255) DEFAULT NULL,
   `timings` varchar(255) DEFAULT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -624,7 +1226,7 @@ CREATE TABLE `salon_info` (
 
 LOCK TABLES `salon_info` WRITE;
 /*!40000 ALTER TABLE `salon_info` DISABLE KEYS */;
-INSERT INTO `salon_info` VALUES (1,'123, Beauty Lane, Near City Mall, Pune, Maharashtra - 411001','salon@llbeauty.com','+91 98765 43210','Our premium studio in Pune offers cutting-edge hair styling, skin treatments, and customized wellness therapies in a deeply relaxing luxury environment.','/uploads/salon/1779643850920_bridal.png','L.L. Beauty Salon','Main Flagship Branch','Mon - Sat: 07:00 AM - 10:00 PM (Sunday Closed)');
+INSERT INTO `salon_info` VALUES (1,'123, Beauty Lane, Near City Mall, Pune, Maharashtra - 411001','salon@eva.com','+91 98765 43210','Our premium studio in Pune offers cutting-edge hair styling, skin treatments, and customized wellness therapies in a deeply relaxing luxury environment.','/uploads/salon/1779643850920_bridal.png','EVA Beauty Salon','Main Flagship Branch','Mon - Sat: 07:00 AM - 10:00 PM (Sunday Closed)',0);
 /*!40000 ALTER TABLE `salon_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -642,6 +1244,8 @@ CREATE TABLE `salon_services` (
   `image_url` varchar(255) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `price` double DEFAULT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `category` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -652,8 +1256,113 @@ CREATE TABLE `salon_services` (
 
 LOCK TABLES `salon_services` WRITE;
 /*!40000 ALTER TABLE `salon_services` DISABLE KEYS */;
-INSERT INTO `salon_services` VALUES (1,'Professional cut, shampoo, conditioning and blow-dry styling.',45,'/images/haircare.png','Hair Styling & Cut',899),(2,'Deep nourishment, repair treatment, and relaxing scalp massage.',60,'/images/haircare.png','Luxury Hair Spa',1499),(3,'Premium exfoliating facial with botanical extracts for instant radiance.',50,'/images/skincare.png','Gold Glow Facial',1999),(4,'Elite luxury bridal makeover including saree draping, hair, and makeup.',180,'/images/spa.png','Bridal Makeover',9999),(5,'Premium global hair coloring and highlights.',120,'/images/haircare.png','Hair Color',2999);
+INSERT INTO `salon_services` VALUES (1,'Professional cut, shampoo, conditioning and blow-dry styling.',45,'/images/haircare.png','Hair Styling & Cut',899,1,NULL),(2,'Deep nourishment, repair treatment, and relaxing scalp massage.',60,'/images/haircare.png','Luxury Hair Spa',1499,1,NULL),(3,'Premium exfoliating facial with botanical extracts for instant radiance.',50,'/images/skincare.png','Gold Glow Facial',1999,1,NULL),(4,'Elite luxury bridal makeover including saree draping, hair, and makeup.',180,'/images/spa.png','Bridal Makeover',9999,1,NULL),(5,'Premium global hair coloring and highlights.',120,'/images/haircare.png','Hair Color',2999,1,NULL);
 /*!40000 ALTER TABLE `salon_services` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `store_applications`
+--
+
+DROP TABLE IF EXISTS `store_applications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `store_applications` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `business_name` varchar(255) NOT NULL,
+  `contact_email` varchar(255) NOT NULL,
+  `contact_phone` varchar(255) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `details` text,
+  `status` enum('APPROVED','PENDING','REJECTED') NOT NULL,
+  `application_type` enum('AGENT','MERCHANT') NOT NULL,
+  `user_id` bigint NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT '0',
+  `aadhar_document_url` varchar(255) DEFAULT NULL,
+  `aadhar_number` varchar(255) DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `bank_account_holder_name` varchar(255) DEFAULT NULL,
+  `bank_account_number` varchar(255) DEFAULT NULL,
+  `business_type` varchar(255) DEFAULT NULL,
+  `city` varchar(255) DEFAULT NULL,
+  `gst_document_url` varchar(255) DEFAULT NULL,
+  `gst_number` varchar(255) DEFAULT NULL,
+  `ifsc_code` varchar(255) DEFAULT NULL,
+  `owner_name` varchar(255) DEFAULT NULL,
+  `pan_document_url` varchar(255) DEFAULT NULL,
+  `pan_number` varchar(255) DEFAULT NULL,
+  `shop_photo_url` varchar(255) DEFAULT NULL,
+  `state` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKi9806p8j67a488cshvt8islay` (`user_id`),
+  CONSTRAINT `FKi9806p8j67a488cshvt8islay` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `store_applications`
+--
+
+LOCK TABLES `store_applications` WRITE;
+/*!40000 ALTER TABLE `store_applications` DISABLE KEYS */;
+INSERT INTO `store_applications` VALUES (23,'Kalyani Vilas Bhawar','kalyanibhawar465@gmail.com','9172051078','2026-06-19 08:51:38.045621','Address: Bhagwan Nagar, Wkad, Pimpri-Chinchwad, Pune\nCity: PUNE\nState: Maharashtra\nOccupation: seller\nExperience: 1\nReferral Code: \nRegistration Type: FREE','APPROVED','AGENT',12,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+/*!40000 ALTER TABLE `store_applications` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `store_credit_transactions`
+--
+
+DROP TABLE IF EXISTS `store_credit_transactions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `store_credit_transactions` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `amount` decimal(10,2) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `transaction_type` varchar(255) NOT NULL,
+  `user_id` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK11mhd2v97h14lxpd0t4f4qj2t` (`user_id`),
+  CONSTRAINT `FK11mhd2v97h14lxpd0t4f4qj2t` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `store_credit_transactions`
+--
+
+LOCK TABLES `store_credit_transactions` WRITE;
+/*!40000 ALTER TABLE `store_credit_transactions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `store_credit_transactions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `store_credits`
+--
+
+DROP TABLE IF EXISTS `store_credits`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `store_credits` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `balance` decimal(10,2) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
+  `user_id` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UKi7y2o8hvho6rjc44noi1buamm` (`user_id`),
+  CONSTRAINT `FK6fbwphggnesu5fm0wa32t0ys9` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `store_credits`
+--
+
+LOCK TABLES `store_credits` WRITE;
+/*!40000 ALTER TABLE `store_credits` DISABLE KEYS */;
+/*!40000 ALTER TABLE `store_credits` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -681,7 +1390,7 @@ CREATE TABLE `user_memberships` (
   KEY `FK3aftj3ypdb19itnsapcxykedv` (`user_id`),
   CONSTRAINT `FK3aftj3ypdb19itnsapcxykedv` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `FKd578eqokdbymythx3ihdde1n` FOREIGN KEY (`membership_id`) REFERENCES `memberships` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -690,7 +1399,6 @@ CREATE TABLE `user_memberships` (
 
 LOCK TABLES `user_memberships` WRITE;
 /*!40000 ALTER TABLE `user_memberships` DISABLE KEYS */;
-INSERT INTO `user_memberships` VALUES (8,'2027-05-27 16:40:13.541926','mock_payment_1779900013379','2026-05-27 16:40:13.541926','ACTIVE',6,9,NULL,NULL,'LLB-B-00001','6aa2ee87-aa4d-4e59-ba8f-6a95f96ed395'),(9,'2027-05-27 16:52:48.951539','mock_payment_1779900768848','2026-05-27 16:52:48.951539','ACTIVE',4,3,NULL,NULL,'LLB-P-00001','89e57497-9a53-4498-9882-42e10f13beb6'),(10,'2027-05-28 10:05:19.342342','pay_SukEmluKsxSavR','2026-05-28 10:05:19.342342','UPGRADED',4,14,NULL,NULL,'LLB-P-00002','e6e4fb83-9147-4532-a09b-ae5331957108'),(11,'2027-05-28 10:16:35.417139','pay_SukQa6wHK4ELFE','2026-05-28 10:16:35.417139','ACTIVE',5,14,NULL,NULL,'LLB-G-00001','2946ab49-02e5-47bb-9571-06b0c2598813'),(12,'2027-05-29 06:43:06.622921','pay_Sv5KIocA26Gj0n','2026-05-29 06:43:06.622921','UPGRADED',5,15,NULL,NULL,'LLB-G-00002','4f80ef8f-69fd-4200-a01b-cda2f86cdc62'),(13,'2027-05-29 06:52:31.430326','pay_Sv5UDamNvU4dea','2026-05-29 06:52:31.430326','ACTIVE',6,15,NULL,NULL,'LLB-B-00002','64de7899-f106-45d5-8440-7142b45bc91d'),(14,'2027-06-02 09:20:12.172630','pay_Swi8l2N9hZsgiu','2026-06-02 09:20:12.172630','UPGRADED',4,17,NULL,NULL,'LLB-P-00003','34ed3e33-07a6-4eed-96c5-a602949d45b0'),(15,'2027-06-02 11:28:05.430315','pay_SwkJqXS0MVpiqB','2026-06-02 11:28:05.429801','ACTIVE',5,17,NULL,NULL,'LLB-G-00003','836e2c71-2dad-4a80-9d2c-59d61b49313b'),(16,'2027-06-04 06:04:50.066313','pay_SxRsWRskbl4ZKZ','2026-06-04 06:04:50.066313','UPGRADED',4,18,NULL,NULL,'LLB-P-00004','aef49120-cd7b-4354-8bfc-fc8ec27ce00e'),(17,'2027-06-04 07:54:00.187578','pay_SxTjwa1yLRiEI5','2026-06-04 07:54:00.187578','ACTIVE',5,18,NULL,NULL,'LLB-G-00004','020690a9-926f-4931-848f-c2f2d3a43bf9');
 /*!40000 ALTER TABLE `user_memberships` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -709,8 +1417,16 @@ CREATE TABLE `users` (
   `name` varchar(255) DEFAULT NULL,
   `password` varchar(255) DEFAULT NULL,
   `wallet_balance` decimal(38,2) DEFAULT NULL,
+  `is_blocked` bit(1) DEFAULT NULL,
+  `role` varchar(20) NOT NULL DEFAULT 'USER',
+  `active` bit(1) DEFAULT NULL,
+  `agent_status` varchar(20) DEFAULT NULL,
+  `membership_status` varchar(20) DEFAULT NULL,
+  `merchant_status` varchar(20) DEFAULT NULL,
+  `executive_status` varchar(20) DEFAULT NULL,
+  `referral_code` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -719,7 +1435,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'2026-05-23 05:38:14.804879','kalyanivilasbhawar@gmail.com','9172051078','Kalyani Vilas Bhawar',NULL,2000.00),(2,'2026-05-23 05:43:38.674258','priti@gmail.com','9307897806','Priti Pansare',NULL,0.00),(3,'2026-05-23 10:10:45.701963','prachi@gmail.com','7776654433','prachi',NULL,418.70),(4,'2026-05-23 13:35:01.763267','nikita@gmail.com','8765432890','nikita',NULL,0.00),(5,'2026-05-23 19:08:43.606787','komal@gmail.com','8976543210','komal',NULL,0.00),(6,'2026-05-24 12:00:47.875710','vaishnavi@gmail.com','9876543210','vaishnavi shingare',NULL,0.00),(7,'2026-05-25 07:11:41.816104','shreya@gmail.com','8765432865','Shreya',NULL,0.00),(8,'2026-05-25 07:12:21.668730','pooja@gmail.com','9975149793','pooja ',NULL,0.00),(9,'2026-05-25 12:02:37.205431','pooja@gmail.com','9096472249','pooja',NULL,3337.31),(10,'2026-05-25 15:51:47.312915','priti@gmail.com','8787989800','priti',NULL,500.00),(11,'2026-05-26 11:57:58.702845','pranali@gmail.com','9988776655','pranali',NULL,0.00),(12,'2026-05-27 06:44:34.412902','shruti@gmail.com','9637825621','Shruti',NULL,0.00),(13,'2026-05-27 07:11:05.958065','shradhha@gmail.com','8877996655','shradhha',NULL,0.00),(14,'2026-05-28 10:03:41.739640','shruti@gmail.com','9898989898','Shruti',NULL,2704.20),(15,'2026-05-29 06:40:38.127598','pratvii@gmail.com','9322806345','pratvii',NULL,3400.00),(16,'2026-05-29 13:39:58.305078','trupti@gmail.com','8888888888','trupti',NULL,0.00),(17,'2026-05-30 08:02:37.502098','kalyanibhawar465@gmail.com','9172051078','Kalyani Bhawar',NULL,1200.00),(18,'2026-05-30 08:03:42.304004','kalyanibhawar3@gmail.com','9172051078','Kalyani Vilas Bhawar',NULL,1300.00),(19,'2026-05-30 11:27:54.523345','pansarepriti09@gmail.com','9797979797','Priti Pansare',NULL,0.00),(20,'2026-06-01 13:18:21.280811','neharesapana2@gmail.com','8208566605','Prachi Nehare',NULL,0.00);
+INSERT INTO `users` VALUES (12,'2026-06-19 08:50:43.703587','kalyanibhawar465@gmail.com','9172051078','Kalyani Vilas Bhawar',NULL,0.00,_binary '\0','USER',_binary '','ACTIVE','NOT_APPLIED','NOT_APPLIED',NULL,''),(14,'2026-06-19 08:56:01.330099','kalyanibhawar3@gmail.com','9898989898','Kalyani',NULL,0.00,_binary '\0','USER',_binary '','NOT_APPLIED','NOT_APPLIED','NOT_APPLIED',NULL,'REF12361'),(15,'2026-06-19 16:03:58.386416','neharesapana2@gmail.com','9876543210','Sapna',NULL,0.00,_binary '\0','USER',_binary '','NOT_APPLIED','NOT_APPLIED','NOT_APPLIED',NULL,'REF12361');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -747,7 +1463,7 @@ CREATE TABLE `wallet_transactions` (
   PRIMARY KEY (`id`),
   KEY `FKrtsa3qtjhd0rn4xb92na03vd` (`user_id`),
   CONSTRAINT `FKrtsa3qtjhd0rn4xb92na03vd` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -756,7 +1472,6 @@ CREATE TABLE `wallet_transactions` (
 
 LOCK TABLES `wallet_transactions` WRITE;
 /*!40000 ALTER TABLE `wallet_transactions` DISABLE KEYS */;
-INSERT INTO `wallet_transactions` VALUES (1,2000.00,'2026-05-27 06:05:50.108028','Redeemed for Order #1','DEBIT',8,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(2,1500.00,'2026-05-27 10:17:47.109897','Redeemed for Order #4','DEBIT',9,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(3,2500.00,'2026-05-27 16:40:13.812864','Welcome credit for Eva Black Card activation','CREDIT',9,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(4,937.31,'2026-05-27 16:48:06.839372','Cashback for Order #6 (Eva Black Card)','CREDIT',9,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(5,300.00,'2026-05-27 16:52:48.967889','Welcome credit for Eva Pink Card activation','CREDIT',3,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(6,118.70,'2026-05-27 17:26:50.622423','Cashback for Order #7 (Eva Pink Card)','CREDIT',3,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(7,100.00,NULL,'Secured advanced booking payment for Appointment #10','DEBIT',6,NULL,NULL,'2026-05-28 06:45:59.196364',NULL,NULL,NULL,NULL),(8,100.00,NULL,'Secured advanced booking payment for Appointment #12','DEBIT',9,NULL,NULL,'2026-05-28 06:51:32.707173',NULL,NULL,NULL,NULL),(9,300.00,NULL,'Welcome credit for Eva Pink Card activation','CREDIT',14,NULL,NULL,'2026-05-28 10:05:19.361345',NULL,NULL,NULL,NULL),(10,1000.00,NULL,'Welcome credit for Eva Gold Card activation','CREDIT',14,NULL,NULL,'2026-05-28 10:16:35.425128',NULL,NULL,NULL,NULL),(11,752.10,'2026-05-29 05:15:56.588859','Cashback for Order #18 (Eva Gold Card)','CREDIT',14,NULL,NULL,NULL,'GENERAL_CREDIT',NULL,NULL,NULL),(12,752.10,'2026-05-29 06:11:02.201968','Cashback for Order #19 (Eva Gold Card)','CREDIT',14,NULL,NULL,NULL,'GENERAL_CREDIT',NULL,NULL,NULL),(13,100.00,'2026-05-29 06:14:07.605550','Secured advanced booking payment for Appointment #22','DEBIT',14,NULL,NULL,NULL,'SALON_DEPOSIT',NULL,NULL,NULL),(14,1000.00,'2026-05-29 06:43:06.667575','Welcome credit for Eva Gold Card activation','CREDIT',15,NULL,NULL,NULL,'MEMBERSHIP_WELCOME',NULL,NULL,NULL),(15,100.00,'2026-05-29 06:44:46.162065','Secured advanced booking payment for Appointment #23','DEBIT',15,NULL,NULL,NULL,'SALON_DEPOSIT',NULL,NULL,NULL),(16,2500.00,'2026-05-29 06:52:31.450338','Welcome credit for Eva Black Card activation','CREDIT',15,NULL,NULL,NULL,'MEMBERSHIP_WELCOME',NULL,NULL,NULL),(17,300.00,'2026-06-02 09:20:12.213945','Welcome credit for Eva Pink Card activation','CREDIT',17,NULL,NULL,NULL,'MEMBERSHIP_WELCOME',NULL,NULL,NULL),(18,1000.00,'2026-06-02 11:28:05.481851','Welcome credit for Eva Gold Card activation','CREDIT',17,NULL,NULL,NULL,'MEMBERSHIP_WELCOME',NULL,NULL,NULL),(19,300.00,'2026-06-04 06:04:50.154383','Welcome credit for Eva Pink Card activation','CREDIT',18,NULL,NULL,NULL,'MEMBERSHIP_WELCOME',NULL,NULL,NULL),(20,1000.00,'2026-06-04 07:54:00.234100','Welcome credit for Eva Gold Card activation','CREDIT',18,NULL,NULL,NULL,'MEMBERSHIP_WELCOME',NULL,NULL,NULL),(21,100.00,'2026-06-05 11:24:39.911294','Secured advanced booking payment for Appointment #25','DEBIT',17,NULL,NULL,NULL,'SALON_DEPOSIT',NULL,NULL,NULL);
 /*!40000 ALTER TABLE `wallet_transactions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -774,7 +1489,7 @@ CREATE TABLE `wallets` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UKsswfdl9fq40xlkove1y5kc7kv` (`user_id`),
   CONSTRAINT `FKc1foyisidw7wqqrkamafuwn4e` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -783,7 +1498,7 @@ CREATE TABLE `wallets` (
 
 LOCK TABLES `wallets` WRITE;
 /*!40000 ALTER TABLE `wallets` DISABLE KEYS */;
-INSERT INTO `wallets` VALUES (1,1200.00,17),(2,1300.00,18);
+INSERT INTO `wallets` VALUES (1,0.00,12),(2,0.00,14),(3,0.00,15);
 /*!40000 ALTER TABLE `wallets` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -796,4 +1511,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-07  1:58:20
+-- Dump completed on 2026-06-20  0:50:12

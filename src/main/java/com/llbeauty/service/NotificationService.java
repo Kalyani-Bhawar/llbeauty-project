@@ -1,57 +1,51 @@
 package com.llbeauty.service;
 
 import com.llbeauty.entity.AdminNotification;
-import com.llbeauty.repository.AdminNotificationRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.llbeauty.entity.Notification;
+import com.llbeauty.entity.User;
+
 import java.util.List;
 
-@Service
-public class NotificationService {
+/**
+ * NotificationService – contract for user and admin notification operations.
+ */
+public interface NotificationService {
 
-    private final AdminNotificationRepository notificationRepository;
+    // ─── User Notifications ───────────────────────────────────────────────────
 
-    public NotificationService(AdminNotificationRepository notificationRepository) {
-        this.notificationRepository = notificationRepository;
-    }
+    void createNotification(User user, String title, String message);
 
-    @Transactional
-    public void sendNotification(String title, String message, String type, String linkUrl) {
-        AdminNotification notification = new AdminNotification();
-        notification.setTitle(title);
-        notification.setMessage(message);
-        notification.setType(type);
-        notification.setLinkUrl(linkUrl);
-        notification.setRead(false);
-        notificationRepository.save(notification);
-    }
+    void createNotification(User user, String title, String message, Notification.NotificationType type);
 
-    public List<AdminNotification> getUnreadNotifications() {
-        return notificationRepository.findByIsReadFalseOrderByCreatedAtDesc();
-    }
+    List<Notification> getUserNotifications(User user);
 
-    public List<AdminNotification> getRecentNotifications() {
-        return notificationRepository.findTop10ByOrderByCreatedAtDesc();
-    }
+    List<Notification> getUnreadUserNotifications(User user);
 
-    public long getUnreadCount() {
-        return notificationRepository.countByIsReadFalse();
-    }
+    long getUserUnreadCount(User user);
 
-    @Transactional
-    public void markAsRead(Long id) {
-        notificationRepository.findById(id).ifPresent(notification -> {
-            notification.setRead(true);
-            notificationRepository.save(notification);
-        });
-    }
+    void markAsRead(Long notificationId);
 
-    @Transactional
-    public void markAllAsRead() {
-        List<AdminNotification> unread = notificationRepository.findByIsReadFalseOrderByCreatedAtDesc();
-        for (AdminNotification n : unread) {
-            n.setRead(true);
-        }
-        notificationRepository.saveAll(unread);
-    }
+    void markAllAsRead(User user);
+
+    void deleteNotification(Long notificationId);
+
+    // ─── Admin Notifications ──────────────────────────────────────────────────
+
+    void sendNotification(String title, String message, String type, String linkUrl);
+
+    void createNotificationToAdmins(String title, String message);
+
+    List<AdminNotification> getRecentNotifications();
+
+    List<AdminNotification> getUnreadNotifications();
+
+    long getUnreadCount();
+
+    void markAdminNotificationRead(Long id);
+
+    void markAllAdminNotificationsRead();
+
+    void deleteAdminNotification(Long id);
+
+    void markAllAsRead();
 }

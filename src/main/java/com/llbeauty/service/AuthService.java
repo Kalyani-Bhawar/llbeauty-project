@@ -10,7 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import com.llbeauty.entity.AgentProfile;
+import com.llbeauty.entity.Commission;
+import com.llbeauty.repository.AgentProfileRepository;
+import com.llbeauty.repository.CommissionRepository;
+import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
@@ -26,6 +30,8 @@ public class AuthService {
     private final OtpService otpService;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final AgentProfileRepository agentProfileRepository;
+    private final CommissionRepository commissionRepository;
 
     @org.springframework.beans.factory.annotation.Value("${admin.default.password:admin123}")
     private String defaultAdminPassword;
@@ -34,12 +40,15 @@ public class AuthService {
                        AdminRepository adminRepository,
                        OtpService otpService,
                        JwtUtil jwtUtil,
-                       BCryptPasswordEncoder passwordEncoder) {
+                       BCryptPasswordEncoder passwordEncoder,AgentProfileRepository agentProfileRepository,
+                       CommissionRepository commissionRepository) {
         this.userRepository = userRepository;
         this.adminRepository = adminRepository;
         this.otpService = otpService;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
+        this.agentProfileRepository = agentProfileRepository;
+        this.commissionRepository = commissionRepository;
     }
 
     // =========================================================
@@ -54,7 +63,35 @@ public class AuthService {
         user.setName(request.getName());
         user.setMobile(request.getMobile());
         user.setEmail(request.getEmail());
+        user.setReferralCode(request.getReferralCode());
         userRepository.save(user);
+        String referralCode = request.getReferralCode();
+
+        if (referralCode != null) {
+            referralCode = referralCode.trim();
+        }
+
+        if (referralCode != null && !referralCode.isBlank()) {
+
+            System.out.println("Referral Code = [" + referralCode + "]");
+
+            agentProfileRepository.findByReferralCode(referralCode)
+                .ifPresent(agent -> {
+
+                    System.out.println("FOUND AGENT = " + agent.getId());
+
+                    Commission commission = new Commission();
+
+                    commission.setAgent(agent);
+                    commission.setAmount(new BigDecimal("50"));
+                    commission.setDescription("User Registration Referral");
+                    commission.setStatus("APPROVED");
+
+                    commissionRepository.save(commission);
+
+                    System.out.println("COMMISSION SAVED");
+                });
+        }
         
         // Send OTP to registered email
         otpService.sendOtp(request.getEmail());

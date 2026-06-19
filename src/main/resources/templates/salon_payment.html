@@ -311,6 +311,10 @@
             let formData = new FormData();
             formData.append("appointmentId", appointmentId);
             formData.append("useWallet", useWallet);
+			formData.append(
+			    "referralCode",
+			    referralCode
+			);
 
             fetch('/salon/create-order', {
                 method: 'POST',

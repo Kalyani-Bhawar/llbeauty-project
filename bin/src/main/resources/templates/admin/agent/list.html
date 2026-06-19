@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::section})}">
+<head><title>Agent Management – Admin</title></head>
+<body>
+<section>
+    <h1 class="page-title"><i class="bi bi-people-fill me-2" style="color:#c9a84c;"></i> Agent Management</h1>
+    <p class="page-subtitle">Manage all EVA agent accounts, review applications, and monitor performance.</p>
+
+    <!-- Flash Messages -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show rounded-3" role="alert" style="background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.2);color:#2ecc71;">
+        <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}">Success</span>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- SEARCH & FILTER BAR -->
+    <div class="d-flex flex-wrap gap-3 mb-4">
+        <form th:action="@{/admin/agents}" method="GET" class="d-flex flex-wrap gap-2 align-items-center flex-grow-1">
+            <div class="position-relative flex-grow-1">
+                <i class="bi bi-search position-absolute" style="left:14px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.3);"></i>
+                <input type="text" name="search" class="form-control" th:value="${search}"
+                       placeholder="Search by Agent ID, name or email..."
+                       style="background:rgba(30,30,30,0.8);border:1px solid rgba(201,168,76,0.15);border-radius:12px;color:#fff;padding:10px 14px 10px 38px;font-size:0.85rem;">
+            </div>
+            <select name="status" class="form-select" onchange="this.form.submit()"
+                    style="width:160px;background:rgba(30,30,30,0.8);border:1px solid rgba(201,168,76,0.15);border-radius:12px;color:#fff;font-size:0.85rem;padding:10px 14px;">
+                <option value="ALL" th:selected="${status == 'ALL'}">All Status</option>
+                <option value="Applied" th:selected="${status == 'Applied'}">Applied</option>
+                <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Active</option>
+                <option value="Suspended" th:selected="${status == 'Suspended'}">Suspended</option>
+                <option value="Rejected" th:selected="${status == 'Rejected'}">Rejected</option>
+            </select>
+            <button type="submit" class="btn" style="background:rgba(201,168,76,0.15);color:#c9a84c;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:10px 20px;font-size:0.85rem;font-weight:500;">
+                <i class="bi bi-funnel me-1"></i> Filter
+            </button>
+        </form>
+        <div class="d-flex gap-2">
+            <a href="/admin/agents/commission-rules" class="btn" style="background:rgba(201,168,76,0.15);color:#c9a84c;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:10px 20px;font-size:0.85rem;font-weight:500;">
+                <i class="bi bi-gear me-1"></i> Commission Rules
+            </a>
+            <a href="/admin/agents/settlements" class="btn" style="background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.3);border-radius:12px;padding:10px 20px;font-size:0.85rem;font-weight:500;">
+                <i class="bi bi-bank me-1"></i> Settlements
+            </a>
+        </div>
+    </div>
+
+    <!-- AGENTS TABLE -->
+    <div class="data-card">
+        <div class="data-card-header">
+            <h6><i class="bi bi-people me-2" style="color:#c9a84c;"></i> Registered Agents</h6>
+            <span style="color:rgba(255,255,255,0.4);font-size:0.8rem;" th:text="${agents.size()} + ' agents found'">0 agents found</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Agent ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Referral Code</th>
+                        <th>Status</th>
+                        <th>Wallet Balance</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${agents}">
+                        <td>
+                            <span class="fw-semibold" style="color:#c9a84c;" th:text="${item['agent'].agentId != null ? item['agent'].agentId : '—'}">EVAAG</span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;background:rgba(201,168,76,0.15);color:#c9a84c;font-size:0.75rem;font-weight:700;">
+                                    <span th:text="${item['profile'].fullName != null ? item['profile'].fullName.substring(0,1) : '?'}">?</span>
+                                </div>
+                                <span th:text="${item['profile'].fullName != null ? item['profile'].fullName : item['agent'].user.name}">Name</span>
+                            </div>
+                        </td>
+                        <td style="color:rgba(255,255,255,0.5);" th:text="${item['agent'].user.email}">email</td>
+                        <td>
+                            <code style="background:rgba(201,168,76,0.1);color:#c9a84c;padding:3px 8px;border-radius:6px;font-size:0.8rem;"
+                                  th:if="${item['agent'].referralCode != null}"
+                                  th:text="${item['agent'].referralCode}">CODE</code>
+                            <span th:if="${item['agent'].referralCode == null}" style="color:rgba(255,255,255,0.3);">—</span>
+                        </td>
+                        <td>
+                            <span class="badge-status badge-completed" th:if="${item['agent'].status == 'ACTIVE'}">Active</span>
+                            <span class="badge-status badge-pending" th:if="${item['agent'].status == 'Applied'}">Applied</span>
+                            <span class="badge-status badge-cancelled" th:if="${item['agent'].status == 'Suspended'}">Suspended</span>
+                            <span class="badge-status badge-cancelled" th:if="${item['agent'].status == 'Rejected'}">Rejected</span>
+                            <span class="badge-status" style="background:rgba(149,165,166,0.15);color:#95a5a6;"
+                                  th:if="${item['agent'].status != 'ACTIVE' && item['agent'].status != 'Applied' && item['agent'].status != 'Suspended' && item['agent'].status != 'Rejected'}"
+                                  th:text="${item['agent'].status}">Status</span>
+                        </td>
+                        <td style="color:#2ecc71;font-weight:600;">₹<span th:text="${#numbers.formatDecimal(item['wallet'].currentBalance, 1, 2)}">0.00</span></td>
+                        <td>
+                            <a th:href="@{/admin/agents/{id}/details(id=${item['agent'].id})}"
+                               class="btn btn-sm"
+                               style="background:rgba(201,168,76,0.15);color:#c9a84c;border:1px solid rgba(201,168,76,0.2);border-radius:8px;font-size:0.75rem;font-weight:500;padding:5px 14px;">
+                                <i class="bi bi-eye me-1"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${agents == null || agents.isEmpty()}">
+                        <td colspan="7" class="empty-state">
+                            <i class="bi bi-people"></i>
+                            <p>No agents found matching your criteria.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div class="content">
+        <div class="card bg-dark text-white border-danger mb-3 mx-auto mt-5" style="max-width: 600px;">
+            <div class="card-header border-danger"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i> Error Encountered</div>
+            <div class="card-body">
+                <h5 class="card-title text-danger">An unexpected error occurred.</h5>
+                <p class="card-text text-white-50" th:text="${errorMessage}">Error details will appear here.</p>
+                <button type="button" class="btn btn-outline-light mt-3" onclick="history.back()">Go Back</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -540,22 +540,50 @@ public class AdminController {
     }
 
     @PostMapping("/products/save")
-    public String saveProduct(@ModelAttribute("product") Product product, 
-                              @RequestParam("imageFile") MultipartFile imageFile, 
+    public String saveProduct(@ModelAttribute("product") Product product,
+                              @RequestParam("imageFile") MultipartFile imageFile,
                               RedirectAttributes redirectAttributes) {
+
         try {
+
             if (!imageFile.isEmpty()) {
                 String imageUrl = saveUploadedFile(imageFile, "products");
                 product.setImageUrl(imageUrl);
             } else {
-                product.setImageUrl("/images/skincare.png"); // fallback default image
+                product.setImageUrl("/images/skincare.png");
             }
+
+            if (product.getMerchantDiscount() == null) {
+                product.setMerchantDiscount(0.0);
+            }
+
+            if (product.getWholesalePrice() == null) {
+                product.setWholesalePrice(0.0);
+            }
+
+            if (product.getStatus() == null || product.getStatus().isBlank()) {
+                product.setStatus("ACTIVE");
+            }
+            if (product.getPrice() != null && product.getMerchantDiscount() != null) {
+
+                double wholesalePrice =
+                    product.getPrice() -
+                    (product.getPrice() * product.getMerchantDiscount() / 100);
+
+                product.setWholesalePrice(wholesalePrice);
+            }
+
             productRepository.save(product);
-            redirectAttributes.addFlashAttribute("successMessage", "Product added successfully!");
+
+            redirectAttributes.addFlashAttribute(
+                "successMessage",
+                "Product added successfully!"
+            );
+
         } catch (IOException e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("errorMessage", "Failed to upload image: " + e.getMessage());
         }
+
         return "redirect:/admin/products";
     }
 
@@ -586,6 +614,16 @@ public class AdminController {
             product.setPrice(productDetails.getPrice());
             product.setStock(productDetails.getStock());
             product.setStatus(productDetails.getStatus());
+            product.setMerchantDiscount(productDetails.getMerchantDiscount());
+            if (product.getPrice() != null &&
+            	    product.getMerchantDiscount() != null) {
+
+            	    double wholesalePrice =
+            	        product.getPrice() -
+            	        (product.getPrice() * product.getMerchantDiscount() / 100);
+
+            	    product.setWholesalePrice(wholesalePrice);
+            	}
             
             try {
                 if (!imageFile.isEmpty()) {
@@ -601,6 +639,7 @@ public class AdminController {
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Product not found.");
         }
+        
         return "redirect:/admin/products";
     }
 

@@ -1,6 +1,7 @@
 package com.llbeauty.service;
 
-import com.llbeauty.dto.ExecutiveApplicationRequest;
+import com.llbeauty.dto.AgentApplicationRequest;
+
 import com.llbeauty.dto.MerchantApplicationRequest;
 import com.llbeauty.dto.StoreApplicationResponse;
 import com.llbeauty.dto.ApplicationStatusResponse;
@@ -12,9 +13,9 @@ import java.util.List;
 public interface StoreApplicationService {
 
     /**
-     * User applies for Executive program.
+     * User applies for Agent program.
      */
-    StoreApplicationResponse applyExecutive(Long userId, ExecutiveApplicationRequest request) throws ResourceNotFoundException;
+    StoreApplicationResponse applyAgent(Long userId, AgentApplicationRequest request) throws ResourceNotFoundException;
 
     /**
      * User applies for Merchant program.
@@ -22,7 +23,7 @@ public interface StoreApplicationService {
     StoreApplicationResponse applyMerchant(Long userId, MerchantApplicationRequest request) throws ResourceNotFoundException;
 
     /**
-     * Admin approves an application (executive or merchant).
+     * Admin approves an application (agent or merchant).
      */
     StoreApplicationResponse approveApplication(Long applicationId) throws ResourceNotFoundException;
 

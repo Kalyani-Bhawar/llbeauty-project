@@ -23,8 +23,18 @@ public class Order extends Auditable {
     private String paymentId;
     private String razorpayOrderId;
     private LocalDateTime createdAt;
+    @Column(name = "referral_code")
+    private String referralCode;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    public String getReferralCode() {
+		return referralCode;
+	}
+
+	public void setReferralCode(String referralCode) {
+		this.referralCode = referralCode;
+	}
+
+	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> items = new ArrayList<>();
 
     @PrePersist

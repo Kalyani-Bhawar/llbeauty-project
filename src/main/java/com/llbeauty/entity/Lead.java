@@ -11,8 +11,8 @@ public class Lead {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "executive_user_id", nullable = false)
-    private User executive;
+    @JoinColumn(name = "agent_user_id", nullable = false)
+    private User agent;
 
     @Column(nullable = false)
     private String name;
@@ -47,8 +47,8 @@ public class Lead {
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public User getExecutive() { return executive; }
-    public void setExecutive(User executive) { this.executive = executive; }
+    public User getAgent() { return agent; }
+    public void setAgent(User agent) { this.agent = agent; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getMobile() { return mobile; }

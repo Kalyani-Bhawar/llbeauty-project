@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="My Account Dashboard – EVA VIP Portal. Manage your membership, wallet, and transaction history.">
+    <title>My Account – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link th:href="@{/css/style.css(v=1.1)}" href="/css/style.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        /* ─── Dashboard Wrapper ─── */
+        .dashboard-content {
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            flex: 1 0 auto !important; /* Force it to grow, never shrink, auto basis */
+            padding: 48px 0 80px;
+            color: #fff;
+        }
+
+        /* ─── Stat Cards ─── */
+        .stat-glass-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 20px;
+            padding: 28px 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.35s ease;
+            text-decoration: none;
+            display: block;
+        }
+        .stat-glass-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .stat-glass-card:hover {
+            border-color: rgba(201,168,76,0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+        }
+        .stat-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 18px;
+        }
+        .stat-icon.gold { background: rgba(201,168,76,0.12); }
+        .stat-icon.green { background: rgba(46,204,113,0.12); }
+        .stat-icon.blue { background: rgba(52,152,219,0.12); }
+        .stat-icon.pink { background: rgba(255,117,140,0.12); }
+        .stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.9rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        .stat-label {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.45);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* ─── Membership VIP Card ─── */
+        .vip-pass {
+            border-radius: 24px;
+            padding: 28px 26px;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #fff;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: all 0.35s ease;
+        }
+        .vip-pass:hover { transform: translateY(-4px); }
+        .vip-pass.no-member {
+            background: linear-gradient(135deg, #1a1a1a 0%, #111 100%);
+            border: 1.5px dashed rgba(201,168,76,0.3);
+        }
+        .vip-pass.pink-pass {
+            background: linear-gradient(135deg, #ff758c 0%, #c2185b 100%);
+        }
+        .vip-pass.gold-pass {
+            background: linear-gradient(135deg, #c9a84c 0%, #7d5f0b 100%);
+        }
+        .vip-pass.black-pass {
+            background: radial-gradient(ellipse at top right, #333 0%, #111 50%, #000 100%);
+            border: 1px solid rgba(201,168,76,0.5);
+            box-shadow: 0 20px 50px rgba(201,168,76,0.1);
+        }
+        .vip-pass .shine-line {
+            position: absolute;
+            top: 0; left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            transform: skewX(-20deg);
+            animation: passShine 4s infinite 1s;
+        }
+        @keyframes passShine {
+            0% { left: -100%; }
+            40%, 100% { left: 150%; }
+        }
+        .vip-pass-tier {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.75;
+        }
+        .vip-pass-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+        }
+        .vip-pass-chip {
+            width: 44px; height: 32px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .vip-pass-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+        .vip-pass-validity {
+            font-size: 0.72rem;
+            opacity: 0.6;
+        }
+
+        /* ─── Panel Cards ─── */
+        .panel-card {
+            background: rgba(22,22,22,0.95);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 20px;
+            padding: 28px;
+            /* height: 100%; REMOVED to prevent flexbox overflow bugs */
+        }
+        .panel-card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            color: rgba(201,168,76,0.9);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 20px;
+        }
+        .panel-card-title i {
+            font-size: 1rem;
+        }
+
+        /* ─── Transaction Table ─── */
+        .txn-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.2s;
+        }
+        .txn-row:last-child { border-bottom: none; }
+        .txn-row:hover { background: rgba(255,255,255,0.015); border-radius: 10px; padding-left: 6px; }
+        .txn-icon-badge {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .txn-icon-badge.credit { background: rgba(46,204,113,0.12); color: #2ecc71; }
+        .txn-icon-badge.debit  { background: rgba(231,76,60,0.12); color: #e74c3c; }
+
+        .txn-amount-credit { color: #2ecc71; font-weight: 700; font-size: 1rem; font-family: 'Playfair Display', serif; }
+        .txn-amount-debit  { color: #e74c3c; font-weight: 700; font-size: 1rem; font-family: 'Playfair Display', serif; }
+
+        /* ─── Wallet Balance ─── */
+        .wallet-hero {
+            background: linear-gradient(135deg, rgba(201,168,76,0.08) 0%, rgba(201,168,76,0.03) 100%);
+            border: 1px solid rgba(201,168,76,0.2);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .wallet-balance-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--gold);
+            line-height: 1;
+        }
+
+        /* ─── Progress Track ─── */
+        .tier-track {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin-top: 20px;
+        }
+        .tier-dot {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+            border: 2px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.03);
+            transition: all 0.4s ease;
+        }
+        .tier-dot.active {
+            border-color: var(--gold);
+            color: #fff;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            box-shadow: 0 0 12px rgba(201,168,76,0.5);
+        }
+        .tier-line {
+            flex: 1;
+            height: 3px;
+            background: rgba(255,255,255,0.06);
+            position: relative;
+        }
+        .tier-line .fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 100%);
+            transition: width 1s ease;
+        }
+
+        /* ─── Quick Action Buttons ─── */
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 18px 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            text-decoration: none;
+            color: rgba(255,255,255,0.75);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .quick-action-btn:hover {
+            border-color: rgba(201,168,76,0.35);
+            background: rgba(201,168,76,0.06);
+            color: var(--gold);
+            transform: translateY(-3px);
+        }
+        .quick-action-btn i {
+            font-size: 1.4rem;
+        }
+        .quick-action-btn span {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* ─── Offer item ─── */
+        .offer-item {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.02);
+            transition: all 0.3s ease;
+        }
+        .offer-item:hover {
+            border-color: rgba(201,168,76,0.2);
+            background: rgba(201,168,76,0.04);
+        }
+        .offer-emoji {
+            font-size: 1.6rem;
+            flex-shrink: 0;
+            line-height: 1;
+            margin-top: 2px;
+        }
+        .offer-title { font-size: 0.88rem; font-weight: 600; color: #fff; }
+        .offer-desc  { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 3px; }
+
+        /* ─── Alert messages ─── */
+        .dashboard-alert {
+            background: rgba(46,204,113,0.1);
+            color: #2ecc71;
+            border: 1px solid rgba(46,204,113,0.2);
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 0.88rem;
+        }
+        .dashboard-alert.error {
+            background: rgba(231,76,60,0.1);
+            color: #e74c3c;
+            border-color: rgba(231,76,60,0.2);
+        }
+
+        /* ─── QR Box ─── */
+        .qr-container {
+            background: #fff;
+            padding: 8px;
+            border-radius: 14px;
+            display: inline-block;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 767px) {
+            .dashboard-content { padding: 28px 0 60px; }
+            .wallet-balance-num { font-size: 1.9rem; }
+            .vip-pass { min-height: 160px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <header>
+        <div th:replace="~{fragments/header :: header}"></div>
+    </header>
+
+    <main class="dashboard-content d-flex flex-column">
+        <div class="container-fluid px-4 py-4 animate-fade-up">
+
+            <!-- Flash Messages -->
+            <div th:if="${successMessage}" class="dashboard-alert mb-4">
+                <i class="bi bi-patch-check-fill me-2"></i>
+                <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${errorMessage}" class="dashboard-alert error mb-4">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <!-- Page Header -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-5">
+                <div>
+                    <p class="mb-1" style="font-size:0.75rem; text-transform: uppercase; letter-spacing:1.5px; color: var(--gold);">
+                        <i class="bi bi-person-circle me-1"></i> My Account
+                    </p>
+                    <h1 class="brand-font mb-0 text-white" style="font-size: 2rem; font-weight: 700;">
+                        Welcome back, <span th:text="${user.name}" style="color: var(--gold);">Beautiful</span>!
+                    </h1>
+                    <p class="text-white-50 mb-0 mt-1" style="font-size:0.85rem;">
+                        <i class="bi bi-phone me-1"></i><span th:text="${user.mobile}"></span>
+                        &nbsp;·&nbsp;
+                        <i class="bi bi-envelope me-1"></i><span th:text="${user.email ?: 'No email on file'}"></span>
+                    </p>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="/shop" class="btn btn-sm btn-outline-gold px-4 py-2">
+                        <i class="bi bi-bag me-1"></i> Visit Boutique
+                    </a>
+                    <a href="/wallet/topup" class="btn btn-sm btn-gold px-4 py-2">
+                        <i class="bi bi-plus-circle-fill me-1"></i> Add Money
+                    </a>
+                </div>
+            </div>
+
+            <!-- ── STAT CARDS ROW ── -->
+            <div class="row g-3 mb-4">
+                <!-- Wallet Balance -->
+                <div class="col-6 col-lg-3">
+                    <a href="/wallet/topup" class="stat-glass-card">
+                        <div class="stat-icon gold"><i class="bi bi-wallet2" style="color:var(--gold);"></i></div>
+                        <div class="stat-value text-gold">
+                            ₹<span th:text="${#numbers.formatDecimal(walletBalance, 1, 2)}">0.00</span>
+                        </div>
+                        <div class="stat-label">Wallet Balance</div>
+                        <div class="mt-2" style="font-size:0.7rem; color: rgba(201,168,76,0.6);">
+                            <i class="bi bi-arrow-up-right-circle-fill me-1"></i> Add Money →
+                        </div>
+                    </a>
+                </div>
+                <!-- Total Transactions -->
+                <div class="col-6 col-lg-3">
+                    <div class="stat-glass-card">
+                        <div class="stat-icon green"><i class="bi bi-receipt" style="color:#2ecc71;"></i></div>
+                        <div class="stat-value" style="color:#2ecc71;">
+                            <span th:text="${transactions != null ? transactions.size() : 0}">0</span>
+                        </div>
+                        <div class="stat-label">Transactions</div>
+                        <div class="mt-2" style="font-size:0.7rem; color: rgba(46,204,113,0.5);">
+                            All time records
+                        </div>
+                    </div>
+                </div>
+                <!-- Membership Status -->
+                <div class="col-6 col-lg-3">
+                    <a href="/membership" class="stat-glass-card">
+                        <div class="stat-icon pink"><i class="bi bi-crown-fill" style="color:#ff758c;"></i></div>
+                        <div class="stat-value" style="font-size: 1.1rem; color: #ff758c;" 
+                             th:text="${activeMembership != null ? activeMembership.membership.name : 'No Plan'}">
+                            No Plan
+                        </div>
+                        <div class="stat-label">Membership</div>
+                        <div class="mt-2" style="font-size:0.7rem; color: rgba(255,117,140,0.6);" 
+                             th:if="${activeMembership != null}">
+                            Valid till: <span th:text="${#temporals.format(activeMembership.expiryDate, 'dd MMM yyyy')}"></span>
+                        </div>
+                        <div class="mt-2" style="font-size:0.7rem; color: rgba(255,117,140,0.6);" th:if="${activeMembership == null}">
+                            Upgrade Now →
+                        </div>
+                    </a>
+                </div>
+                <!-- Savings -->
+                <div class="col-6 col-lg-3">
+                    <div class="stat-glass-card">
+                        <div class="stat-icon blue"><i class="bi bi-piggy-bank-fill" style="color:#3498db;"></i></div>
+                        <div class="stat-value" style="color:#3498db;">
+                            <span th:text="${activeMembership != null ? #numbers.formatDecimal(activeMembership.membership.cashbackPercent * 100, 1, 0) : '0'}">0</span>%
+                        </div>
+                        <div class="stat-label">Cashback Rate</div>
+                        <div class="mt-2" style="font-size:0.7rem; color: rgba(52,152,219,0.5);">
+                            On every purchase
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── MAIN CONTENT ── -->
+            <div class="row g-4 mb-4">
+
+                <!-- LEFT COLUMN -->
+                <div class="col-12 col-lg-5 d-flex flex-column gap-4">
+
+                    <!-- VIP PASS CARD -->
+                    <div class="panel-card d-flex flex-column" style="flex: 1;">
+                        <div class="panel-card-title">
+                            <i class="bi bi-credit-card-2-front-fill" style="color: var(--gold);"></i>
+                            VIP Digital Pass
+                        </div>
+
+                        <!-- WITH MEMBERSHIP -->
+                        <div th:if="${activeMembership != null}">
+                            <div class="vip-pass mb-4"
+                                 th:classappend="${#strings.contains(activeMembership.membership.name, 'Pink')} ? 'pink-pass' : (${#strings.contains(activeMembership.membership.name, 'Gold')} ? 'gold-pass' : 'black-pass')">
+                                <div class="shine-line"></div>
+                                <!-- Top row -->
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="vip-pass-tier" th:text="${activeMembership.membership.name}">EVA GOLD</div>
+                                        <div class="vip-pass-brand mt-1">L.L. <span style="opacity:0.7;">BEAUTY</span></div>
+                                    </div>
+                                    <div class="vip-pass-chip"></div>
+                                </div>
+                                <!-- QR Code -->
+                                <div class="text-center my-3">
+                                    <div class="qr-container">
+                                        <div id="qrcode" style="width:90px; height:90px;"></div>
+                                    </div>
+                                </div>
+                                <!-- Bottom row -->
+                                <div class="d-flex justify-content-between align-items-end">
+                                    <div>
+                                        <div class="vip-pass-validity mb-1">MEMBER ID</div>
+                                        <div class="vip-pass-name" th:text="${membershipId}">LLB-MEMBER-0001</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="vip-pass-validity mb-1">VALID TILL</div>
+                                        <div class="vip-pass-name" th:text="${#temporals.format(activeMembership.expiryDate, 'MM / yyyy')}">05/2027</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tier Progress -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span style="font-size:0.8rem; color: rgba(255,255,255,0.5); font-weight: 600;">Membership Tier</span>
+                                    <a href="/membership" class="text-decoration-none" style="font-size:0.75rem; color: var(--gold);"
+                                       th:if="${tierProgress < 100}">
+                                        Upgrade <i class="bi bi-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                                <div class="tier-track">
+                                    <div class="tier-dot" th:classappend="${tierProgress >= 33} ? 'active' : ''">P</div>
+                                    <div class="tier-line">
+                                        <div class="fill" th:style="'width:' + (${tierProgress >= 66} ? '100' : '0') + '%'"></div>
+                                    </div>
+                                    <div class="tier-dot" th:classappend="${tierProgress >= 66} ? 'active' : ''">G</div>
+                                    <div class="tier-line">
+                                        <div class="fill" th:style="'width:' + (${tierProgress == 100} ? '100' : '0') + '%'"></div>
+                                    </div>
+                                    <div class="tier-dot" th:classappend="${tierProgress == 100} ? 'active' : ''">B</div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <span style="font-size:0.65rem; color: rgba(255,255,255,0.3);">Eva Pink</span>
+                                    <span style="font-size:0.65rem; color: rgba(255,255,255,0.3);">Eva Gold</span>
+                                    <span style="font-size:0.65rem; color: rgba(255,255,255,0.3);">Eva Black</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MEMBERSHIP HISTORY PANEL -->
+                        <div class="panel-card mb-4" th:if="${membershipHistory != null and !membershipHistory.isEmpty()}">
+                            <div class="panel-card-title">
+                                <i class="bi bi-clock-history" style="color: var(--gold);"></i>
+                                Membership History
+                            </div>
+                            <div class="d-flex flex-column gap-3">
+                                <div th:each="h : ${membershipHistory}" class="txn-row">
+                                    <div class="txn-icon-badge" style="background: rgba(201,168,76,0.1); color: var(--gold);">
+                                        <i class="bi bi-award"></i>
+                                    </div>
+                                    <div class="flex-fill" style="min-width: 0;">
+                                        <div style="font-size:0.85rem; font-weight:600; color:#fff;" th:text="${h.planName}">Eva Gold Card</div>
+                                        <div style="font-size:0.7rem; color: rgba(255,255,255,0.4);" class="text-truncate">
+                                            Valid: <span th:text="${#temporals.format(h.startDate, 'dd MMM yyyy')}"></span> to <span th:text="${#temporals.format(h.expiryDate, 'dd MMM yyyy')}"></span>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge-status badge-completed" style="font-size: 0.65rem;" th:if="${h.status == 'ACTIVE'}">ACTIVE</span>
+                                        <span class="badge-status badge-cancelled" style="font-size: 0.65rem;" th:if="${h.status == 'EXPIRED'}">EXPIRED</span>
+                                        <span class="badge-status badge-pending" style="font-size: 0.65rem;" th:if="${h.status == 'UPGRADED' or h.status == 'RENEWED'}">HISTORIC</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WITHOUT MEMBERSHIP -->
+                        <div th:if="${activeMembership == null}">
+                            <div class="vip-pass no-member text-center mb-4">
+                                <div>
+                                    <div style="font-size: 3rem; margin-bottom: 12px;">🌟</div>
+                                    <h5 class="brand-font text-white mb-2">Activate VIP Privilege</h5>
+                                    <p style="font-size:0.82rem; color: rgba(255,255,255,0.45); max-width: 240px; margin: 0 auto 20px;">
+                                        Unlock up to 20% instant cashback, birthday gifts & free shipping.
+                                    </p>
+                                    <a href="/membership" class="btn btn-gold btn-sm px-4">
+                                        <i class="bi bi-crown-fill me-2"></i> Unlock VIP Club
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <a href="/wallet/topup" class="quick-action-btn">
+                                    <i class="bi bi-wallet2"></i>
+                                    <span>Add Money</span>
+                                </a>
+                            </div>
+                            <div class="col-4">
+                                <a href="/shop" class="quick-action-btn">
+                                    <i class="bi bi-bag-heart"></i>
+                                    <span>Shop</span>
+                                </a>
+                            </div>
+                            <div class="col-4">
+                                <a href="/membership" class="quick-action-btn">
+                                    <i class="bi bi-crown"></i>
+                                    <span>Upgrade</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN (TOP) -->
+                <div class="col-12 col-lg-7 d-flex flex-column gap-4">
+                    <!-- WALLET PANEL -->
+                    <div class="panel-card d-flex flex-column" style="flex: 1;">
+                        <div class="panel-card-title">
+                            <i class="bi bi-wallet2" style="color: var(--gold);"></i>
+                            L.L. Rewards Wallet
+                        </div>
+
+                        <!-- Balance hero block -->
+                        <div class="wallet-hero">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                                <div>
+                                    <div class="stat-label mb-2">Available Balance</div>
+                                    <div class="wallet-balance-num" id="walletBalanceDisplay">
+                                        ₹<span th:text="${#numbers.formatDecimal(walletBalance, 1, 2)}">0.00</span>
+                                    </div>
+                                    <div class="mt-2" style="font-size:0.78rem; color: rgba(255,255,255,0.4);">
+                                        <i class="bi bi-shield-fill-check text-success me-1"></i>
+                                        Secured &amp; Encrypted
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column gap-2">
+                                    <a href="/wallet/topup" class="btn btn-gold btn-sm px-4">
+                                        <i class="bi bi-plus-circle-fill me-1"></i> Top Up
+                                    </a>
+                                    <div class="text-center" style="font-size:0.68rem; color: rgba(255,255,255,0.3);">
+                                        Use at checkout
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick preset add -->
+                        <div class="d-flex gap-2 flex-wrap mb-2">
+                            <span style="font-size:0.72rem; color: rgba(255,255,255,0.4); line-height:2.2; white-space:nowrap;">Quick Add:</span>
+                            <a href="/wallet/topup?amount=100" class="badge text-decoration-none" 
+                               style="background:rgba(201,168,76,0.1); color:var(--gold); border:1px solid rgba(201,168,76,0.2); padding:6px 14px; border-radius:50px; font-size:0.75rem; font-weight:600;">
+                                + ₹100
+                            </a>
+                            <a href="/wallet/topup?amount=200" class="badge text-decoration-none" 
+                               style="background:rgba(201,168,76,0.1); color:var(--gold); border:1px solid rgba(201,168,76,0.2); padding:6px 14px; border-radius:50px; font-size:0.75rem; font-weight:600;">
+                                + ₹200
+                            </a>
+                            <a href="/wallet/topup?amount=500" class="badge text-decoration-none" 
+                               style="background:rgba(201,168,76,0.1); color:var(--gold); border:1px solid rgba(201,168,76,0.2); padding:6px 14px; border-radius:50px; font-size:0.75rem; font-weight:600;">
+                                + ₹500
+                            </a>
+                            <a href="/wallet/topup?amount=1000" class="badge text-decoration-none" 
+                               style="background:rgba(201,168,76,0.1); color:var(--gold); border:1px solid rgba(201,168,76,0.2); padding:6px 14px; border-radius:50px; font-size:0.75rem; font-weight:600;">
+                                + ₹1000
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── MAIN CONTENT ROW 2 (BOTTOM) ── -->
+            <div class="row g-4">
+                <!-- LEFT COLUMN (BOTTOM) -->
+                <div class="col-12 col-lg-5 d-flex flex-column gap-4">
+
+                    <!-- EXCLUSIVE OFFERS -->
+                    <div class="panel-card d-flex flex-column" style="flex: 1;">
+                        <div class="panel-card-title">
+                            <i class="bi bi-gift-fill" style="color: #ff758c;"></i>
+                            Member Exclusives
+                        </div>
+                        <div class="d-flex flex-column gap-3">
+                            <div class="offer-item">
+                                <span class="offer-emoji">💇</span>
+                                <div>
+                                    <div class="offer-title">Salon Booking Discount</div>
+                                    <div class="offer-desc">Present your VIP ID at the checkout desk to avail.</div>
+                                </div>
+                            </div>
+                            <div class="offer-item">
+                                <span class="offer-emoji">🎁</span>
+                                <div>
+                                    <div class="offer-title">Monthly Free Sample Hamper</div>
+                                    <div class="offer-desc">Available for Gold &amp; Black card holders. Claim at flagship.</div>
+                                </div>
+                            </div>
+                            <div class="offer-item">
+                                <span class="offer-emoji">🎂</span>
+                                <div>
+                                    <div class="offer-title">Birthday Surprise Gift</div>
+                                    <div class="offer-desc">Special beauty hamper delivered on your birthday month.</div>
+                                </div>
+                            </div>
+                            <div class="offer-item">
+                                <span class="offer-emoji">🚚</span>
+                                <div>
+                                    <div class="offer-title">Free Priority Shipping</div>
+                                    <div class="offer-desc">All orders shipped free for Gold &amp; Black members.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT COLUMN (BOTTOM) -->
+                <div class="col-12 col-lg-7 d-flex flex-column gap-4">
+
+                    <!-- REWARD POINTS PANEL -->
+                    <div class="panel-card mb-4">
+                        <div class="panel-card-title">
+                            <i class="bi bi-star-fill" style="color: #ffc107;"></i>
+                            L.L. Rewards Points
+                        </div>
+                        <div class="row g-3 py-2">
+                            <div class="col-4 text-center">
+                                <div style="font-size: 0.72rem; text-transform: uppercase; color: rgba(255,255,255,0.45); letter-spacing: 0.08em; font-weight: 500;">Available</div>
+                                <div style="font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #ffc107;" 
+                                     th:text="${rewardPoint != null ? rewardPoint.availablePoints : 0}">0</div>
+                            </div>
+                            <div class="col-4 text-center" style="border-left: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06);">
+                                <div style="font-size: 0.72rem; text-transform: uppercase; color: rgba(255,255,255,0.45); letter-spacing: 0.08em; font-weight: 500;">Total Earned</div>
+                                <div style="font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #2ecc71;" 
+                                     th:text="${rewardPoint != null ? rewardPoint.totalPoints : 0}">0</div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div style="font-size: 0.72rem; text-transform: uppercase; color: rgba(255,255,255,0.45); letter-spacing: 0.08em; font-weight: 500;">Redeemed</div>
+                                <div style="font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #e74c3c;" 
+                                     th:text="${rewardPoint != null ? rewardPoint.redeemedPoints : 0}">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TRANSACTIONS PANEL -->
+                    <div class="panel-card">
+                        <div class="panel-card-title">
+                            <i class="bi bi-clock-history" style="color: var(--gold);"></i>
+                            Transaction Ledger
+                            <span class="ms-auto badge" th:if="${transactions != null && !transactions.isEmpty()}"
+                                  style="background: rgba(201,168,76,0.12); color: var(--gold); font-size:0.7rem; padding:4px 10px; border-radius:50px;">
+                                <span th:text="${transactions.size()}">0</span> records
+                            </span>
+                        </div>
+
+                        <!-- Transaction Rows -->
+                        <div style="flex: 1; overflow-y: auto; padding-right: 4px;">
+                            <div th:if="${transactions != null && !transactions.isEmpty()}">
+                                <div th:each="tx : ${transactions}" class="txn-row">
+                                    <!-- Icon -->
+                                    <div class="txn-icon-badge" th:classappend="${tx.type == 'CREDIT'} ? 'credit' : 'debit'">
+                                        <i th:class="${tx.type == 'CREDIT'} ? 'bi bi-arrow-down-left' : 'bi bi-arrow-up-right'"></i>
+                                    </div>
+                                    <!-- Details -->
+                                    <div class="flex-fill" style="min-width: 0;">
+                                        <div style="font-size:0.85rem; font-weight:600; color:#fff; white-space: nowrap; overflow:hidden; text-overflow:ellipsis;"
+                                             th:text="${tx.description ?: 'Wallet Transaction'}">
+                                            Wallet Transaction
+                                        </div>
+                                        <div class="d-flex gap-2 mt-1 flex-wrap">
+                                            <span style="font-size:0.7rem; color: rgba(255,255,255,0.35);">
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                <span th:text="${#temporals.format(tx.createdAt, 'dd MMM yyyy')}"></span>
+                                            </span>
+                                            <span style="font-size:0.7rem; color: rgba(255,255,255,0.25);">
+                                                <i class="bi bi-clock me-1"></i>
+                                                <span th:text="${#temporals.format(tx.createdAt, 'hh:mm a')}"></span>
+                                            </span>
+                                        </div>
+                                        <!-- Payment method badge -->
+                                        <span class="mt-1 d-inline-block" style="font-size:0.65rem; color: rgba(255,255,255,0.3);"
+                                              th:text="${#strings.contains(tx.source ?: '', 'RAZORPAY') ? '💳 Razorpay' : (#strings.contains(tx.source ?: '', 'QR') ? '📱 QR Scan' : (#strings.contains(tx.description ?: '', 'Cashback') ? '✨ Cashback' : '👛 Wallet'))}">
+                                        </span>
+                                    </div>
+                                    <!-- Amount -->
+                                    <div class="text-end flex-shrink-0">
+                                        <div th:if="${tx.type == 'CREDIT'}" class="txn-amount-credit">
+                                            +₹<span th:text="${#numbers.formatDecimal(tx.amount, 1, 2)}">0.00</span>
+                                        </div>
+                                        <div th:if="${tx.type == 'DEBIT'}" class="txn-amount-debit">
+                                            −₹<span th:text="${#numbers.formatDecimal(tx.amount, 1, 2)}">0.00</span>
+                                        </div>
+                                        <div class="mt-1">
+                                            <span style="font-size:0.65rem; color:#2ecc71; background: rgba(46,204,113,0.1); 
+                                                         padding:2px 8px; border-radius:50px; border:1px solid rgba(46,204,113,0.2);">
+                                                ✓ Done
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Empty state -->
+                            <div th:if="${transactions == null || transactions.isEmpty()}" class="text-center py-5">
+                                <i class="bi bi-wallet2 d-block mb-3" style="font-size: 2.5rem; color: rgba(201,168,76,0.3);"></i>
+                                <p style="color: rgba(255,255,255,0.35); font-size:0.88rem; margin-bottom: 16px;">
+                                    No transactions yet. Start by topping up your wallet!
+                                </p>
+                                <a href="/wallet/topup" class="btn btn-gold btn-sm px-4">
+                                    <i class="bi bi-plus-circle me-1"></i> Add Money Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script th:inline="javascript">
+        const membershipActive = [[${activeMembership != null}]];
+        if (membershipActive) {
+            const uuid = [[${activeMembership != null ? activeMembership.uuid : ''}]];
+            if (uuid && uuid !== 'null' && uuid.trim() !== '') {
+                const qrText = window.location.origin + "/member/verify/" + uuid;
+                const qr = new QRious({
+                    element: document.createElement('canvas'),
+                    value: qrText,
+                    size: 200,
+                    background: 'white',
+                    foreground: 'black',
+                    level: 'H'
+                });
+                const qrImg = document.createElement('img');
+                qrImg.src = qr.toDataURL();
+                qrImg.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:6px;';
+                const container = document.getElementById('qrcode');
+                if (container) {
+                    container.innerHTML = '';
+                    container.appendChild(qrImg);
+                }
+            } else {
+                const container = document.getElementById('qrcode');
+                if (container) {
+                    container.innerHTML = '<span class="text-danger" style="font-size: 0.65rem;">Generating Secure ID...</span>';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

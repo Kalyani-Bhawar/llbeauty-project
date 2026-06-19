@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div class="content">
+
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-start mb-5">
+            <div>
+                <h1 class="page-title mb-1">Membership Users</h1>
+                <div class="page-subtitle">Track active VIP pass holders, revenue analytics, and member records.</div>
+            </div>
+            <a href="/admin/memberships" class="btn btn-sm" style="background:rgba(201,168,76,0.1); color:#c9a84c; border:1px solid rgba(201,168,76,0.3); border-radius:8px; padding:8px 20px; font-size:0.85rem;">
+                <i class="bi bi-gear-fill me-1"></i> Manage Plans
+            </a>
+        </div>
+
+        <!-- Filters & Search -->
+        <form th:action="@{/admin/membership-users}" method="get" class="mb-4 d-flex gap-2">
+            <input type="text" name="search" th:value="${search}" class="form-control w-25" placeholder="Search by name, email, mobile...">
+            <select name="status" class="form-select w-auto">
+                <option value="">All Status</option>
+                <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">ACTIVE</option>
+                <option value="EXPIRED" th:selected="${status == 'EXPIRED'}">EXPIRED</option>
+                <option value="UPGRADED" th:selected="${status == 'UPGRADED'}">UPGRADED</option>
+            </select>
+            <button type="submit" class="btn btn-gold px-4">Filter</button>
+            <a th:href="@{/admin/membership-users}" class="btn btn-outline-light">Clear</a>
+        </form>
+
+        <!-- Revenue Analytics Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon gold"><i class="bi bi-currency-rupee"></i></div>
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(totalRevenue, 1, 0)}">0</span></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon emerald"><i class="bi bi-patch-check-fill"></i></div>
+                    <div class="stat-label">Active Members</div>
+                    <div class="stat-value" th:text="${activeCount}">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon ruby"><i class="bi bi-clock-history"></i></div>
+                    <div class="stat-label">Expired</div>
+                    <div class="stat-value" th:text="${expiredCount}">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon sapphire"><i class="bi bi-people-fill"></i></div>
+                    <div class="stat-label">Total Records</div>
+                    <div class="stat-value" th:text="${totalElements}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Member Records Table -->
+        <div class="data-card">
+            <div class="data-card-header">
+                <h6><i class="bi bi-card-list me-2" style="color:#c9a84c;"></i>All Membership Records</h6>
+                <span style="font-size:0.78rem;color:rgba(255,255,255,0.4);" th:text="${totalElements} + ' Records'">0 Records</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Mobile</th>
+                            <th>Plan</th>
+                            <th>Start Date</th>
+                            <th>Expiry Date</th>
+                            <th>Payment ID</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="um : ${userMemberships}">
+                            <td>
+                                <div style="font-weight:600;font-size:0.88rem;" th:text="${um.user?.name ?: 'Unknown'}">Member Name</div>
+                                <div style="font-size:0.75rem;color:rgba(255,255,255,0.35);" th:text="${um.user?.email ?: ''}">email</div>
+                            </td>
+                            <td style="font-size:0.83rem;" th:text="${um.user?.mobile ?: '-'}">Mobile</td>
+                            <td>
+                                <span style="padding:4px 12px; border-radius:20px; font-size:0.72rem; font-weight:600;"
+                                      th:classappend="${#strings.contains(um.membership.name, 'Pink')} ? 'badge-status' : (${#strings.contains(um.membership.name, 'Gold')} ? 'badge-status badge-pending' : 'badge-status badge-completed')"
+                                      th:text="${um.membership?.name ?: 'N/A'}">Card Name</span>
+                            </td>
+                            <td style="font-size:0.78rem;color:rgba(255,255,255,0.5);"
+                                th:text="${#temporals.format(um.startDate, 'dd-MM-yyyy')}">Date</td>
+                            <td style="font-size:0.78rem;color:rgba(255,255,255,0.5);"
+                                th:text="${#temporals.format(um.expiryDate, 'dd-MM-yyyy')}">Date</td>
+                            <td style="font-size:0.72rem; font-family:monospace; color:rgba(255,255,255,0.4);"
+                                th:text="${um.razorpayPaymentId ?: 'N/A'}">pay_id</td>
+                            <td>
+                                <span class="badge-status badge-completed" th:if="${um.status == 'ACTIVE'}">ACTIVE</span>
+                                <span class="badge-status badge-cancelled" th:if="${um.status == 'EXPIRED'}">EXPIRED</span>
+                                <span class="badge-status badge-pending" th:if="${um.status == 'UPGRADED'}">UPGRADED</span>
+                                <span class="badge-status" th:if="${um.status != 'ACTIVE' and um.status != 'EXPIRED' and um.status != 'UPGRADED'}" th:text="${um.status}">Status</span>
+                            </td>
+                            <td>
+                                <div class="btn-group" th:if="${um.status == 'ACTIVE'}">
+                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" th:data-bs-target="'#extendModal' + ${um.id}" title="Extend Plan">
+                                        <i class="bi bi-clock"></i> Extend
+                                    </button>
+                                    <form th:action="@{/admin/membership/deactivate/{id}(id=${um.id})}" method="post" onsubmit="return confirm('Cancel this VIP plan?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancel Plan">
+                                            <i class="bi bi-x-circle"></i> Cancel
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="btn-group" th:unless="${um.status == 'ACTIVE'}">
+                                    <form th:action="@{/admin/membership/activate/{id}(id=${um.id})}" method="post" onsubmit="return confirm('Activate this VIP plan?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Activate Plan">
+                                            <i class="bi bi-check-circle"></i> Activate
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Extend Modal per Membership -->
+                        <div th:each="um : ${userMemberships}" th:if="${um.status == 'ACTIVE'}" class="modal fade" th:id="'extendModal' + ${um.id}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form th:action="@{/admin/membership/extend/{id}(id=${um.id})}" method="post">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-dark">Extend VIP Pass for <span th:text="${um.user?.name}"></span></h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-dark">
+                                            <div class="mb-3">
+                                                <label class="form-label">Months to Extend</label>
+                                                <input type="number" name="months" class="form-control" value="1" min="1" max="60" required>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-info">Extend</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <tr th:if="${#lists.isEmpty(userMemberships)}">
+                            <td colspan="8" class="empty-state">
+                                <i class="bi bi-award"></i>
+                                No membership records yet. Members will appear here after purchase.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav th:if="${totalPages > 1}" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/membership-users(page=${currentPage - 1}, search=${search}, status=${status})}">Previous</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                        th:classappend="${currentPage == i} ? 'active'">
+                        <a class="page-link" th:href="@{/admin/membership-users(page=${i}, search=${search}, status=${status})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/membership-users(page=${currentPage + 1}, search=${search}, status=${status})}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+    </div>
+</body>
+</html>

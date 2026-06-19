@@ -60,6 +60,13 @@
                            placeholder="Enter 10-digit mobile number" required
                            pattern="^[6-9]\d{9}$" title="Enter a valid 10-digit mobile number starting with 6-9">
                     <div class="text-danger" th:if="${#fields.hasErrors('mobile')}" th:errors="*{mobile}"></div>
+					<div class="mb-3">
+					    <label>Referral Code</label>
+					    <input type="text"
+					           class="form-control"
+					           name="referralCode"
+					           placeholder="Enter Referral Code (Optional)">
+					</div>
                     <div class="form-text text-muted" style="font-size: 0.75rem; margin-top: 6px;">
                         A secure verification OTP will be sent to your email address.
                     </div>

@@ -1,6 +1,7 @@
 package com.llbeauty.controller;
 
-import com.llbeauty.dto.ExecutiveApplicationRequest;
+import com.llbeauty.dto.AgentApplicationRequest;
+
 import com.llbeauty.dto.MerchantApplicationRequest;
 import com.llbeauty.dto.StoreApplicationResponse;
 import com.llbeauty.entity.*;
@@ -29,7 +30,7 @@ public class StoreMvcController {
     private final UserRepository userRepository;
     private final StoreApplicationService storeApplicationService;
     private final StoreApplicationRepository storeApplicationRepository;
-    private final ExecutiveProfileRepository executiveProfileRepository;
+    private final AgentProfileRepository agentProfileRepository;
     private final MerchantProfileRepository merchantProfileRepository;
     private final StoreCreditRepository storeCreditRepository;
     private final CommissionRepository commissionRepository;
@@ -46,7 +47,7 @@ public class StoreMvcController {
     public StoreMvcController(UserRepository userRepository,
                               StoreApplicationService storeApplicationService,
                               StoreApplicationRepository storeApplicationRepository,
-                              ExecutiveProfileRepository executiveProfileRepository,
+                              AgentProfileRepository agentProfileRepository,
                               MerchantProfileRepository merchantProfileRepository,
                               StoreCreditRepository storeCreditRepository,
                               CommissionRepository commissionRepository,
@@ -59,7 +60,7 @@ public class StoreMvcController {
         this.userRepository = userRepository;
         this.storeApplicationService = storeApplicationService;
         this.storeApplicationRepository = storeApplicationRepository;
-        this.executiveProfileRepository = executiveProfileRepository;
+        this.agentProfileRepository = agentProfileRepository;
         this.merchantProfileRepository = merchantProfileRepository;
         this.storeCreditRepository = storeCreditRepository;
         this.commissionRepository = commissionRepository;
@@ -83,10 +84,10 @@ public class StoreMvcController {
     public String storeOpportunity(Model model) {
         User user = getAuthenticatedUser();
         if (user != null) {
-            model.addAttribute("executiveStatus", user.getExecutiveStatus() != null ? user.getExecutiveStatus() : "NOT_APPLIED");
+            model.addAttribute("agentStatus", user.getAgentStatus() != null ? user.getAgentStatus() : "NOT_APPLIED");
             model.addAttribute("merchantStatus", user.getMerchantStatus() != null ? user.getMerchantStatus() : "NOT_APPLIED");
         } else {
-            model.addAttribute("executiveStatus", "NOT_APPLIED");
+            model.addAttribute("agentStatus", "NOT_APPLIED");
             model.addAttribute("merchantStatus", "NOT_APPLIED");
         }
         return "store_opportunity";
@@ -111,33 +112,33 @@ public class StoreMvcController {
             .get();
 
         model.addAttribute("application", latestApp);
-        model.addAttribute("appType", latestApp.getType() == ApplicationType.EXECUTIVE ? "Executive" : "Merchant");
+        model.addAttribute("appType", latestApp.getType() == ApplicationType.AGENT ? "Agent" : "Merchant");
         model.addAttribute("status", latestApp.getStatus().name());
 
         return "store_status";
     }
 
-    @GetMapping("/executive/application-status")
-    public String executiveApplicationStatus(Model model) {
+    @GetMapping("/agent/application-status")
+    public String agentApplicationStatus(Model model) {
         User user = getAuthenticatedUser();
         if (user == null) {
-            return "redirect:/auth/login?redirect=/store/executive/application-status";
+            return "redirect:/auth/login?redirect=/store/agent/application-status";
         }
-        String status = user.getExecutiveStatus();
-        if ("ACTIVE".equals(status)) return "redirect:/store/executive/dashboard";
-        if ("NOT_APPLIED".equals(status) || status == null) return "redirect:/store/executive/apply";
+        String status = user.getAgentStatus();
+        if ("ACTIVE".equals(status)) return "redirect:/store/agent/dashboard";
+        if ("NOT_APPLIED".equals(status) || status == null) return "redirect:/store/agent/apply";
 
         StoreApplication latestApp = storeApplicationRepository.findByUser(user).stream()
-            .filter(a -> a.getType() == ApplicationType.EXECUTIVE)
+            .filter(a -> a.getType() == ApplicationType.AGENT)
             .max((a, b) -> a.getId().compareTo(b.getId()))
             .orElse(null);
 
         if (latestApp == null) {
-            return "redirect:/store/executive/apply";
+            return "redirect:/store/agent/apply";
         }
 
         model.addAttribute("application", latestApp);
-        model.addAttribute("appType", "Executive");
+        model.addAttribute("appType", "Agent");
         model.addAttribute("status", latestApp.getStatus().name());
 
         return "store_status";
@@ -169,28 +170,28 @@ public class StoreMvcController {
         return "store_status";
     }
 
-    @GetMapping("/executive/apply")
-    public String executiveApplyForm(Model model) {
+    @GetMapping("/agent/apply")
+    public String agentApplyForm(Model model) {
         User user = getAuthenticatedUser();
         if (user == null) {
-            return "redirect:/auth/login?redirect=/store/executive/apply";
+            return "redirect:/auth/login?redirect=/store/agent/apply";
         }
 
-        if ("ACTIVE".equals(user.getExecutiveStatus())) {
-            return "redirect:/store/executive/dashboard";
+        if ("ACTIVE".equals(user.getAgentStatus())) {
+            return "redirect:/store/agent/dashboard";
         }
 
-        List<StoreApplication> pending = storeApplicationRepository.findByUserAndTypeAndStatus(user, ApplicationType.EXECUTIVE, ApplicationStatus.PENDING);
+        List<StoreApplication> pending = storeApplicationRepository.findByUserAndTypeAndStatus(user, ApplicationType.AGENT, ApplicationStatus.PENDING);
         if (!pending.isEmpty()) {
             return "redirect:/store/status";
         }
 
-        model.addAttribute("executiveRequest", new ExecutiveApplicationRequest());
-        return "executive_apply";
+        model.addAttribute("agentRequest", new AgentApplicationRequest());
+        return "agent_apply";
     }
 
-    @PostMapping("/executive/apply")
-    public String submitExecutiveApply(@Valid @ModelAttribute("executiveRequest") ExecutiveApplicationRequest request,
+    @PostMapping("/agent/apply")
+    public String submitAgentApply(@Valid @ModelAttribute("agentRequest") AgentApplicationRequest request,
                                       BindingResult bindingResult,
                                       RedirectAttributes redirectAttributes) {
         User user = getAuthenticatedUser();
@@ -203,34 +204,39 @@ public class StoreMvcController {
         }
 
         if (bindingResult.hasErrors()) {
-            return "executive_apply";
+            return "agent_apply";
         }
 
         try {
-            storeApplicationService.applyExecutive(user.getId(), request);
+            storeApplicationService.applyAgent(user.getId(), request);
             return "redirect:/store/status";
         } catch (Exception e) {
             bindingResult.rejectValue("fullName", "error.request", e.getMessage());
-            return "executive_apply";
+            return "agent_apply";
         }
     }
 
-    @PostMapping("/executive/pay-initiate")
+    @PostMapping("/agent/pay-initiate")
     @ResponseBody
-    public ResponseEntity<?> initiateExecutivePayment(@Valid @RequestBody ExecutiveApplicationRequest request,
+    public ResponseEntity<?> initiateAgentPayment(@Valid @RequestBody AgentApplicationRequest request,
                                                        BindingResult bindingResult) {
         User user = getAuthenticatedUser();
         if (user == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
 
-        if ("ACTIVE".equals(user.getExecutiveStatus())) {
-            return ResponseEntity.badRequest().body(Map.of("error", "You are already registered as an Executive."));
+        if ("ACTIVE".equals(user.getAgentStatus())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "You are already registered as an Agent."));
         }
 
-        List<StoreApplication> pending = storeApplicationRepository.findByUserAndTypeAndStatus(user, ApplicationType.EXECUTIVE, ApplicationStatus.PENDING);
+        List<StoreApplication> pending =
+        	    storeApplicationRepository.findByUserAndTypeAndStatus(
+        	        user,
+        	        ApplicationType.AGENT,
+        	        ApplicationStatus.PENDING
+        	    );
         if (!pending.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "You already have a pending Executive application."));
+            return ResponseEntity.badRequest().body(Map.of("error", "You already have a pending Agent application."));
         }
 
         if (bindingResult.hasErrors()) {
@@ -241,7 +247,7 @@ public class StoreMvcController {
 
         try {
             String dummyRefId = "exe_start_" + System.currentTimeMillis();
-            Payment payment = paymentService.initiatePayment(user, 10000.0, "EXECUTIVE_STARTER", dummyRefId, "RAZORPAY");
+            Payment payment = paymentService.initiatePayment(user, 10000.0, "AGENT_STARTER", dummyRefId, "RAZORPAY");
 
             Map<String, Object> response = new HashMap<>();
             response.put("razorpayOrderId", payment.getRazorpayOrderId());
@@ -253,9 +259,9 @@ public class StoreMvcController {
         }
     }
 
-    @PostMapping("/executive/apply-confirm")
+    @PostMapping("/agent/apply-confirm")
     @ResponseBody
-    public ResponseEntity<?> confirmExecutiveApply(@Valid @RequestBody ExecutiveApplicationRequest request,
+    public ResponseEntity<?> confirmAgentApply(@Valid @RequestBody AgentApplicationRequest request,
                                                    BindingResult bindingResult,
                                                    @RequestParam("paymentId") String paymentId,
                                                    @RequestParam("orderId") String orderId,
@@ -265,13 +271,13 @@ public class StoreMvcController {
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
 
-        if ("ACTIVE".equals(user.getExecutiveStatus())) {
-            return ResponseEntity.badRequest().body(Map.of("error", "You are already registered as an Executive."));
+        if ("ACTIVE".equals(user.getAgentStatus())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "You are already registered as an Agent."));
         }
 
-        List<StoreApplication> pending = storeApplicationRepository.findByUserAndTypeAndStatus(user, ApplicationType.EXECUTIVE, ApplicationStatus.PENDING);
+        List<StoreApplication> pending = storeApplicationRepository.findByUserAndTypeAndStatus(user, ApplicationType.AGENT, ApplicationStatus.PENDING);
         if (!pending.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "You already have a pending Executive application."));
+            return ResponseEntity.badRequest().body(Map.of("error", "You already have a pending AGENT application."));
         }
 
         if (bindingResult.hasErrors()) {
@@ -280,7 +286,7 @@ public class StoreMvcController {
 
         try {
             paymentService.verifyAndProcessPayment(orderId, paymentId, signature);
-            StoreApplicationResponse appResponse = storeApplicationService.applyExecutive(user.getId(), request);
+            StoreApplicationResponse appResponse = storeApplicationService.applyAgent(user.getId(), request);
             return ResponseEntity.ok(Map.of("success", true, "applicationId", appResponse.getId()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -379,21 +385,21 @@ public class StoreMvcController {
         }
     }
 
-    @GetMapping("/executive/dashboard")
-    public String executiveDashboard(Model model) {
+    @GetMapping("/agent/dashboard")
+    public String agentDashboard(Model model) {
         User user = getAuthenticatedUser();
         if (user == null) {
-            return "redirect:/auth/login?redirect=/store/executive/dashboard";
+            return "redirect:/auth/login?redirect=/store/agent/dashboard";
         }
 
-        if (!"ACTIVE".equals(user.getExecutiveStatus())) {
-            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN, "Access Denied: Requires ACTIVE Executive status");
+        if (!"ACTIVE".equals(user.getAgentStatus())) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN, "Access Denied: Requires ACTIVE Agent status");
         }
 
-        ExecutiveProfile profile = executiveProfileRepository.findByUser(user)
-            .orElseThrow(() -> new IllegalStateException("Executive profile not found"));
+        AgentProfile profile = agentProfileRepository.findByUser(user)
+            .orElseThrow(() -> new IllegalStateException("Agent profile not found"));
 
-        List<Commission> commissions = commissionRepository.findByExecutiveOrderByCreatedAtDesc(profile);
+        List<Commission> commissions = commissionRepository.findByAgentOrderByCreatedAtDesc(profile);
         List<UserMembership> referrals = userMembershipRepository.findByReferralCode(profile.getReferralCode());
         java.math.BigDecimal totalCommission = commissions.stream()
             .map(Commission::getAmount)
@@ -407,7 +413,7 @@ public class StoreMvcController {
         model.addAttribute("walletBalance", walletService.getBalance(user));
         model.addAttribute("transactions", walletService.getTransactionHistory(user));
 
-        return "executive_dashboard";
+        return "agent_dashboard";
     }
 
     @GetMapping("/merchant/dashboard")

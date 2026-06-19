@@ -24,12 +24,14 @@
                 <table class="table table-hover align-middle">
                     <thead class="table-dark">
                         <tr>
-                            <th>Image</th>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Price</th>
-                            <th>Stock</th>
-                            <th>Actions</th>
+							<th>Image</th>
+							<th>Name</th>
+							<th>Category</th>
+							<th>Price</th>
+							<th>Merchant Discount</th>
+							<th>Wholesale Price</th>
+							<th>Stock</th>
+							<th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -39,11 +41,31 @@
                             </td>
                             <td th:text="${product.name}" class="fw-bold">Name</td>
                             <td><span class="badge bg-secondary" th:text="${product.category}">Category</span></td>
-                            <td class="text-gold fw-bold" th:text="'₹' + ${product.price}">Price</td>
-                            <td>
-                                <span th:if="${product.stock > 0}" class="text-success fw-bold" th:text="${product.stock} + ' In Stock'"></span>
-                                <span th:if="${product.stock <= 0}" class="text-danger fw-bold">Out of Stock</span>
-                            </td>
+							<td class="text-gold fw-bold"
+							    th:text="'₹' + ${product.price}">
+							</td>
+							
+							<td>
+							    <span class="badge bg-warning text-dark"
+							          th:text="${product.merchantDiscount} + '%'">
+							    </span>
+							</td>
+							
+							<td class="text-info fw-bold"
+							    th:text="'₹' + ${product.wholesalePrice}">
+							</td>
+							
+							<td>
+							    <span th:if="${product.stock > 0}"
+							          class="text-success fw-bold"
+							          th:text="${product.stock} + ' In Stock'">
+							    </span>
+							
+							    <span th:if="${product.stock <= 0}"
+							          class="text-danger fw-bold">
+							          Out of Stock
+							    </span>
+							</td>
                             <td>
                                 <div class="d-flex gap-2">
                                     <a th:href="@{/admin/products/edit/{id}(id=${product.id})}" class="btn btn-sm btn-outline-info">
@@ -58,7 +80,7 @@
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(products)}">
-                            <td colspan="6" class="text-center py-5 text-muted">
+                            <td colspan="8" class="text-center py-5 text-muted">
                                 <i class="bi bi-box-seam" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
                                 No products found. Add a new product to get started.
                             </td>

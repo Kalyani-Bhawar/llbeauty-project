@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div class="content">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h1 class="page-title mb-1">Orders Management</h1>
+                <div class="page-subtitle">Track beauty e-commerce transactions, orders, and shipment status.</div>
+            </div>
+        </div>
+
+        <!-- Filters & Search -->
+        <form th:action="@{/admin/orders}" method="get" class="mb-4 d-flex gap-2">
+            <input type="text" name="search" th:value="${search}" class="form-control w-25" placeholder="Search by Order ID or Customer Name...">
+            <select name="status" class="form-select w-auto">
+                <option value="">All Payment Status</option>
+                <option value="SUCCESS" th:selected="${status == 'SUCCESS'}">SUCCESS</option>
+                <option value="PENDING" th:selected="${status == 'PENDING'}">PENDING</option>
+                <option value="FAILED" th:selected="${status == 'FAILED'}">FAILED</option>
+                <option value="REFUNDED" th:selected="${status == 'REFUNDED'}">REFUNDED</option>
+            </select>
+            <button type="submit" class="btn btn-gold px-4">Filter</button>
+            <a th:href="@{/admin/orders}" class="btn btn-outline-light">Clear</a>
+        </form>
+
+        <!-- Orders Table Card -->
+        <div class="data-card">
+            <div class="data-card-header">
+                <h6><i class="bi bi-box-seam me-2" style="color:#c9a84c;"></i>All Customer Orders</h6>
+                <span style="font-size:0.78rem;color:rgba(255,255,255,0.4);" th:text="${totalElements} + ' Orders'">0 Orders</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Items Purchased</th>
+                            <th>Total Amount</th>
+                            <th>Payment Status</th>
+                            <th>Order Status</th>
+                            <th>Date & Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="order : ${orders}">
+                            <td style="font-size:0.8rem;color:rgba(255,255,255,0.4);font-family:monospace;" th:text="'#LLB-ORD-' + ${order.id}">#LLB-ORD-1</td>
+                            <td>
+                                <div style="font-weight:600;font-size:0.88rem;" th:text="${order.user?.name ?: 'Unknown'}">John Doe</div>
+                                <div style="font-size:0.75rem;color:rgba(255,255,255,0.35);" th:text="${order.user?.email ?: ''}">email</div>
+                                <div style="font-size:0.75rem;color:rgba(255,255,255,0.35);" th:text="${order.user?.mobile ?: ''}">mobile</div>
+                            </td>
+                            <td>
+                                <div style="font-size: 0.83rem;">
+                                    <ul class="list-unstyled mb-0">
+                                        <li th:each="item : ${order.items}" style="margin-bottom: 2px;">
+                                            <span th:text="${item.product?.name}">Product Name</span>
+                                            <span class="text-gold" th:text="' x ' + ${item.quantity}"> x 1</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                            <td>
+                                <span style="font-weight:700;font-size:0.95rem;color:#fff;">
+                                    ₹<span th:text="${#numbers.formatDecimal(order.totalAmount, 1, 2)}">0.00</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge-status badge-completed" th:if="${order.status == 'SUCCESS'}">SUCCESS</span>
+                                <span class="badge-status badge-pending" th:if="${order.status == 'PENDING'}">PENDING</span>
+                                <span class="badge-status badge-cancelled" th:if="${order.status == 'FAILED'}">FAILED</span>
+                                <span class="badge-status badge-cancelled" th:if="${order.status == 'REFUNDED'}">REFUNDED</span>
+                                <span class="badge-status" th:if="${order.status != 'SUCCESS' and order.status != 'PENDING' and order.status != 'FAILED' and order.status != 'REFUNDED'}" th:text="${order.status}">Status</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary" th:text="${order.orderStatus ?: 'PENDING'}">PENDING</span>
+                            </td>
+                            <td style="font-size:0.78rem;color:rgba(255,255,255,0.4);" th:text="${#temporals.format(order.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" th:data-bs-target="'#statusModal' + ${order.id}" title="Update Order Status">
+                                        <i class="bi bi-pencil"></i> Status
+                                    </button>
+                                    <button th:if="${order.status == 'SUCCESS'}" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" th:data-bs-target="'#refundModal' + ${order.id}" title="Refund Order">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Refund
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Status Update Modal -->
+                        <div th:each="order : ${orders}" class="modal fade" th:id="'statusModal' + ${order.id}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form th:action="@{/admin/orders/{id}/update-status(id=${order.id})}" method="post">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-dark">Update Order Status <span th:text="'#LLB-ORD-' + ${order.id}"></span></h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-dark">
+                                            <div class="mb-3">
+                                                <label class="form-label">Order Fulfillment Status</label>
+                                                <select name="orderStatus" class="form-select" required>
+                                                    <option value="PENDING" th:selected="${order.orderStatus == 'PENDING'}">Pending</option>
+                                                    <option value="PROCESSING" th:selected="${order.orderStatus == 'PROCESSING'}">Processing</option>
+                                                    <option value="SHIPPED" th:selected="${order.orderStatus == 'SHIPPED'}">Shipped</option>
+                                                    <option value="DELIVERED" th:selected="${order.orderStatus == 'DELIVERED'}">Delivered</option>
+                                                    <option value="CANCELLED" th:selected="${order.orderStatus == 'CANCELLED'}">Cancelled</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-primary">Update Status</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Refund Modal per Order -->
+                        <div th:each="order : ${orders}" th:if="${order.status == 'SUCCESS'}" class="modal fade" th:id="'refundModal' + ${order.id}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form th:action="@{/admin/orders/{id}/refund(id=${order.id})}" method="post">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-dark">Refund Order <span th:text="'#LLB-ORD-' + ${order.id}"></span></h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-dark">
+                                            <p>Select refund method for <strong>₹<span th:text="${#numbers.formatDecimal(order.totalAmount, 1, 2)}">0.00</span></strong></p>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="radio" name="refundMethod" id="'refundWallet'+${order.id}" value="WALLET" checked>
+                                                <label class="form-check-label" th:for="'refundWallet'+${order.id}">
+                                                    Refund to Wallet Credits (Default)
+                                                </label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="radio" name="refundMethod" id="'refundRazorpay'+${order.id}" value="RAZORPAY">
+                                                <label class="form-check-label" th:for="'refundRazorpay'+${order.id}">
+                                                    Refund to Original Payment Source (Razorpay)
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-danger">Process Refund</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <tr th:if="${#lists.isEmpty(orders)}">
+                            <td colspan="8" class="empty-state">
+                                <i class="bi bi-box-seam"></i>
+                                No customer orders found in the database.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <nav th:if="${totalPages > 1}" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/orders(page=${currentPage - 1}, search=${search}, status=${status})}">Previous</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                        th:classappend="${currentPage == i} ? 'active'">
+                        <a class="page-link" th:href="@{/admin/orders(page=${i}, search=${search}, status=${status})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/orders(page=${currentPage + 1}, search=${search}, status=${status})}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</body>
+</html>

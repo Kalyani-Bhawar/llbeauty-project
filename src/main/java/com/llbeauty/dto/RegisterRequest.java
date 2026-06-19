@@ -13,6 +13,15 @@ public class RegisterRequest {
     @NotBlank(message = "Email address is required")
     @Email(message = "Enter a valid email address")
     private String email;
+    public String getReferralCode() {
+		return referralCode;
+	}
+
+	public void setReferralCode(String referralCode) {
+		this.referralCode = referralCode;
+	}
+
+	private String referralCode;
 
     @java.lang.SuppressWarnings("all")
     

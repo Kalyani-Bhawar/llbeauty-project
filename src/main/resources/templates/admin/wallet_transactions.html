@@ -25,7 +25,11 @@
                     </thead>
                     <tbody>
                         <tr th:each="txn : ${transactions}">
-                            <td style="font-size:0.8rem;color:rgba(255,255,255,0.4);" th:text="${txn.id}">1</td>
+							<td>
+							    <span style="font-weight:600;color:#444;"
+							          th:text="${txn.id}">
+							    </span>
+							</td>
                             <td>
                                 <div style="font-weight:600;font-size:0.85rem;" th:text="${txn.user?.name ?: 'Unknown'}">Name</div>
                             </td>
@@ -40,7 +44,11 @@
                                 </span>
                             </td>
                             <td style="font-size:0.83rem;" th:text="${txn.description}">Description</td>
-                            <td style="font-size:0.78rem;color:rgba(255,255,255,0.4);" th:text="${#temporals.format(txn.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+							<td>
+							    <span style="color:#555;"
+							          th:text="${#temporals.format(txn.createdAt,'dd MMM yyyy HH:mm')}">
+							    </span>
+							</td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(transactions)}">
                             <td colspan="7" class="empty-state">

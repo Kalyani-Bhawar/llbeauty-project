@@ -189,17 +189,17 @@
         
         <div class="row g-4 justify-content-center">
             
-            <!-- RED CARD: EXECUTIVE -->
+            <!-- RED CARD: AGENT -->
             <div class="col-md-6 col-lg-5">
                 <div class="opportunity-card position-relative">
-                    <span th:if="${executiveStatus == 'ACTIVE'}" class="badge bg-success position-absolute top-0 end-0 m-3 z-3 pe-none">ACTIVE</span>
-                    <span th:if="${executiveStatus == 'PENDING'}" class="badge bg-warning text-dark position-absolute top-0 end-0 m-3 z-3 pe-none">PENDING</span>
-                    <span th:if="${executiveStatus == 'NOT_APPLIED'}" class="badge bg-secondary position-absolute top-0 end-0 m-3 z-3 pe-none">NOT APPLIED</span>
-                    <span th:if="${executiveStatus == 'REJECTED'}" class="badge bg-danger position-absolute top-0 end-0 m-3 z-3 pe-none">REJECTED</span>
+                    <span th:if="${agentStatus == 'ACTIVE'}" class="badge bg-success position-absolute top-0 end-0 m-3 z-3 pe-none">ACTIVE</span>
+                    <span th:if="${agentStatus == 'PENDING'}" class="badge bg-warning text-dark position-absolute top-0 end-0 m-3 z-3 pe-none">PENDING</span>
+                    <span th:if="${agentStatus == 'NOT_APPLIED'}" class="badge bg-secondary position-absolute top-0 end-0 m-3 z-3 pe-none">NOT APPLIED</span>
+                    <span th:if="${agentStatus == 'REJECTED'}" class="badge bg-danger position-absolute top-0 end-0 m-3 z-3 pe-none">REJECTED</span>
                     <div class="card-visual red-card">
                         <div class="card-crown">❤️</div>
                         <div class="card-logo">EVA</div>
-                        <div class="card-subtitle">EXECUTIVE</div>
+                        <div class="card-subtitle">AGENT</div>
                     </div>
                     
                     <div class="card-content">
@@ -217,15 +217,15 @@
                         </ul>
                         
                         <div class="deposit-model">
-                            <div class="deposit-title">Join as Executive</div>
-                            FREE REGISTRATION or Starter Kit @ ₹10,000 (Includes ID Card, Training, Catalog, Digital Store, and Starter Credits)
+                            <div class="deposit-title">Join as AGENT</div>
+							₹1000 REGISTRATION or Starter Kit @ ₹10,000 (Includes ID Card, Training, Catalog, Digital Store, and Starter Credits)
                         </div>
                         
                         <div class="action-btn-wrap position-relative z-2">
-                            <a th:if="${executiveStatus == 'NOT_APPLIED'}" href="/store/executive/apply" class="btn-opportunity stretched-link">JOIN AS EXECUTIVE</a>
-                            <a th:if="${executiveStatus == 'PENDING'}" href="/store/executive/application-status" class="btn-opportunity stretched-link">TRACK APPLICATION</a>
-                            <a th:if="${executiveStatus == 'REJECTED'}" href="/store/executive/apply" class="btn-opportunity stretched-link">REAPPLY AS EXECUTIVE</a>
-                            <a th:if="${executiveStatus == 'ACTIVE'}" href="/store/executive/dashboard" class="btn-opportunity active-btn stretched-link">OPEN EXECUTIVE DASHBOARD</a>
+                            <a th:if="${agentStatus == 'NOT_APPLIED'}" href="/store/agent/apply" class="btn-opportunity stretched-link">JOIN AS AGENT</a>
+                            <a th:if="${agentStatus == 'PENDING'}" href="/store/agent/application-status" class="btn-opportunity stretched-link">TRACK APPLICATION</a>
+                            <a th:if="${agentStatus == 'REJECTED'}" href="/store/agent/apply" class="btn-opportunity stretched-link">REAPPLY AS AGENT</a>
+                            <a th:if="${agentStatus == 'ACTIVE'}" href="/store/agent/dashboard" class="btn-opportunity active-btn stretched-link">OPEN AGENT DASHBOARD</a>
                         </div>
                     </div>
                 </div>

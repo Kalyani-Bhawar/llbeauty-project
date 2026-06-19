@@ -91,18 +91,45 @@
                                       th:classappend="${#strings.contains(um.membership.name, 'Pink')} ? 'badge-status' : (${#strings.contains(um.membership.name, 'Gold')} ? 'badge-status badge-pending' : 'badge-status badge-completed')"
                                       th:text="${um.membership?.name ?: 'N/A'}">Card Name</span>
                             </td>
-                            <td style="font-size:0.78rem;color:rgba(255,255,255,0.5);"
-                                th:text="${#temporals.format(um.startDate, 'dd-MM-yyyy')}">Date</td>
-                            <td style="font-size:0.78rem;color:rgba(255,255,255,0.5);"
-                                th:text="${#temporals.format(um.expiryDate, 'dd-MM-yyyy')}">Date</td>
-                            <td style="font-size:0.72rem; font-family:monospace; color:rgba(255,255,255,0.4);"
-                                th:text="${um.razorpayPaymentId ?: 'N/A'}">pay_id</td>
-                            <td>
-                                <span class="badge-status badge-completed" th:if="${um.status == 'ACTIVE'}">ACTIVE</span>
-                                <span class="badge-status badge-cancelled" th:if="${um.status == 'EXPIRED'}">EXPIRED</span>
-                                <span class="badge-status badge-pending" th:if="${um.status == 'UPGRADED'}">UPGRADED</span>
-                                <span class="badge-status" th:if="${um.status != 'ACTIVE' and um.status != 'EXPIRED' and um.status != 'UPGRADED'}" th:text="${um.status}">Status</span>
-                            </td>
+							<td style="font-size:0.78rem;color:#555;font-weight:500;"
+							    th:text="${um.startDate != null ? #temporals.format(um.startDate,'dd MMM yyyy') : '-'}">
+							</td>
+							<td style="font-size:0.78rem;color:#555;font-weight:500;"
+							    th:text="${um.expiryDate != null ? #temporals.format(um.expiryDate,'dd MMM yyyy') : '-'}">
+							</td>
+							<td>
+							    <span style="
+							        background:#f5f5f5;
+							        border:1px solid #ddd;
+							        border-radius:6px;
+							        padding:4px 8px;
+							        font-size:0.72rem;
+							        font-family:monospace;
+							        color:#333;"
+							        th:text="${um.razorpayPaymentId != null ? um.razorpayPaymentId : 'N/A'}">
+							    </span>
+							</td>
+							<td>
+							    <span class="badge-status badge-completed"
+							          th:if="${um.status == 'ACTIVE'}">
+							        ACTIVE
+							    </span>
+							
+							    <span class="badge-status badge-cancelled"
+							          th:if="${um.status == 'EXPIRED'}">
+							        EXPIRED
+							    </span>
+							
+							    <span class="badge-status badge-pending"
+							          th:if="${um.status == 'UPGRADED'}">
+							        UPGRADED
+							    </span>
+							
+							    <span class="badge-status"
+							          th:if="${um.status != 'ACTIVE' and um.status != 'EXPIRED' and um.status != 'UPGRADED'}"
+							          th:text="${um.status}">
+							    </span>
+							</td>
                             <td>
                                 <div class="btn-group" th:if="${um.status == 'ACTIVE'}">
                                     <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" th:data-bs-target="'#extendModal' + ${um.id}" title="Extend Plan">

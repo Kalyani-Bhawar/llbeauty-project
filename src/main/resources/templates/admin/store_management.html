@@ -9,7 +9,7 @@
         </div>
         <div class="d-flex gap-2">
             <a th:href="@{/admin/store-management(tab='applications')}" class="btn btn-sm" th:classappend="${currentSubTab == 'applications' ? 'btn-gold' : 'btn-outline-gold'}">Applications</a>
-            <a th:href="@{/admin/store-management(tab='executives')}" class="btn btn-sm" th:classappend="${currentSubTab == 'executives' ? 'btn-gold' : 'btn-outline-gold'}">Executives</a>
+            <a th:href="@{/admin/store-management(tab='agents')}" class="btn btn-sm" th:classappend="${currentSubTab == 'agents' ? 'btn-gold' : 'btn-outline-gold'}">Agents</a>
             <a th:href="@{/admin/store-management(tab='merchants')}" class="btn btn-sm" th:classappend="${currentSubTab == 'merchants' ? 'btn-gold' : 'btn-outline-gold'}">Merchants</a>
             <a th:href="@{/admin/store-management(tab='wallets')}" class="btn btn-sm" th:classappend="${currentSubTab == 'wallets' ? 'btn-gold' : 'btn-outline-gold'}">Wallets</a>
             <a th:href="@{/admin/store-management(tab='credits')}" class="btn btn-sm" th:classappend="${currentSubTab == 'credits' ? 'btn-gold' : 'btn-outline-gold'}">Credits</a>
@@ -41,7 +41,7 @@
                 </select>
                 <select name="typeFilter" class="form-select form-select-sm bg-dark text-white border-secondary">
                     <option value="" th:selected="${typeFilter == null || typeFilter == ''}">All Types</option>
-                    <option value="EXECUTIVE" th:selected="${typeFilter == 'EXECUTIVE'}">Executive</option>
+                    <option value="AGENT" th:selected="${typeFilter == 'AGENT'}">AGENT</option>
                     <option value="MERCHANT" th:selected="${typeFilter == 'MERCHANT'}">Merchant</option>
                 </select>
                 <button type="submit" class="btn btn-sm btn-gold">Filter</button>
@@ -66,7 +66,7 @@
                         <td th:text="${app.id}">1</td>
                         <td th:text="${app.user.name}">User Name</td>
                         <td>
-                            <span class="badge bg-danger" th:if="${app.type.name() == 'EXECUTIVE'}">EXECUTIVE</span>
+                            <span class="badge bg-danger" th:if="${app.type.name() == 'AGENT'}">AGENT</span>
                             <span class="badge bg-warning text-dark" th:if="${app.type.name() == 'MERCHANT'}">MERCHANT</span>
                         </td>
                         <td th:text="${app.businessName}">Business Name</td>
@@ -96,16 +96,16 @@
         </div>
     </div>
 
-    <!-- ── EXECUTIVES TAB ── -->
-    <div th:if="${currentSubTab == 'executives'}" class="data-card animate-fade-up">
+    <!-- ── AGENTS TAB ── -->
+    <div th:if="${currentSubTab == 'agents'}" class="data-card animate-fade-up">
         <div class="data-card-header">
-            <h6>Approved Executives Directory</h6>
+            <h6>Approved Agents Directory</h6>
         </div>
         <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Executive ID</th>
+                        <th>Agent ID</th>
                         <th>User Name</th>
                         <th>Email</th>
                         <th>Referral Code</th>
@@ -115,23 +115,23 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="exe : ${executives}">
-                        <td class="fw-bold text-gold" th:text="${exe.executiveId}">LLB-EXE-1</td>
+                    <tr th:each="exe : ${agents}">
+                        <td class="fw-bold text-gold" th:text="${exe.agentId}">LLB-EXE-1</td>
                         <td th:text="${exe.user.name}">John Doe</td>
                         <td th:text="${exe.user.email}">john@example.com</td>
                         <td th:text="${exe.referralCode}">REF100</td>
                         <td><span class="badge-status badge-completed" th:text="${exe.status}">ACTIVE</span></td>
                         <td th:text="${#temporals.format(exe.createdAt, 'dd MMM yyyy')}">Date</td>
                         <td>
-                            <form th:action="@{/admin/store/executive/{id}/delete(id=${exe.id})}" method="post" onsubmit="return confirm('Delete this executive?');">
+                            <form th:action="@{/admin/store/agent/{id}/delete(id=${exe.id})}" method="post" onsubmit="return confirm('Delete this agent?');">
                                 <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
                         </td>
                     </tr>
-                    <tr th:if="${executives.isEmpty()}">
-                        <td colspan="6" class="text-center py-5 text-white-50">No executives enrolled.</td>
+                    <tr th:if="${agents.isEmpty()}">
+                        <td colspan="6" class="text-center py-5 text-white-50">No agents enrolled.</td>
                     </tr>
                 </tbody>
             </table>
@@ -201,7 +201,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="w : ${wallets}" th:if="${w.user.role == 'EXECUTIVE' || w.user.role == 'MERCHANT'}">
+                    <tr th:each="w : ${wallets}" th:if="${w.user.role == 'AGENT' || w.user.role == 'MERCHANT'}">
                         <td th:text="${w.id}">1</td>
                         <td th:text="${w.user.name}">Partner Name</td>
                         <td><span class="badge bg-dark text-gold" th:text="${w.user.role}">ROLE</span></td>
@@ -254,8 +254,8 @@
         <div class="col-md-4">
             <div class="stat-card">
                 <div class="stat-icon gold"><i class="bi bi-people-fill"></i></div>
-                <div class="stat-label">Total Executives</div>
-                <div class="stat-value" th:text="${totalExecutives}">0</div>
+                <div class="stat-label">Total Agents</div>
+                <div class="stat-value" th:text="${totalAgents}">0</div>
             </div>
         </div>
         <div class="col-md-4">
@@ -282,7 +282,7 @@
         <div class="col-md-6">
             <div class="stat-card">
                 <div class="stat-icon ruby"><i class="bi bi-percent"></i></div>
-                <div class="stat-label">Total Executive Commissions Payouts</div>
+                <div class="stat-label">Total Agent Commissions Payouts</div>
                 <div class="stat-value text-danger" th:text="'₹' + ${#numbers.formatDecimal(totalCommissions, 1, 0)}">₹0</div>
             </div>
         </div>

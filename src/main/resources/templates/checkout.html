@@ -1,592 +1,639 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Checkout – EVA</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="/css/style.css" rel="stylesheet">
-    <style>
-        .checkout-container {
-            background: #fdfdfd;
-            padding: 70px 0;
-            color: var(--dark);
-        }
-        .checkout-box {
-            background: #ffffff;
-            border: 1px solid #f0ebe0;
-            border-radius: 16px;
-            padding: 36px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-            margin-bottom: 24px;
-        }
-        .checkout-box h5 {
-            font-family: 'Playfair Display', serif;
-            font-weight: 600;
-            border-bottom: 1.5px solid var(--beige-dark);
-            padding-bottom: 14px;
-            margin-bottom: 24px;
-            color: var(--dark);
-        }
-        .item-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px dashed rgba(0,0,0,0.06);
-        }
-        .item-row:last-child {
-            border-bottom: none;
-        }
-        .order-summary-lbl {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-        .order-summary-val {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-        .vip-discount-alert {
-            background: rgba(201,168,76,0.08);
-            border: 1px solid rgba(201,168,76,0.2);
-            color: var(--gold-dark);
-            border-radius: 12px;
-            padding: 12px 16px;
-            font-size: 0.82rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .modal-dark {
-            background: #151515;
-            color: #fff;
-            border: 1px solid rgba(201,168,76,0.15);
-            border-radius: 18px;
-        }
-    </style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Secure Checkout – EVA</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link
+		href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap"
+		rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+	<link href="/css/style.css" rel="stylesheet">
+	<style>
+		.checkout-container {
+			background: #fdfdfd;
+			padding: 70px 0;
+			color: var(--dark);
+		}
+
+		.checkout-box {
+			background: #ffffff;
+			border: 1px solid #f0ebe0;
+			border-radius: 16px;
+			padding: 36px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+			margin-bottom: 24px;
+		}
+
+		.checkout-box h5 {
+			font-family: 'Playfair Display', serif;
+			font-weight: 600;
+			border-bottom: 1.5px solid var(--beige-dark);
+			padding-bottom: 14px;
+			margin-bottom: 24px;
+			color: var(--dark);
+		}
+
+		.item-row {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 12px 0;
+			border-bottom: 1px dashed rgba(0, 0, 0, 0.06);
+		}
+
+		.item-row:last-child {
+			border-bottom: none;
+		}
+
+		.order-summary-lbl {
+			font-size: 0.85rem;
+			color: var(--text-muted);
+		}
+
+		.order-summary-val {
+			font-size: 0.95rem;
+			font-weight: 600;
+			color: var(--dark);
+		}
+
+		.vip-discount-alert {
+			background: rgba(201, 168, 76, 0.08);
+			border: 1px solid rgba(201, 168, 76, 0.2);
+			color: var(--gold-dark);
+			border-radius: 12px;
+			padding: 12px 16px;
+			font-size: 0.82rem;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			margin-bottom: 20px;
+		}
+
+		.modal-dark {
+			background: #151515;
+			color: #fff;
+			border: 1px solid rgba(201, 168, 76, 0.15);
+			border-radius: 18px;
+		}
+	</style>
 </head>
+
 <body>
+	<!-- NAVBAR -->
+	<div th:replace="~{fragments/header :: header}"></div>
+	<div class="checkout-container">
+		<div class="container animate-fade-up">
+			<h2 class="brand-font mb-5 text-center">Secure Checkout</h2>
+			<div class="row g-4">
+				<!-- LEFT COLUMN: SHIPPING INFO & WALLET REDEMPTION -->
+				<div class="col-lg-7">
+					<!-- Shipping Address -->
+					<div class="checkout-box">
+						<h5><i class="bi bi-geo-alt me-2" style="color:var(--gold);"></i>Delivery Address</h5>
+						<form id="checkoutForm">
+							<div class="row g-3">
+								<div class="col-md-6">
+									<label class="form-label">Full Name</label>
+									<input type="text" class="form-control" id="billingName"
+										th:value="${currentUser.name}" required>
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Mobile Number</label>
+									<input type="text" class="form-control" id="billingMobile"
+										th:value="${currentUser.mobile}" required>
+								</div>
+								<div class="col-12">
+									<label class="form-label">Shipping Address</label>
+									<input type="text" class="form-control"
+										placeholder="Street Address, Apartment, Suite" required>
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">City</label>
+									<input type="text" class="form-control" placeholder="Pune" required>
+								</div>
+								<div class="col-md-6">
+									<label class="form-label">Pincode</label>
+									<input type="text" class="form-control" placeholder="411001" required>
+								</div>
+								<div class="checkout-card">
+									<h6>Agent Referral</h6>
+									<input type="text" id="referralCode" class="form-control"
+										placeholder="Enter Referral Code (Optional)">
+								</div>
+							</div>
+						</form>
+					</div>
+					<!-- Wallet Toggle -->
+					<div class="checkout-box">
+						<h5><i class="bi bi-wallet2 me-2" style="color:var(--gold);"></i>Redeem Wallet Credits</h5>
+						<div class="d-flex align-items-center justify-content-between p-3 rounded"
+							style="background:#fcfaf6; border:1px solid #f0ebe0;">
+							<div class="form-check m-0">
+								<input class="form-check-input" type="checkbox" id="walletCheckbox"
+									onchange="toggleWalletRedemption()">
+								<label class="form-check-label order-summary-val" for="walletCheckbox"
+									style="cursor:pointer; font-size:0.9rem;"> Apply L.L. Rewards Credits </label>
+								<div class="text-muted" style="font-size:0.75rem; margin-top:2px;"> Available balance:
+									<strong>₹<span
+											th:text="${#numbers.formatDecimal(walletBalance, 1, 0)}">0</span></strong>
+								</div>
+							</div>
+							<span class="badge bg-dark p-2 text-gold font-weight-bold" style="font-size:0.9rem;"
+								id="walletBadgeText"> -₹0.00 </span>
+						</div>
+					</div>
+				</div>
+				<!-- RIGHT COLUMN: ORDER SUMMARY -->
+				<div class="col-lg-5">
+					<div class="checkout-box" style="border: 2px solid var(--beige-dark); background:#fafafa;">
+						<h5>Order Summary</h5>
+						<!-- Items Loop -->
+						<div class="mb-4">
+							<div class="item-row" th:each="item : ${items}">
+								<div>
+									<div style="font-weight:600; font-size:0.9rem;" th:text="${item.product.name}">Rose
+										Gold Elixir</div>
+									<div style="font-size: 0.75rem; color:var(--text-muted);"> Quantity: <span
+											th:text="${item.quantity}">1</span> · Price: ₹<span
+											th:text="${#numbers.formatDecimal(item.product.price, 1, 0)}">2499</span>
+									</div>
+								</div>
+								<span class="order-summary-val" style="color:var(--gold-dark);"
+									th:text="'₹' + ${#numbers.formatDecimal(item.total, 1, 0)}">₹2499</span>
+							</div>
+						</div>
+						<!-- VIP Banner -->
+						<div th:if="${activeMembership != null}" class="vip-discount-alert">
+							<span>💎</span>
+							<div>
+								<strong>VIP <span th:text="${passName}">Eva Gold Card</span> Activated!</strong><br>
+								<span th:text="${#numbers.formatDecimal(discountPercent, 1, 0)}">15</span>% instant
+								checkout discount applied automatically.
+							</div>
+						</div>
+						<div th:if="${activeMembership == null}" class="p-3 rounded mb-4 text-center"
+							style="background:#f2ebd9; border: 1px dashed rgba(201,168,76,0.5);">
+							<span style="font-size:0.78rem; color:#775c1c;">💡 <strong>Upgrade Tip:</strong> Buy a VIP
+								Membership Card first to get up to 25% instant checkout discount!</span>
+						</div>
+						<!-- Math Ledger -->
+						<div class="d-flex flex-column gap-3 py-3 border-top border-bottom mb-4"
+							style="border-color:#e8e0d0 !important;">
+							<div class="d-flex justify-content-between">
+								<span class="order-summary-lbl">Items Subtotal</span>
+								<span class="order-summary-val"
+									th:text="'₹' + ${#numbers.formatDecimal(subtotal, 1, 2)}">₹0.00</span>
+							</div>
+							<div class="d-flex justify-content-between" th:if="${activeMembership != null}">
+								<span class="order-summary-lbl">VIP Card Discount</span>
+								<span class="order-summary-val text-success"
+									th:text="'-₹' + ${#numbers.formatDecimal(discountAmount, 1, 2)}">-₹0.00</span>
+							</div>
+							<div class="d-flex justify-content-between">
+								<span class="order-summary-lbl">+ 18% GST</span>
+								<span class="order-summary-val"
+									th:text="'+₹' + ${#numbers.formatDecimal(gstAmount, 1, 2)}">+₹0.00</span>
+							</div>
+							<div class="d-flex justify-content-between" id="walletDeductionRow"
+								style="display:none !important;">
+								<span class="order-summary-lbl">Wallet Applied</span>
+								<span class="order-summary-val text-success" id="walletDeductionValue">-₹0.00</span>
+							</div>
+							<div class="d-flex justify-content-between mt-2">
+								<span class="order-summary-val" style="font-size:1.05rem;">Grand Total</span>
+								<span class="order-summary-val text-gold" style="font-size:1.25rem;"
+									id="grandTotalDisplay"
+									th:text="'₹' + ${#numbers.formatDecimal(finalAmount, 1, 2)}">₹0.00</span>
+							</div>
+						</div>
+						<!-- Choose Payment Method -->
+						<div class="checkout-box">
+							<h5><i class="bi bi-credit-card-2-front me-2" style="color:var(--gold);"></i>Choose Payment
+								Method</h5>
+							<ul class="nav nav-pills flex-column m-0" id="paymentTab" role="tablist"
+								style="border: 1px solid #e8e0d0; border-radius: 8px; overflow: hidden;">
+								<li class="nav-item" role="presentation">
+									<button
+										class="nav-link active w-100 rounded-0 py-3 fw-bold text-uppercase text-start d-flex justify-content-center"
+										id="card-tab" data-bs-toggle="pill" data-bs-target="#payment-card" type="button"
+										role="tab" aria-selected="true"
+										style="font-size:0.85rem; letter-spacing:0.5px; transition: all 0.3s;"> 💳
+										RAZORPAY / CARDS </button>
+								</li>
+								<li class="nav-item border-top" role="presentation"
+									style="border-color: #e8e0d0 !important;">
+									<button
+										class="nav-link w-100 rounded-0 py-3 fw-bold text-uppercase text-start d-flex justify-content-center"
+										id="upi-tab" data-bs-toggle="pill" data-bs-target="#payment-upi" type="button"
+										role="tab" aria-selected="false"
+										style="font-size:0.85rem; letter-spacing:0.5px; transition: all 0.3s; color: #333;">
+										📱 GPAY / MANUAL QR </button>
+								</li>
+							</ul>
+							<style>
+								#paymentTab .nav-link.active {
+									background-color: #0d6efd !important;
+									color: #fff !important;
+								}
 
-    <!-- NAVBAR -->
-    <div th:replace="~{fragments/header :: header}"></div>
+								#paymentTab .nav-link:not(.active) {
+									background-color: #fcfaf6 !important;
+									color: #333 !important;
+								}
+							</style>
+							<div class="tab-content p-3 rounded" style="border:1px solid #f0ebe0; background:#fcfaf6;"
+								id="paymentTabContent">
+								<!-- Card payment description -->
+								<div class="tab-pane fade show active" id="payment-card" role="tabpanel">
+									<div class="small text-muted mb-2"> Securely pay using Debit/Credit Cards,
+										NetBanking, or Wallet. </div>
+									<div class="d-flex flex-wrap gap-2 mb-3 mt-2">
+										<span class="badge bg-light text-dark border"><i
+												class="bi bi-credit-card me-1"></i> Visa / Mastercard</span>
+										<span class="badge bg-light text-dark border"><i class="bi bi-bank me-1"></i>
+											Net Banking</span>
+										<span class="badge bg-light text-dark border"><i class="bi bi-wallet2 me-1"></i>
+											Wallets</span>
+									</div>
+									<span class="badge bg-gold text-dark" style="font-size:0.75rem; font-weight:600;"><i
+											class="bi bi-shield-check me-1"></i>Razorpay Gateway Enabled</span>
+								</div>
+								<!-- UPI Payment description -->
+								<div class="tab-pane fade" id="payment-upi" role="tabpanel">
+									<div class="small text-muted mb-2"> Pay manually by scanning our Google Pay QR Code.
+										You will need to submit your 12-digit UTR. </div>
+									<div class="d-flex flex-wrap gap-2 mb-3 mt-2">
+										<span class="badge bg-light text-dark border"><i class="bi bi-google me-1"></i>
+											GPay</span>
+										<span class="badge bg-light text-dark border"><i class="bi bi-phone me-1"></i>
+											PhonePe</span>
+										<span class="badge bg-light text-dark border"><i class="bi bi-wallet me-1"></i>
+											Paytm</span>
+									</div>
+									<div class="p-2 border bg-white rounded-3 shadow-sm text-center">
+										<img src="/images/gpay-qr.png" alt="GPay QR"
+											style="max-width: 150px; border: 1px solid #eee; border-radius: 8px;">
+										<div class="mt-2 small fw-bold text-gold">Scan to Pay</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- Place Order Button -->
+						<button type="button" class="btn btn-gold w-100 py-3 font-weight-bold shadow-sm mt-2 mb-4"
+							onclick="placeOrder()"
+							style="border-radius: 12px; font-size: 1.05rem; letter-spacing: 0.5px;">
+							<i class="bi bi-shield-lock-fill me-2"></i> Confirm &amp; Place Order </button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- PREMIUM MOCK PAYMENT DIALOG (MODAL) -->
+		<div class="modal fade" id="mockPaymentModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content modal-dark">
+					<div class="modal-header border-0 pb-0">
+						<h5 class="modal-title brand-font text-gold"><i class="bi bi-shield-fill-check me-2"></i>EVA
+							Secure Gateway</h5>
+						<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+							aria-label="Close"></button>
+					</div>
+					<!-- Initial Mock Simulator Body -->
+					<div class="modal-body text-center py-4" id="modalSimulatorIntro">
+						<div id="simulatedIcon" style="font-size: 3.5rem; margin-bottom: 16px;">💳</div>
+						<h5 class="mb-3" id="modalPaymentTitle">Simulate Order Purchase</h5>
+						<p class="text-muted" style="font-size:0.9rem;"> Amount to authorize: <strong id="modalAmount"
+								class="text-white fs-4">₹0</strong>
+						</p>
+						<div class="p-3 rounded mb-3 text-start bg-dark-rich border border-secondary"
+							style="font-size:0.8rem; line-height:1.5; color:#bbb;">
+							<i class="bi bi-info-circle text-gold me-2"></i><strong>EVA Sandboxed Gateway:</strong>
+							<span id="gatewayDetailMsg">To facilitate testing of the membership credits, cashbacks, and
+								order logging, you can immediately verify this order with a simulated gateway.</span>
+						</div>
+						<div class="d-flex justify-content-end gap-3 mt-4">
+							<button type="button" class="btn btn-outline-light px-4"
+								data-bs-dismiss="modal">Cancel</button>
+							<button type="button" class="btn btn-gold px-4" id="startUpiSimulationBtn">Simulate
+								Success</button>
+						</div>
+					</div>
+					<!-- Live Payment Verification Body (AJAX Loader) -->
+					<div class="modal-body text-center py-5" id="modalSimulatorLoader" style="display:none !important;">
+						<div class="spinner-border text-gold mb-4" role="status"
+							style="width: 4rem; height: 4rem; border-width: 0.35em;">
+							<span class="visually-hidden">Loading...</span>
+						</div>
+						<h4 class="brand-font text-white mb-2" id="loaderStateTitle">Awaiting UPI Payment Authorization
+						</h4>
+						<p class="text-muted small" id="loaderStateDesc">Processing request... Please authorize the
+							request on your UPI app within <span class="text-gold fw-bold" id="countdownTimer">15</span>
+							seconds.</p>
+					</div>
+					<!-- Payment Success Animation Body -->
+					<div class="modal-body text-center py-5" id="modalSimulatorSuccess"
+						style="display:none !important;">
+						<div class="d-flex align-items-center justify-content-center mx-auto mb-4 bg-success text-white rounded-circle shadow-lg animate-fade-up"
+							style="width: 80px; height: 80px; font-size: 3rem;"> ✓ </div>
+						<h4 class="brand-font text-success mb-2">Payment Verified Successfully!</h4>
+						<p class="text-muted small">Your premium beauty products have been purchased. Generating invoice
+							and booking confirmation...</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- GPAY MANUAL UTR SUBMISSION MODAL -->
+		<div class="modal fade" id="gpayModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header border-0 pb-0">
+						<h5 class="modal-title brand-font text-gold"><i class="bi bi-google me-2"></i>Manual GPay
+							Submission</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body py-4">
+						<div class="text-center mb-4">
+							<img src="/images/gpay-qr.png" alt="GPay QR"
+								style="max-width: 200px; border: 2px solid #eee; border-radius: 12px;">
+							<p class="mt-3 mb-0 fw-bold" style="font-size: 1.2rem;">Amount to Pay: <span
+									id="gpayModalAmount" class="text-gold">₹0</span></p>
+							<p class="text-muted small">Please scan the QR code and transfer the exact amount.</p>
+						</div>
+						<form id="gpaySubmitForm" enctype="multipart/form-data">
+							<input type="hidden" name="paymentPurpose" value="CHECKOUT">
+							<input type="hidden" name="referenceId" id="gpayReferenceId">
+							<input type="hidden" name="amount" id="gpayFormAmount">
+							<div class="mb-3">
+								<label class="form-label fw-bold">Amount Paid</label>
+								<input type="text" class="form-control" id="gpayDisplayAmount" disabled>
+								<small class="text-muted">Amount is auto-filled for order checkout.</small>
+							</div>
+							<div class="mb-3">
+								<label class="form-label fw-bold">12-Digit UTR / Reference Number <span
+										class="text-danger">*</span></label>
+								<input type="text" class="form-control" name="utrNumber" required pattern="\d{12}"
+									placeholder="e.g. 312345678901" maxlength="12">
+							</div>
+							<div class="mb-4">
+								<label class="form-label fw-bold">Payment Screenshot <span
+										class="text-muted">(Optional)</span></label>
+								<input type="file" class="form-control" name="screenshot" accept="image/*">
+							</div>
+							<button type="button" class="btn btn-gold w-100 py-2 fw-bold"
+								onclick="submitGPayUTR()">Submit Payment Verification</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- FOOTER -->
+		<div th:replace="~{fragments/footer :: footer}"></div>
+		<!-- SCRIPTS -->
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+		<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+		<script th:inline="javascript">
+			const walletBalance = [[${walletBalance}]];
+			const initialFinalAmount = [[${finalAmount}]];
+			const directProductId = [[${directProductId}]];
 
-    <div class="checkout-container">
-        <div class="container animate-fade-up">
-            
-            <h2 class="brand-font mb-5 text-center">Secure Checkout</h2>
+			let mockPaymentData = null;
+			let mockModalInstance = null;
 
-            <div class="row g-4">
-                
-                <!-- LEFT COLUMN: SHIPPING INFO & WALLET REDEMPTION -->
-                <div class="col-lg-7">
-                    
-                    <!-- Shipping Address -->
-                    <div class="checkout-box">
-                        <h5><i class="bi bi-geo-alt me-2" style="color:var(--gold);"></i>Delivery Address</h5>
-                        <form id="checkoutForm">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Full Name</label>
-                                    <input type="text" class="form-control" id="billingName" th:value="${currentUser.name}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Mobile Number</label>
-                                    <input type="text" class="form-control" id="billingMobile" th:value="${currentUser.mobile}" required>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label">Shipping Address</label>
-                                    <input type="text" class="form-control" placeholder="Street Address, Apartment, Suite" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">City</label>
-                                    <input type="text" class="form-control" placeholder="Pune" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Pincode</label>
-                                    <input type="text" class="form-control" placeholder="411001" required>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
+			function toggleWalletRedemption() {
+				const useWallet = document.getElementById('walletCheckbox').checked;
+				const walletBadge = document.getElementById('walletBadgeText');
+				const walletRow = document.getElementById('walletDeductionRow');
+				const walletVal = document.getElementById('walletDeductionValue');
+				const grandTotal = document.getElementById('grandTotalDisplay');
 
-                    <!-- Wallet Toggle -->
-                    <div class="checkout-box">
-                        <h5><i class="bi bi-wallet2 me-2" style="color:var(--gold);"></i>Redeem Wallet Credits</h5>
-                        <div class="d-flex align-items-center justify-content-between p-3 rounded" style="background:#fcfaf6; border:1px solid #f0ebe0;">
-                            <div class="form-check m-0">
-                                <input class="form-check-input" type="checkbox" id="walletCheckbox" onchange="toggleWalletRedemption()">
-                                <label class="form-check-label order-summary-val" for="walletCheckbox" style="cursor:pointer; font-size:0.9rem;">
-                                    Apply L.L. Rewards Credits
-                                </label>
-                                <div class="text-muted" style="font-size:0.75rem; margin-top:2px;">
-                                    Available balance: <strong>₹<span th:text="${#numbers.formatDecimal(walletBalance, 1, 0)}">0</span></strong>
-                                </div>
-                            </div>
-                            <span class="badge bg-dark p-2 text-gold font-weight-bold" style="font-size:0.9rem;" id="walletBadgeText">
-                                -₹0.00
-                            </span>
-                        </div>
-                    </div>
-                </div>
+				if (useWallet) {
+					const applied = Math.min(walletBalance, initialFinalAmount);
+					const remaining = initialFinalAmount - applied;
 
-                <!-- RIGHT COLUMN: ORDER SUMMARY -->
-                <div class="col-lg-5">
-                    <div class="checkout-box" style="border: 2px solid var(--beige-dark); background:#fafafa;">
-                        <h5>Order Summary</h5>
-                        
-                        <!-- Items Loop -->
-                        <div class="mb-4">
-                            <div class="item-row" th:each="item : ${items}">
-                                <div>
-                                    <div style="font-weight:600; font-size:0.9rem;" th:text="${item.product.name}">Rose Gold Elixir</div>
-                                    <div style="font-size: 0.75rem; color:var(--text-muted);">
-                                        Quantity: <span th:text="${item.quantity}">1</span> · Price: ₹<span th:text="${#numbers.formatDecimal(item.product.price, 1, 0)}">2499</span>
-                                    </div>
-                                </div>
-                                <span class="order-summary-val" style="color:var(--gold-dark);" th:text="'₹' + ${#numbers.formatDecimal(item.total, 1, 0)}">₹2499</span>
-                            </div>
-                        </div>
+					walletBadge.innerText = "-₹" + applied.toFixed(2);
+					walletVal.innerText = "-₹" + applied.toFixed(2);
+					walletRow.setAttribute("style", "display: flex !important;");
+					grandTotal.innerText = "₹" + remaining.toFixed(2);
+				} else {
+					walletBadge.innerText = "-₹0.00";
+					walletRow.setAttribute("style", "display: none !important;");
+					grandTotal.innerText = "₹" + initialFinalAmount.toFixed(2);
+				}
+			}
 
-                        <!-- VIP Banner -->
-                        <div th:if="${activeMembership != null}" class="vip-discount-alert">
-                            <span>💎</span>
-                            <div>
-                                <strong>VIP <span th:text="${passName}">Eva Gold Card</span> Activated!</strong><br>
-                                <span th:text="${#numbers.formatDecimal(discountPercent, 1, 0)}">15</span>% instant checkout discount applied automatically.
-                            </div>
-                        </div>
-                        <div th:if="${activeMembership == null}" class="p-3 rounded mb-4 text-center" style="background:#f2ebd9; border: 1px dashed rgba(201,168,76,0.5);">
-                            <span style="font-size:0.78rem; color:#775c1c;">💡 <strong>Upgrade Tip:</strong> Buy a VIP Membership Card first to get up to 25% instant checkout discount!</span>
-                        </div>
+			function placeOrder() {
+				// Check form validation
+				const form = document.getElementById('checkoutForm');
+				if (form && !form.checkValidity()) {
+					form.reportValidity();
+					return;
+				}
 
-                        <!-- Math Ledger -->
-                        <div class="d-flex flex-column gap-3 py-3 border-top border-bottom mb-4" style="border-color:#e8e0d0 !important;">
-                            <div class="d-flex justify-content-between">
-                                <span class="order-summary-lbl">Items Subtotal</span>
-                                <span class="order-summary-val" th:text="'₹' + ${#numbers.formatDecimal(subtotal, 1, 2)}">₹0.00</span>
-                            </div>
-                            <div class="d-flex justify-content-between" th:if="${activeMembership != null}">
-                                <span class="order-summary-lbl">VIP Card Discount</span>
-                                <span class="order-summary-val text-success" th:text="'-₹' + ${#numbers.formatDecimal(discountAmount, 1, 2)}">-₹0.00</span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span class="order-summary-lbl">+ 18% GST</span>
-                                <span class="order-summary-val" th:text="'+₹' + ${#numbers.formatDecimal(gstAmount, 1, 2)}">+₹0.00</span>
-                            </div>
-                            <div class="d-flex justify-content-between" id="walletDeductionRow" style="display:none !important;">
-                                <span class="order-summary-lbl">Wallet Applied</span>
-                                <span class="order-summary-val text-success" id="walletDeductionValue">-₹0.00</span>
-                            </div>
-                            <div class="d-flex justify-content-between mt-2">
-                                <span class="order-summary-val" style="font-size:1.05rem;">Grand Total</span>
-                                <span class="order-summary-val text-gold" style="font-size:1.25rem;" id="grandTotalDisplay" th:text="'₹' + ${#numbers.formatDecimal(finalAmount, 1, 2)}">₹0.00</span>
-                            </div>
-                        </div>
+				const isUpiTab = document.getElementById('upi-tab').classList.contains('active');
+				const useWallet = document.getElementById('walletCheckbox').checked;
+				const referralCode =
+					document.getElementById('referralCode').value;
 
-                    <!-- Choose Payment Method -->
-                    <div class="checkout-box">
-                        <h5><i class="bi bi-credit-card-2-front me-2" style="color:var(--gold);"></i>Choose Payment Method</h5>
-                        <ul class="nav nav-pills flex-column m-0" id="paymentTab" role="tablist" style="border: 1px solid #e8e0d0; border-radius: 8px; overflow: hidden;">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active w-100 rounded-0 py-3 fw-bold text-uppercase text-start d-flex justify-content-center" id="card-tab" data-bs-toggle="pill" data-bs-target="#payment-card" type="button" role="tab" aria-selected="true" style="font-size:0.85rem; letter-spacing:0.5px; transition: all 0.3s;">
-                                    💳 RAZORPAY / CARDS
-                                </button>
-                            </li>
-                            <li class="nav-item border-top" role="presentation" style="border-color: #e8e0d0 !important;">
-                                <button class="nav-link w-100 rounded-0 py-3 fw-bold text-uppercase text-start d-flex justify-content-center" id="upi-tab" data-bs-toggle="pill" data-bs-target="#payment-upi" type="button" role="tab" aria-selected="false" style="font-size:0.85rem; letter-spacing:0.5px; transition: all 0.3s; color: #333;">
-                                    📱 GPAY / MANUAL QR
-                                </button>
-                            </li>
-                        </ul>
-                        <style>
-                            #paymentTab .nav-link.active {
-                                background-color: #0d6efd !important;
-                                color: #fff !important;
-                            }
-                            #paymentTab .nav-link:not(.active) {
-                                background-color: #fcfaf6 !important;
-                                color: #333 !important;
-                            }
-                        </style>
-                        <div class="tab-content p-3 rounded" style="border:1px solid #f0ebe0; background:#fcfaf6;" id="paymentTabContent">
-                            <!-- Card payment description -->
-                            <div class="tab-pane fade show active" id="payment-card" role="tabpanel">
-                                <div class="small text-muted mb-2">
-                                    Securely pay using Debit/Credit Cards, NetBanking, or Wallet.
-                                </div>
-                                <div class="d-flex flex-wrap gap-2 mb-3 mt-2">
-                                    <span class="badge bg-light text-dark border"><i class="bi bi-credit-card me-1"></i> Visa / Mastercard</span>
-                                    <span class="badge bg-light text-dark border"><i class="bi bi-bank me-1"></i> Net Banking</span>
-                                    <span class="badge bg-light text-dark border"><i class="bi bi-wallet2 me-1"></i> Wallets</span>
-                                </div>
-                                <span class="badge bg-gold text-dark" style="font-size:0.75rem; font-weight:600;"><i class="bi bi-shield-check me-1"></i>Razorpay Gateway Enabled</span>
-                            </div>
-                            <!-- UPI Payment description -->
-                            <div class="tab-pane fade" id="payment-upi" role="tabpanel">
-                                <div class="small text-muted mb-2">
-                                    Pay manually by scanning our Google Pay QR Code. You will need to submit your 12-digit UTR.
-                                </div>
-                                <div class="d-flex flex-wrap gap-2 mb-3 mt-2">
-                                    <span class="badge bg-light text-dark border"><i class="bi bi-google me-1"></i> GPay</span>
-                                    <span class="badge bg-light text-dark border"><i class="bi bi-phone me-1"></i> PhonePe</span>
-                                    <span class="badge bg-light text-dark border"><i class="bi bi-wallet me-1"></i> Paytm</span>
-                                </div>
-                                <div class="p-2 border bg-white rounded-3 shadow-sm text-center">
-                                    <img src="/images/gpay-qr.png" alt="GPay QR" style="max-width: 150px; border: 1px solid #eee; border-radius: 8px;">
-                                    <div class="mt-2 small fw-bold text-gold">Scan to Pay</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+				// Check UPI input VPA if UPI tab is selected
+				if (isUpiTab) {
+					const upiInput = document.getElementById('upiAddressInput');
+					if (upiInput && upiInput.value.trim() !== "" && !upiInput.value.includes("@")) {
+						alert("Please enter a valid UPI Address (e.g. name@upi)");
+						upiInput.focus();
+						return;
+					}
+				}
 
-                    <!-- Place Order Button -->
-                    <button type="button" class="btn btn-gold w-100 py-3 font-weight-bold shadow-sm mt-2 mb-4" onclick="placeOrder()" style="border-radius: 12px; font-size: 1.05rem; letter-spacing: 0.5px;">
-                        <i class="bi bi-shield-lock-fill me-2"></i> Confirm &amp; Place Order
-                    </button>
-                </div>
+				let url =
+					`/checkout/place-order?useWallet=${useWallet}&referralCode=${encodeURIComponent(referralCode)}`;
+				if (directProductId) {
+					url += `&directProductId=${directProductId}`;
+				}
 
-            </div>
+				fetch(url, {method: 'POST'})
+					.then(res => res.json())
+					.then(data => {
+						if (data.status === 'success') {
+							// Fully paid via wallet, completed instantly
+							window.location.href = data.redirectUrl;
+						} else if (data.status === 'payment_pending') {
+							mockPaymentData = data;
 
-        </div>
-    </div>
+							if (isUpiTab) {
+								// Open GPay Manual Modal
+								document.getElementById('gpayModalAmount').innerText = '₹' + data.amountToPay.toFixed(2);
+								document.getElementById('gpayDisplayAmount').value = '₹' + data.amountToPay.toFixed(2);
+								document.getElementById('gpayFormAmount').value = data.amountToPay;
+								document.getElementById('gpayReferenceId').value = data.orderId;
 
-    <!-- PREMIUM MOCK PAYMENT DIALOG (MODAL) -->
-    <div class="modal fade" id="mockPaymentModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-dark">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title brand-font text-gold"><i class="bi bi-shield-fill-check me-2"></i>EVA Secure Gateway</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                
-                <!-- Initial Mock Simulator Body -->
-                <div class="modal-body text-center py-4" id="modalSimulatorIntro">
-                    <div id="simulatedIcon" style="font-size: 3.5rem; margin-bottom: 16px;">💳</div>
-                    <h5 class="mb-3" id="modalPaymentTitle">Simulate Order Purchase</h5>
-                    <p class="text-muted" style="font-size:0.9rem;">
-                        Amount to authorize: <strong id="modalAmount" class="text-white fs-4">₹0</strong>
-                    </p>
-                    <div class="p-3 rounded mb-3 text-start bg-dark-rich border border-secondary" style="font-size:0.8rem; line-height:1.5; color:#bbb;">
-                        <i class="bi bi-info-circle text-gold me-2"></i><strong>EVA Sandboxed Gateway:</strong>
-                        <span id="gatewayDetailMsg">To facilitate testing of the membership credits, cashbacks, and order logging, you can immediately verify this order with a simulated gateway.</span>
-                    </div>
-                    <div class="d-flex justify-content-end gap-3 mt-4">
-                        <button type="button" class="btn btn-outline-light px-4" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-gold px-4" id="startUpiSimulationBtn">Simulate Success</button>
-                    </div>
-                </div>
+								new bootstrap.Modal(document.getElementById('gpayModal')).show();
+							} else if (data.useMock) {
+								document.getElementById('modalAmount').innerText = '₹' + Math.round(data.amountToPay);
 
-                <!-- Live Payment Verification Body (AJAX Loader) -->
-                <div class="modal-body text-center py-5" id="modalSimulatorLoader" style="display:none !important;">
-                    <div class="spinner-border text-gold mb-4" role="status" style="width: 4rem; height: 4rem; border-width: 0.35em;">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <h4 class="brand-font text-white mb-2" id="loaderStateTitle">Awaiting UPI Payment Authorization</h4>
-                    <p class="text-muted small" id="loaderStateDesc">Processing request... Please authorize the request on your UPI app within <span class="text-gold fw-bold" id="countdownTimer">15</span> seconds.</p>
-                </div>
+								if (!mockModalInstance) {
+									mockModalInstance = new bootstrap.Modal(document.getElementById('mockPaymentModal'));
+								}
 
-                <!-- Payment Success Animation Body -->
-                <div class="modal-body text-center py-5" id="modalSimulatorSuccess" style="display:none !important;">
-                    <div class="d-flex align-items-center justify-content-center mx-auto mb-4 bg-success text-white rounded-circle shadow-lg animate-fade-up" style="width: 80px; height: 80px; font-size: 3rem;">
-                        ✓
-                    </div>
-                    <h4 class="brand-font text-success mb-2">Payment Verified Successfully!</h4>
-                    <p class="text-muted small">Your premium beauty products have been purchased. Generating invoice and booking confirmation...</p>
-                </div>
-            </div>
-        </div>
-    </div>
+								// Customize gateway layout based on payment choice (UPI vs Razorpay Cards)
+								if (isUpiTab) {
+									document.getElementById('simulatedIcon').innerText = '📱';
+									document.getElementById('modalPaymentTitle').innerText = 'Simulate UPI QR / Wallet Purchase';
+									document.getElementById('gatewayDetailMsg').innerText = 'Scanning the dynamic QR code or paying to ' + (document.getElementById('upiAddressInput').value || 'llbeauty@upi') + ' will dynamically trigger an instant payment push check. Autorun sandbox validation below.';
+								} else {
+									document.getElementById('simulatedIcon').innerText = '💳';
+									document.getElementById('modalPaymentTitle').innerText = 'Simulate Credit/Debit Order Purchase';
+									document.getElementById('gatewayDetailMsg').innerText = 'Since no commercial Razorpay production API credentials are configured, we provide this sandbox gateway simulator to verify the order checkout flow.';
+								}
 
-    <!-- GPAY MANUAL UTR SUBMISSION MODAL -->
-    <div class="modal fade" id="gpayModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title brand-font text-gold"><i class="bi bi-google me-2"></i>Manual GPay Submission</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body py-4">
-                    <div class="text-center mb-4">
-                        <img src="/images/gpay-qr.png" alt="GPay QR" style="max-width: 200px; border: 2px solid #eee; border-radius: 12px;">
-                        <p class="mt-3 mb-0 fw-bold" style="font-size: 1.2rem;">Amount to Pay: <span id="gpayModalAmount" class="text-gold">₹0</span></p>
-                        <p class="text-muted small">Please scan the QR code and transfer the exact amount.</p>
-                    </div>
-                    
-                    <form id="gpaySubmitForm" enctype="multipart/form-data">
-                        <input type="hidden" name="paymentPurpose" value="CHECKOUT">
-                        <input type="hidden" name="referenceId" id="gpayReferenceId">
-                        <input type="hidden" name="amount" id="gpayFormAmount">
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Amount Paid</label>
-                            <input type="text" class="form-control" id="gpayDisplayAmount" disabled>
-                            <small class="text-muted">Amount is auto-filled for order checkout.</small>
-                        </div>
+								// Reset modal layout
+								document.getElementById('modalSimulatorIntro').style.setProperty('display', 'block', 'important');
+								document.getElementById('modalSimulatorLoader').style.setProperty('display', 'none', 'important');
+								document.getElementById('modalSimulatorSuccess').style.setProperty('display', 'none', 'important');
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">12-Digit UTR / Reference Number <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="utrNumber" required pattern="\d{12}" placeholder="e.g. 312345678901" maxlength="12">
-                        </div>
+								mockModalInstance.show();
+							} else {
+								// Open real Razorpay
+								var options = {
+									"key": data.key,
+									"amount": Math.round(data.amountToPay * 100),
+									"currency": "INR",
+									"name": "EVA",
+									"description": "Order Checkout",
+									"image": "/images/logo.png",
+									"order_id": data.razorpayOrderId,
+									"handler": function (rzp_res) {
+										verifyOrderPayment(data.orderId, rzp_res.razorpay_payment_id, rzp_res.razorpay_order_id, rzp_res.razorpay_signature);
+									},
+									"prefill": {
+										"name": document.getElementById('billingName') ? document.getElementById('billingName').value : '',
+										"contact": document.getElementById('billingMobile') ? document.getElementById('billingMobile').value : ''
+									},
+									"theme": {
+										"color": "#0d6efd"
+									}
+								};
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Payment Screenshot <span class="text-muted">(Optional)</span></label>
-                            <input type="file" class="form-control" name="screenshot" accept="image/*">
-                        </div>
-                        
-                        <button type="button" class="btn btn-gold w-100 py-2 fw-bold" onclick="submitGPayUTR()">Submit Payment Verification</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+								if (isUpiTab) {
+									var upiId = document.getElementById('upiAddressInput').value;
+									if (upiId && upiId.includes('@')) {
+										options.prefill.method = 'upi';
+										options.prefill.vpa = upiId;
+									}
+								}
 
-    <!-- FOOTER -->
-    <div th:replace="~{fragments/footer :: footer}"></div>
+								var rzp1 = new Razorpay(options);
+								rzp1.on('payment.failed', function (response) {
+									alert("Payment Failed: " + response.error.description);
+								});
+								rzp1.open();
+							}
+						} else {
+							alert("Order placement failed: " + data.message);
+						}
+					})
+					.catch(err => {
+						console.error("Order error: ", err);
+					});
+			}
 
-    <!-- SCRIPTS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script th:inline="javascript">
-        const walletBalance = [[${walletBalance}]];
-        const initialFinalAmount = [[${finalAmount}]];
-        const directProductId = [[${directProductId}]];
+			// Trigger visual simulated steps upon clicking success
+			document.getElementById('startUpiSimulationBtn').addEventListener('click', function () {
+				// Show loader tab
+				document.getElementById('modalSimulatorIntro').style.setProperty('display', 'none', 'important');
+				document.getElementById('modalSimulatorLoader').style.setProperty('display', 'block', 'important');
 
-        let mockPaymentData = null;
-        let mockModalInstance = null;
+				const isUpiTab = document.getElementById('upi-tab').classList.contains('active');
+				if (isUpiTab) {
+					document.getElementById('loaderStateTitle').innerText = 'Awaiting Mobile UPI Authorization';
+					document.getElementById('loaderStateDesc').innerHTML = 'Sending pay request to <strong>' + (document.getElementById('upiAddressInput').value || 'yourname@upi') + '</strong>... Please approve on your phone inside <span class="text-gold fw-bold" id="countdownTimer">5</span>s.';
+				} else {
+					document.getElementById('loaderStateTitle').innerText = 'Authorizing Cards Transaction';
+					document.getElementById('loaderStateDesc').innerHTML = 'Connecting to banking server... Verifying 3D Secure OTP inside <span class="text-gold fw-bold" id="countdownTimer">5</span>s.';
+				}
 
-        function toggleWalletRedemption() {
-            const useWallet = document.getElementById('walletCheckbox').checked;
-            const walletBadge = document.getElementById('walletBadgeText');
-            const walletRow = document.getElementById('walletDeductionRow');
-            const walletVal = document.getElementById('walletDeductionValue');
-            const grandTotal = document.getElementById('grandTotalDisplay');
+				// Start dynamic verification countdown
+				let count = 3;
+				const timer = document.getElementById('countdownTimer');
+				const interval = setInterval(() => {
+					count--;
+					if (timer) timer.innerText = count;
+					if (count <= 0) {
+						clearInterval(interval);
 
-            if (useWallet) {
-                const applied = Math.min(walletBalance, initialFinalAmount);
-                const remaining = initialFinalAmount - applied;
-                
-                walletBadge.innerText = "-₹" + applied.toFixed(2);
-                walletVal.innerText = "-₹" + applied.toFixed(2);
-                walletRow.setAttribute("style", "display: flex !important;");
-                grandTotal.innerText = "₹" + remaining.toFixed(2);
-            } else {
-                walletBadge.innerText = "-₹0.00";
-                walletRow.setAttribute("style", "display: none !important;");
-                grandTotal.innerText = "₹" + initialFinalAmount.toFixed(2);
-            }
-        }
+						// Show success tab
+						document.getElementById('modalSimulatorLoader').style.setProperty('display', 'none', 'important');
+						document.getElementById('modalSimulatorSuccess').style.setProperty('display', 'block', 'important');
 
-        function placeOrder() {
-            // Check form validation
-            const form = document.getElementById('checkoutForm');
-            if (form && !form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
+						setTimeout(() => {
+							if (mockModalInstance) {
+								mockModalInstance.hide();
+							}
+							// Execute final backend order completion callback
+							if (mockPaymentData) {
+								let randomPaymentId = 'pay_upi_order_' + Math.random().toString(36).substring(2, 10);
+								verifyOrderPayment(mockPaymentData.orderId, randomPaymentId, null, null);
+							}
+						}, 1500);
+					}
+				}, 1000);
+			});
 
-            const isUpiTab = document.getElementById('upi-tab').classList.contains('active');
-            const useWallet = document.getElementById('walletCheckbox').checked;
-            
-            // Check UPI input VPA if UPI tab is selected
-            if (isUpiTab) {
-                const upiInput = document.getElementById('upiAddressInput');
-                if (upiInput && upiInput.value.trim() !== "" && !upiInput.value.includes("@")) {
-                    alert("Please enter a valid UPI Address (e.g. name@upi)");
-                    upiInput.focus();
-                    return;
-                }
-            }
+			function verifyOrderPayment(orderId, paymentId, rzpOrderId, rzpSignature) {
+				let formData = new FormData();
+				formData.append("orderId", orderId);
+				formData.append("paymentId", paymentId);
+				if (rzpOrderId) formData.append("razorpayOrderId", rzpOrderId);
+				if (rzpSignature) formData.append("razorpaySignature", rzpSignature);
 
-            let url = `/checkout/place-order?useWallet=${useWallet}`;
-            if (directProductId) {
-                url += `&directProductId=${directProductId}`;
-            }
+				if (directProductId) {
+					formData.append("directProductId", directProductId);
+				}
 
-            fetch(url, { method: 'POST' })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Fully paid via wallet, completed instantly
-                    window.location.href = data.redirectUrl;
-                } else if (data.status === 'payment_pending') {
-                    mockPaymentData = data;
-                    
-                    if (isUpiTab) {
-                        // Open GPay Manual Modal
-                        document.getElementById('gpayModalAmount').innerText = '₹' + data.amountToPay.toFixed(2);
-                        document.getElementById('gpayDisplayAmount').value = '₹' + data.amountToPay.toFixed(2);
-                        document.getElementById('gpayFormAmount').value = data.amountToPay;
-                        document.getElementById('gpayReferenceId').value = data.orderId;
-                        
-                        new bootstrap.Modal(document.getElementById('gpayModal')).show();
-                    } else if (data.useMock) {
-                        document.getElementById('modalAmount').innerText = '₹' + Math.round(data.amountToPay);
-                        
-                        if (!mockModalInstance) {
-                            mockModalInstance = new bootstrap.Modal(document.getElementById('mockPaymentModal'));
-                        }
-                        
-                        // Customize gateway layout based on payment choice (UPI vs Razorpay Cards)
-                        if (isUpiTab) {
-                            document.getElementById('simulatedIcon').innerText = '📱';
-                            document.getElementById('modalPaymentTitle').innerText = 'Simulate UPI QR / Wallet Purchase';
-                            document.getElementById('gatewayDetailMsg').innerText = 'Scanning the dynamic QR code or paying to ' + (document.getElementById('upiAddressInput').value || 'llbeauty@upi') + ' will dynamically trigger an instant payment push check. Autorun sandbox validation below.';
-                        } else {
-                            document.getElementById('simulatedIcon').innerText = '💳';
-                            document.getElementById('modalPaymentTitle').innerText = 'Simulate Credit/Debit Order Purchase';
-                            document.getElementById('gatewayDetailMsg').innerText = 'Since no commercial Razorpay production API credentials are configured, we provide this sandbox gateway simulator to verify the order checkout flow.';
-                        }
+				fetch('/checkout/confirm-order', {
+					method: 'POST',
+					body: formData
+				})
+					.then(res => res.json())
+					.then(data => {
+						if (data.status === 'success') {
+							window.location.href = data.redirectUrl;
+						} else {
+							alert("Order verification failed: " + data.message);
+						}
+					})
+					.catch(err => {
+						console.error("Order payment verify error: ", err);
+					});
+			}
 
-                        // Reset modal layout
-                        document.getElementById('modalSimulatorIntro').style.setProperty('display', 'block', 'important');
-                        document.getElementById('modalSimulatorLoader').style.setProperty('display', 'none', 'important');
-                        document.getElementById('modalSimulatorSuccess').style.setProperty('display', 'none', 'important');
-                        
-                        mockModalInstance.show();
-                    } else {
-                        // Open real Razorpay
-                        var options = {
-                            "key": data.key,
-                            "amount": Math.round(data.amountToPay * 100), 
-                            "currency": "INR",
-                            "name": "EVA",
-                            "description": "Order Checkout",
-                            "image": "/images/logo.png",
-                            "order_id": data.razorpayOrderId,
-                            "handler": function (rzp_res){
-                                verifyOrderPayment(data.orderId, rzp_res.razorpay_payment_id, rzp_res.razorpay_order_id, rzp_res.razorpay_signature);
-                            },
-                            "prefill": {
-                                "name": document.getElementById('billingName') ? document.getElementById('billingName').value : '',
-                                "contact": document.getElementById('billingMobile') ? document.getElementById('billingMobile').value : ''
-                            },
-                            "theme": {
-                                "color": "#0d6efd"
-                            }
-                        };
+			function submitGPayUTR() {
+				const form = document.getElementById('gpaySubmitForm');
+				if (!form.checkValidity()) {
+					form.reportValidity();
+					return;
+				}
 
-                        if (isUpiTab) {
-                            var upiId = document.getElementById('upiAddressInput').value;
-                            if (upiId && upiId.includes('@')) {
-                                options.prefill.method = 'upi';
-                                options.prefill.vpa = upiId;
-                            }
-                        }
-
-                        var rzp1 = new Razorpay(options);
-                        rzp1.on('payment.failed', function (response){
-                            alert("Payment Failed: " + response.error.description);
-                        });
-                        rzp1.open();
-                    }
-                } else {
-                    alert("Order placement failed: " + data.message);
-                }
-            })
-            .catch(err => {
-                console.error("Order error: ", err);
-            });
-        }
-
-        // Trigger visual simulated steps upon clicking success
-        document.getElementById('startUpiSimulationBtn').addEventListener('click', function() {
-            // Show loader tab
-            document.getElementById('modalSimulatorIntro').style.setProperty('display', 'none', 'important');
-            document.getElementById('modalSimulatorLoader').style.setProperty('display', 'block', 'important');
-            
-            const isUpiTab = document.getElementById('upi-tab').classList.contains('active');
-            if (isUpiTab) {
-                document.getElementById('loaderStateTitle').innerText = 'Awaiting Mobile UPI Authorization';
-                document.getElementById('loaderStateDesc').innerHTML = 'Sending pay request to <strong>' + (document.getElementById('upiAddressInput').value || 'yourname@upi') + '</strong>... Please approve on your phone inside <span class="text-gold fw-bold" id="countdownTimer">5</span>s.';
-            } else {
-                document.getElementById('loaderStateTitle').innerText = 'Authorizing Cards Transaction';
-                document.getElementById('loaderStateDesc').innerHTML = 'Connecting to banking server... Verifying 3D Secure OTP inside <span class="text-gold fw-bold" id="countdownTimer">5</span>s.';
-            }
-
-            // Start dynamic verification countdown
-            let count = 3;
-            const timer = document.getElementById('countdownTimer');
-            const interval = setInterval(() => {
-                count--;
-                if (timer) timer.innerText = count;
-                if (count <= 0) {
-                    clearInterval(interval);
-                    
-                    // Show success tab
-                    document.getElementById('modalSimulatorLoader').style.setProperty('display', 'none', 'important');
-                    document.getElementById('modalSimulatorSuccess').style.setProperty('display', 'block', 'important');
-                    
-                    setTimeout(() => {
-                        if (mockModalInstance) {
-                            mockModalInstance.hide();
-                        }
-                        // Execute final backend order completion callback
-                        if (mockPaymentData) {
-                            let randomPaymentId = 'pay_upi_order_' + Math.random().toString(36).substring(2, 10);
-                            verifyOrderPayment(mockPaymentData.orderId, randomPaymentId, null, null);
-                        }
-                    }, 1500);
-                }
-            }, 1000);
-        });
-
-        function verifyOrderPayment(orderId, paymentId, rzpOrderId, rzpSignature) {
-            let formData = new FormData();
-            formData.append("orderId", orderId);
-            formData.append("paymentId", paymentId);
-            if (rzpOrderId) formData.append("razorpayOrderId", rzpOrderId);
-            if (rzpSignature) formData.append("razorpaySignature", rzpSignature);
-            
-            if (directProductId) {
-                formData.append("directProductId", directProductId);
-            }
-
-            fetch('/checkout/confirm-order', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    window.location.href = data.redirectUrl;
-                } else {
-                    alert("Order verification failed: " + data.message);
-                }
-            })
-            .catch(err => {
-                console.error("Order payment verify error: ", err);
-            });
-        }
-
-        function submitGPayUTR() {
-            const form = document.getElementById('gpaySubmitForm');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-            
-            const formData = new FormData(form);
-            fetch('/manual-payment/submit', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    window.location.href = data.redirectUrl;
-                } else {
-                    alert("Error: " + data.message);
-                }
-            })
-            .catch(err => {
-                console.error("GPay submit error: ", err);
-                alert("Failed to submit request.");
-            });
-        }
-    </script>
+				const formData = new FormData(form);
+				fetch('/manual-payment/submit', {
+					method: 'POST',
+					body: formData
+				})
+					.then(res => res.json())
+					.then(data => {
+						if (data.status === 'success') {
+							window.location.href = data.redirectUrl;
+						} else {
+							alert("Error: " + data.message);
+						}
+					})
+					.catch(err => {
+						console.error("GPay submit error: ", err);
+						alert("Failed to submit request.");
+					});
+			}
+		</script>
 </body>
+
 </html>

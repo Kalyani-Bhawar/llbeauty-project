@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}">
+<body>
+    <div class="content">
+        <h1 class="page-title mb-1">Wallet Transactions</h1>
+        <div class="page-subtitle">All user wallet credits and debits</div>
+
+        <div class="data-card mt-4">
+            <div class="data-card-header">
+                <h6><i class="bi bi-wallet2 me-2" style="color:#c9a84c;"></i>Transaction History</h6>
+                <span style="font-size:0.78rem;color:rgba(255,255,255,0.4);" th:text="${transactions.size()} + ' Records'">0 Records</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Mobile</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Description</th>
+                            <th>Date & Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="txn : ${transactions}">
+                            <td style="font-size:0.8rem;color:rgba(255,255,255,0.4);" th:text="${txn.id}">1</td>
+                            <td>
+                                <div style="font-weight:600;font-size:0.85rem;" th:text="${txn.user?.name ?: 'Unknown'}">Name</div>
+                            </td>
+                            <td style="font-size:0.83rem;" th:text="${txn.user?.mobile ?: '-'}">Mobile</td>
+                            <td>
+                                <span class="badge-status badge-completed" th:if="${txn.type == 'CREDIT'}">CREDIT</span>
+                                <span class="badge-status badge-cancelled" th:if="${txn.type == 'DEBIT'}">DEBIT</span>
+                            </td>
+                            <td>
+                                <span style="font-weight:700;font-size:0.9rem;" th:classappend="${txn.type == 'CREDIT'} ? 'text-success' : 'text-danger'">
+                                    <span th:text="${txn.type == 'CREDIT'} ? '+₹' + ${#numbers.formatDecimal(txn.amount, 1, 0)} : '-₹' + ${#numbers.formatDecimal(txn.amount, 1, 0)}">₹0</span>
+                                </span>
+                            </td>
+                            <td style="font-size:0.83rem;" th:text="${txn.description}">Description</td>
+                            <td style="font-size:0.78rem;color:rgba(255,255,255,0.4);" th:text="${#temporals.format(txn.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(transactions)}">
+                            <td colspan="7" class="empty-state">
+                                <i class="bi bi-wallet"></i>
+                                No wallet transactions found
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

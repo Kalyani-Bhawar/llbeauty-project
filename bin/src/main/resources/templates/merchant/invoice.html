@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVA Beauty - Invoice</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #333333;
+            font-family: 'Outfit', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            padding: 40px 0;
+        }
+        .invoice-card {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .invoice-header {
+            border-bottom: 2px solid #D4AF37;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .invoice-title {
+            color: #D4AF37;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .table-invoice th {
+            background-color: #343a40;
+            color: #ffffff;
+            font-weight: 500;
+        }
+        .total-summary-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        .total-row.grand-total {
+            font-weight: bold;
+            font-size: 1.15rem;
+            color: #D4AF37;
+            border-top: 1px solid #dee2e6;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+        @media print {
+            body {
+                background-color: #ffffff;
+                padding: 0;
+            }
+            .invoice-card {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container text-center mb-4 no-print">
+        <button onclick="window.print()" class="btn btn-dark btn-lg"><i class="bi bi-printer me-2"></i>Print Invoice</button>
+        <a href="/merchant/orders" class="btn btn-outline-secondary btn-lg ms-2"><i class="bi bi-arrow-left me-2"></i>Back to Orders</a>
+    </div>
+
+    <div class="invoice-card">
+        <!-- Invoice Header -->
+        <div class="invoice-header d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1 class="invoice-title mb-0">EVA BEAUTY</h1>
+                <p class="text-muted mb-0">Premium Salon & Cosmetics Merchant Invoice</p>
+            </div>
+            <div class="text-end">
+                <h3 class="mb-1">INVOICE</h3>
+                <span class="text-muted font-monospace small" th:text="${invoice.invoiceNumber}">INV-00000</span>
+            </div>
+        </div>
+
+        <!-- Meta Info -->
+        <div class="row mb-4">
+            <div class="col-sm-6">
+                <h5 class="mb-2 text-uppercase fw-bold text-muted small">Billed To:</h5>
+                <h6 class="mb-1 fw-bold text-dark" th:text="${invoice.merchantOrder.user.name}">Merchant Name</h6>
+                <p class="text-muted small mb-0">Email: <span th:text="${invoice.merchantOrder.user.email}">merchant@example.com</span></p>
+                <p class="text-muted small mb-0">Mobile: <span th:text="${invoice.merchantOrder.user.mobile}">0000000000</span></p>
+            </div>
+            <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
+                <h5 class="mb-2 text-uppercase fw-bold text-muted small">Invoice Details:</h5>
+                <p class="small text-dark mb-1"><strong>Order Reference:</strong> <span th:text="${invoice.orderNumber}">ORD-0000</span></p>
+                <p class="small text-dark mb-1"><strong>Invoice Date:</strong> <span th:text="${#temporals.format(invoice.date, 'dd-MM-yyyy HH:mm')}">Date</span></p>
+                <p class="small text-dark mb-0"><strong>Payment Method:</strong> 
+                    <span th:if="${invoice.walletAmountUsed > 0 && invoice.razorpayAmountPaid > 0}">NXL Credits + Razorpay</span>
+                    <span th:if="${invoice.walletAmountUsed > 0 && invoice.razorpayAmountPaid <= 0}">NXL Credits</span>
+                    <span th:if="${invoice.walletAmountUsed <= 0 && invoice.razorpayAmountPaid > 0}">Razorpay</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Products Table -->
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered table-invoice align-middle">
+                <thead>
+                    <tr>
+                        <th>Product & Category</th>
+                        <th class="text-center">MRP (Unit)</th>
+                        <th class="text-center">Merchant Discount %</th>
+                        <th class="text-center">Merchant Price</th>
+                        <th class="text-center">Bulk Discount %</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-end">Final Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${invoice.merchantOrder.items}">
+                        <td>
+                            <strong th:text="${item.product.name}">Product Name</strong>
+                            <div class="small text-muted" th:text="${item.product.category}">Category</div>
+                        </td>
+                        <td class="text-center" th:text="'₹' + ${#numbers.formatDecimal(item.mrp, 1, 2)}">₹0.00</td>
+                        <td class="text-center" th:text="${item.merchantDiscountPercent} + '%'">0%</td>
+                        <td class="text-center" th:text="'₹' + ${#numbers.formatDecimal(item.merchantPrice, 1, 2)}">₹0.00</td>
+                        <td class="text-center" th:text="${item.bulkDiscountPercent > 0 ? (item.bulkDiscountPercent + '%') : '-'}">0%</td>
+                        <td class="text-center" th:text="${item.quantity}">0</td>
+                        <td class="text-end fw-semibold" th:text="'₹' + ${#numbers.formatDecimal(item.finalPrice * item.quantity, 1, 2)}">₹0.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Billing Summary -->
+        <div class="row justify-content-end">
+            <div class="col-md-5">
+                <div class="total-summary-box">
+                    <div class="total-row">
+                        <span class="text-muted">Subtotal (Retail MRP):</span>
+                        <span th:text="'₹' + ${#numbers.formatDecimal(invoice.subtotal, 1, 2)}">₹0.00</span>
+                    </div>
+                    <div class="total-row text-info">
+                        <span>Product Discount:</span>
+                        <span th:text="'-₹' + ${#numbers.formatDecimal(invoice.productDiscounts, 1, 2)}">-₹0.00</span>
+                    </div>
+                    <div class="total-row text-success" th:if="${invoice.bulkDiscounts > 0}">
+                        <span>Bulk volume Discount:</span>
+                        <span th:text="'-₹' + ${#numbers.formatDecimal(invoice.bulkDiscounts, 1, 2)}">-₹0.00</span>
+                    </div>
+                    <div class="total-row fw-bold text-dark border-top border-secondary pt-2 mt-2">
+                        <span>Total Savings:</span>
+                        <span th:text="'₹' + ${#numbers.formatDecimal(invoice.totalSavings, 1, 2)}">₹0.00</span>
+                    </div>
+                    <div class="total-row.grand-total grand-total">
+                        <span>Final Payable Amount:</span>
+                        <span th:text="'₹' + ${#numbers.formatDecimal(invoice.finalPayableAmount, 1, 2)}">₹0.00</span>
+                    </div>
+                    
+                    <hr class="my-2">
+                    
+                    <div class="total-row text-primary small">
+                        <span>NXL Credits Used:</span>
+                        <span th:text="'-' + ${#numbers.formatDecimal(invoice.walletAmountUsed, 1, 2)} + ' NXL'">-0.00 NXL</span>
+                    </div>
+                    <div class="total-row text-dark small fw-semibold">
+                        <span>Razorpay Paid:</span>
+                        <span th:text="'₹' + ${#numbers.formatDecimal(invoice.razorpayAmountPaid, 1, 2)}">₹0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer terms -->
+        <div class="text-center mt-5 pt-3 border-top border-light text-muted small">
+            <p class="mb-0">Thank you for partnering with EVA Beauty! This is a system-generated invoice.</p>
+        </div>
+    </div>
+</body>
+</html>

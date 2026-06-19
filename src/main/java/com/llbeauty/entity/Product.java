@@ -1,6 +1,7 @@
 package com.llbeauty.entity;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,15 +18,33 @@ public class Product {
     private Double wholesalePrice;
     private String imageUrl;
     private Integer stock;
+    private Double merchantDiscount = 0.0;
     private String status = "ACTIVE";
     private LocalDateTime createdAt;
 
     @PrePersist
     public void prePersist() {
+
         this.createdAt = LocalDateTime.now();
+
         if (this.status == null) {
             this.status = "ACTIVE";
         }
+
+        if (this.merchantDiscount == null) {
+            this.merchantDiscount = 0.0;
+        }
+
+        if (this.wholesalePrice == null) {
+            this.wholesalePrice = 0.0;
+        }
+    }
+    public Double getMerchantDiscount() {
+        return merchantDiscount;
+    }
+
+    public void setMerchantDiscount(Double merchantDiscount) {
+        this.merchantDiscount = merchantDiscount;
     }
 
 

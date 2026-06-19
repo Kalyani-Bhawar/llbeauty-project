@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::main})}">
+<body>
+<main>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h1 class="page-title">Store Management</h1>
+            <p class="page-subtitle">Process program applications, monitor wallets, store credits, and commissions.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a th:href="@{/admin/store-management(tab='applications')}" class="btn btn-sm" th:classappend="${currentSubTab == 'applications' ? 'btn-gold' : 'btn-outline-gold'}">Applications</a>
+            <a th:href="@{/admin/store-management(tab='executives')}" class="btn btn-sm" th:classappend="${currentSubTab == 'executives' ? 'btn-gold' : 'btn-outline-gold'}">Executives</a>
+            <a th:href="@{/admin/store-management(tab='merchants')}" class="btn btn-sm" th:classappend="${currentSubTab == 'merchants' ? 'btn-gold' : 'btn-outline-gold'}">Merchants</a>
+            <a th:href="@{/admin/store-management(tab='wallets')}" class="btn btn-sm" th:classappend="${currentSubTab == 'wallets' ? 'btn-gold' : 'btn-outline-gold'}">Wallets</a>
+            <a th:href="@{/admin/store-management(tab='credits')}" class="btn btn-sm" th:classappend="${currentSubTab == 'credits' ? 'btn-gold' : 'btn-outline-gold'}">Credits</a>
+            <a th:href="@{/admin/store-management(tab='reports')}" class="btn btn-sm" th:classappend="${currentSubTab == 'reports' ? 'btn-gold' : 'btn-outline-gold'}">Reports</a>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div th:if="${successMessage}" class="alert alert-success border-0 rounded-3 py-3 mb-4" style="background: rgba(46,204,113,0.15); color: #2ecc71;">
+        <i class="bi bi-check-circle-fill me-2"></i> <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger border-0 rounded-3 py-3 mb-4" style="background: rgba(231,76,60,0.15); color: #e74c3c;">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> <span th:text="${errorMessage}"></span>
+    </div>
+
+    <!-- ── APPLICATIONS TAB ── -->
+    <div th:if="${currentSubTab == 'applications'}" class="data-card animate-fade-up">
+        <div class="data-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h6>Program Applications</h6>
+            
+            <form th:action="@{/admin/store-management}" method="get" class="d-flex gap-2">
+                <input type="hidden" name="tab" value="applications">
+                <input type="text" name="search" th:value="${search}" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Search application...">
+                <select name="statusFilter" class="form-select form-select-sm bg-dark text-white border-secondary">
+                    <option value="" th:selected="${statusFilter == null || statusFilter == ''}">All Statuses</option>
+                    <option value="PENDING" th:selected="${statusFilter == 'PENDING'}">Pending</option>
+                    <option value="APPROVED" th:selected="${statusFilter == 'APPROVED'}">Approved</option>
+                    <option value="REJECTED" th:selected="${statusFilter == 'REJECTED'}">Rejected</option>
+                </select>
+                <select name="typeFilter" class="form-select form-select-sm bg-dark text-white border-secondary">
+                    <option value="" th:selected="${typeFilter == null || typeFilter == ''}">All Types</option>
+                    <option value="EXECUTIVE" th:selected="${typeFilter == 'EXECUTIVE'}">Executive</option>
+                    <option value="MERCHANT" th:selected="${typeFilter == 'MERCHANT'}">Merchant</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-gold">Filter</button>
+            </form>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Type</th>
+                        <th>Business Name</th>
+                        <th>Contact Email</th>
+                        <th>Submission Date</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="app : ${applications}">
+                        <td th:text="${app.id}">1</td>
+                        <td th:text="${app.user.name}">User Name</td>
+                        <td>
+                            <span class="badge bg-danger" th:if="${app.type.name() == 'EXECUTIVE'}">EXECUTIVE</span>
+                            <span class="badge bg-warning text-dark" th:if="${app.type.name() == 'MERCHANT'}">MERCHANT</span>
+                        </td>
+                        <td th:text="${app.businessName}">Business Name</td>
+                        <td th:text="${app.contactEmail}">Email</td>
+                        <td th:text="${#temporals.format(app.createdAt, 'dd MMM yyyy')}">Date</td>
+                        <td>
+                            <span class="badge-status badge-pending" th:if="${app.status.name() == 'PENDING'}">PENDING</span>
+                            <span class="badge-status badge-completed" th:if="${app.status.name() == 'APPROVED'}">APPROVED</span>
+                            <span class="badge-status badge-cancelled" th:if="${app.status.name() == 'REJECTED'}">REJECTED</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group">
+                                <a th:href="@{/admin/store/application/{id}(id=${app.id})}" class="btn btn-sm btn-outline-gold py-1 px-3" style="font-size:0.75rem;">Review</a>
+                                <form th:action="@{/admin/store/application/{id}/delete(id=${app.id})}" method="post" onsubmit="return confirm('Soft delete this application?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${applications.isEmpty()}">
+                        <td colspan="8" class="text-center py-5 text-white-50">No store applications found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── EXECUTIVES TAB ── -->
+    <div th:if="${currentSubTab == 'executives'}" class="data-card animate-fade-up">
+        <div class="data-card-header">
+            <h6>Approved Executives Directory</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Executive ID</th>
+                        <th>User Name</th>
+                        <th>Email</th>
+                        <th>Referral Code</th>
+                        <th>Status</th>
+                        <th>Created Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="exe : ${executives}">
+                        <td class="fw-bold text-gold" th:text="${exe.executiveId}">LLB-EXE-1</td>
+                        <td th:text="${exe.user.name}">John Doe</td>
+                        <td th:text="${exe.user.email}">john@example.com</td>
+                        <td th:text="${exe.referralCode}">REF100</td>
+                        <td><span class="badge-status badge-completed" th:text="${exe.status}">ACTIVE</span></td>
+                        <td th:text="${#temporals.format(exe.createdAt, 'dd MMM yyyy')}">Date</td>
+                        <td>
+                            <form th:action="@{/admin/store/executive/{id}/delete(id=${exe.id})}" method="post" onsubmit="return confirm('Delete this executive?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${executives.isEmpty()}">
+                        <td colspan="6" class="text-center py-5 text-white-50">No executives enrolled.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── MERCHANTS TAB ── -->
+    <div th:if="${currentSubTab == 'merchants'}" class="data-card animate-fade-up">
+        <div class="data-card-header">
+            <h6>Approved Merchants Directory</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Merchant ID</th>
+                        <th>Shop Name</th>
+                        <th>Owner Name</th>
+                        <th>GSTIN</th>
+                        <th>PAN</th>
+                        <th>Channels</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="mer : ${merchants}">
+                        <td class="fw-bold text-gold" th:text="${mer.merchantId}">LLB-MER-1</td>
+                        <td th:text="${mer.ownerName}">Owner Name</td>
+                        <td th:text="${mer.gstNumber}">GSTXXXX</td>
+                        <td th:text="${mer.panNumber}">PANXXXX</td>
+                        <td>
+                            <span class="badge bg-info text-dark" th:if="${mer.onlineSelling}">Online</span>
+                            <span class="badge bg-secondary" th:if="${mer.offlineSelling}">Offline</span>
+                        </td>
+                        <td><span class="badge-status badge-completed" th:text="${mer.status}">ACTIVE</span></td>
+                        <td>
+                            <form th:action="@{/admin/store/merchant/{id}/delete(id=${mer.id})}" method="post" onsubmit="return confirm('Delete this merchant?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${merchants.isEmpty()}">
+                        <td colspan="7" class="text-center py-5 text-white-50">No merchants enrolled.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── WALLETS TAB ── -->
+    <div th:if="${currentSubTab == 'wallets'}" class="data-card animate-fade-up">
+        <div class="data-card-header">
+            <h6>Partners Wallet Ledger</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Wallet ID</th>
+                        <th>Partner Name</th>
+                        <th>Role</th>
+                        <th>Email</th>
+                        <th class="text-end">Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="w : ${wallets}" th:if="${w.user.role == 'EXECUTIVE' || w.user.role == 'MERCHANT'}">
+                        <td th:text="${w.id}">1</td>
+                        <td th:text="${w.user.name}">Partner Name</td>
+                        <td><span class="badge bg-dark text-gold" th:text="${w.user.role}">ROLE</span></td>
+                        <td th:text="${w.user.email}">Email</td>
+                        <td class="text-end fw-bold text-gold" th:text="'₹' + ${#numbers.formatDecimal(w.balance, 1, 2)}">₹0.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── CREDITS TAB ── -->
+    <div th:if="${currentSubTab == 'credits'}" class="data-card animate-fade-up">
+        <div class="data-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h6>Merchant Store Credits Accounts</h6>
+            
+            <button class="btn btn-sm btn-gold" data-bs-toggle="modal" data-bs-target="#addCreditModal">
+                <i class="bi bi-plus-circle me-1"></i> Add Store Credits
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Credit ID</th>
+                        <th>Shop Name</th>
+                        <th>Owner Name</th>
+                        <th>Last Updated</th>
+                        <th class="text-end">NXL Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c : ${storeCredits}">
+                        <td th:text="${c.id}">1</td>
+                        <td th:text="${c.user.name}">Shop Name</td>
+                        <td th:text="${c.user.name}">Owner Name</td>
+                        <td th:text="${#temporals.format(c.updatedAt, 'dd MMM yyyy, hh:mm a')}">Date</td>
+                        <td class="text-end fw-bold text-gold" th:text="'₹' + ${#numbers.formatDecimal(c.balance, 1, 2)}">₹0.00</td>
+                    </tr>
+                    <tr th:if="${storeCredits.isEmpty()}">
+                        <td colspan="5" class="text-center py-5 text-white-50">No store credits accounts active.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── REPORTS TAB ── -->
+    <div th:if="${currentSubTab == 'reports'}" class="row g-4 animate-fade-up">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon gold"><i class="bi bi-people-fill"></i></div>
+                <div class="stat-label">Total Executives</div>
+                <div class="stat-value" th:text="${totalExecutives}">0</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon sapphire"><i class="bi bi-shop"></i></div>
+                <div class="stat-label">Total Merchants</div>
+                <div class="stat-value" th:text="${totalMerchants}">0</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon emerald"><i class="bi bi-wallet2"></i></div>
+                <div class="stat-label">Total Wallet Balance</div>
+                <div class="stat-value" style="font-size: 1.8rem;" th:text="'₹' + ${#numbers.formatDecimal(totalWalletBalance, 1, 0)}">₹0</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon sapphire"><i class="bi bi-cash-coin"></i></div>
+                <div class="stat-label">Total NXL Store Credits Disbursed</div>
+                <div class="stat-value text-gold" th:text="'₹' + ${#numbers.formatDecimal(totalStoreCredits, 1, 0)}">₹0</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon ruby"><i class="bi bi-percent"></i></div>
+                <div class="stat-label">Total Executive Commissions Payouts</div>
+                <div class="stat-value text-danger" th:text="'₹' + ${#numbers.formatDecimal(totalCommissions, 1, 0)}">₹0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD CREDIT MODAL -->
+    <div class="modal fade" id="addCreditModal" tabindex="-1" aria-labelledby="addCreditModalLabel" aria-hidden="true" style="color: #111;">
+        <div class="modal-dialog">
+            <div class="modal-content border-0">
+                <div class="modal-header bg-dark text-white border-secondary">
+                    <h5 class="modal-title font-serif" id="addCreditModalLabel" style="color: #c9a84c;">Add Store Credits</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{/admin/store/credit/add}" method="post">
+                    <div class="modal-body bg-dark text-white">
+                        <div class="mb-3">
+                            <label for="selectUser" class="form-label text-white-50">Select Merchant</label>
+                            <select name="userId" id="selectUser" class="form-select bg-dark text-white border-secondary" required>
+                                <option value="">-- Choose Partner --</option>
+                                <option th:each="c : ${storeCredits}" th:value="${c.user.id}" th:text="${c.user.name}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="amount" class="form-label text-white-50">Amount (INR)</label>
+                            <input type="number" name="amount" id="amount" class="form-control bg-dark text-white border-secondary" placeholder="Enter amount to add" min="1" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-dark border-secondary">
+                        <button type="button" class="btn btn-sm btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-gold">Confirm Credit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

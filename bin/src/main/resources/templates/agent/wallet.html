@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet & Earnings – Agent Portal – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .agent-sidebar {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid rgba(201,168,76,0.15);
+            padding: 24px;
+        }
+        .nav-pills-gold .nav-link {
+            color: var(--text-dark);
+            border-radius: 8px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .nav-pills-gold .nav-link:hover {
+            background: rgba(201,168,76,0.06);
+            color: var(--gold-dark);
+        }
+        .nav-pills-gold .nav-link.active {
+            background: var(--gold);
+            color: var(--white);
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- NAVBAR -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <section class="container my-5">
+        <div class="row g-4">
+            <!-- SIDEBAR -->
+            <div class="col-lg-3">
+                <div class="agent-sidebar">
+                    <div class="text-center mb-4">
+                        <div class="position-relative d-inline-block">
+                            <img src="/images/about_vision.png" class="rounded-circle border border-3 border-warning" style="width: 85px; height: 85px; object-fit: cover;">
+                        </div>
+                        <h5 class="brand-font mt-3 text-gold" th:text="${agent.user.name}">Agent Name</h5>
+                        <p class="text-muted small mb-0" th:text="${agent.agentId}">EVAAG000001</p>
+                    </div>
+                    <hr class="my-4">
+                    <div class="nav flex-column nav-pills-gold">
+                        <a href="/agent/dashboard" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                        <a href="/agent/wallet" class="nav-link active"><i class="bi bi-wallet2"></i> Wallet & Earnings</a>
+                        <a href="/agent/referrals" class="nav-link"><i class="bi bi-share"></i> My Referrals</a>
+                        <a href="/agent/commissions" class="nav-link"><i class="bi bi-cash-stack"></i> Commission Ledger</a>
+                        <a href="/agent/settlements" class="nav-link"><i class="bi bi-bank"></i> Settlements</a>
+                        <a href="/agent/profile" class="nav-link"><i class="bi bi-person-gear"></i> Manage Profile</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN CONTENT -->
+            <div class="col-lg-9">
+                <div class="text-start mb-4">
+                    <h2 class="brand-font text-gold mb-1"><i class="bi bi-wallet2 me-2"></i> Agent Wallet & Payouts</h2>
+                    <p class="text-muted">Monitor your earnings ledger and automatic monthly payouts.</p>
+                </div>
+
+                <!-- EARNINGS SUMMARY CARD -->
+                <div class="card border-0 rounded-4 p-4 mb-4 shadow-sm text-white" style="background: linear-gradient(135deg, #3a3a3a, #151515);">
+                    <div class="row g-4 text-center text-md-start">
+                        <div class="col-md-4 border-end border-secondary">
+                            <h6 class="text-white-50 uppercase tracking-wide small mb-1">CURRENT BALANCE</h6>
+                            <h2 class="fw-bold text-gold mb-1" style="font-family:'Playfair Display', serif;">₹<span th:text="${#numbers.formatDecimal(wallet.currentBalance, 1, 2)}">0.00</span></h2>
+                            <p class="small text-white-50 mb-0">Approved commissions to be processed in next settlement cycle.</p>
+                        </div>
+                        <div class="col-md-4 border-end border-secondary">
+                            <h6 class="text-white-50 uppercase tracking-wide small mb-1">PENDING VERIFICATION</h6>
+                            <h3 class="fw-semibold text-white mb-1">₹<span th:text="${#numbers.formatDecimal(wallet.pendingEarnings, 1, 2)}">0.00</span></h3>
+                            <p class="small text-white-50 mb-0">Earnings registered, waiting admin approval.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-white-50 uppercase tracking-wide small mb-1">TOTAL SETTLED (PAID)</h6>
+                            <h3 class="fw-semibold text-success mb-1">₹<span th:text="${#numbers.formatDecimal(wallet.paidEarnings, 1, 2)}">0.00</span></h3>
+                            <p class="small text-white-50 mb-0">Total commissions successfully transferred to your bank.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INFO ALERT -->
+                <div class="alert alert-info rounded-3 p-3 mb-4" role="alert">
+                    <i class="bi bi-info-circle-fill me-2 text-info"></i>
+                    <strong>Payout Schedule:</strong> Settlements are automatically generated monthly for all approved commissions and directly transferred to your bank account registered on your profile.
+                </div>
+
+                <!-- EARNINGS BREAKDOWN -->
+                <div class="row g-4">
+                    <!-- Approved Commissions -->
+                    <div class="col-md-6">
+                        <div class="card border-0 rounded-4 p-4 shadow-sm bg-white">
+                            <h5 class="brand-font text-gold mb-3"><i class="bi bi-shield-check me-1"></i> Approved (Unpaid) Ledger</h5>
+                            <div class="table-responsive">
+                                <table class="table align-middle table-hover" style="font-size: 0.85rem;">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Description</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="comm : ${approvedCommissions}">
+                                            <td>
+                                                <span th:text="${comm.description}">Description</span>
+                                                <small class="text-muted d-block" th:text="${#temporals.format(comm.approvedAt, 'dd MMM yyyy')}">Date</small>
+                                            </td>
+                                            <td class="fw-semibold text-gold">₹<span th:text="${comm.amount}">0.00</span></td>
+                                        </tr>
+                                        <tr th:if="${approvedCommissions == null || approvedCommissions.isEmpty()}">
+                                            <td colspan="2" class="text-center text-muted py-4">No unpaid approved commissions.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settlements History -->
+                    <div class="col-md-6">
+                        <div class="card border-0 rounded-4 p-4 shadow-sm bg-white">
+                            <h5 class="brand-font text-gold mb-3"><i class="bi bi-bank me-1"></i> Settlement History</h5>
+                            <div class="table-responsive">
+                                <table class="table align-middle table-hover" style="font-size: 0.85rem;">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Month</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="set : ${settlements}">
+                                            <td>
+                                                <span class="fw-semibold" th:text="${set.month}">2026-06</span>
+                                                <small class="text-muted d-block" th:text="${set.settlementId}">ID</small>
+                                            </td>
+                                            <td class="fw-bold">₹<span th:text="${set.totalAmount}">0.00</span></td>
+                                            <td>
+                                                <span class="badge bg-warning-subtle text-warning" th:if="${set.status == 'PENDING'}">PENDING</span>
+                                                <span class="badge bg-success-subtle text-success" th:if="${set.status == 'PAID'}">PAID</span>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${settlements == null || settlements.isEmpty()}">
+                                            <td colspan="3" class="text-center text-muted py-4">No settlements generated yet.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

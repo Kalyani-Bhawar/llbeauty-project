@@ -1,6 +1,7 @@
 package com.llbeauty.controller;
 
 import com.llbeauty.entity.*;
+
 import com.llbeauty.repository.*;
 import com.llbeauty.service.StoreApplicationService;
 import com.llbeauty.service.WalletService;
@@ -20,7 +21,7 @@ public class AdminStoreController {
     private final StoreApplicationRepository storeApplicationRepository;
     private final StoreApplicationService storeApplicationService;
     private final UserRepository userRepository;
-    private final ExecutiveProfileRepository executiveProfileRepository;
+    private final AgentProfileRepository agentProfileRepository;
     private final MerchantProfileRepository merchantProfileRepository;
     private final StoreCreditRepository storeCreditRepository;
     private final CommissionRepository commissionRepository;
@@ -31,7 +32,7 @@ public class AdminStoreController {
     public AdminStoreController(StoreApplicationRepository storeApplicationRepository,
                                 StoreApplicationService storeApplicationService,
                                 UserRepository userRepository,
-                                ExecutiveProfileRepository executiveProfileRepository,
+                                AgentProfileRepository agentProfileRepository,
                                 MerchantProfileRepository merchantProfileRepository,
                                 StoreCreditRepository storeCreditRepository,
                                 CommissionRepository commissionRepository,
@@ -41,7 +42,7 @@ public class AdminStoreController {
         this.storeApplicationRepository = storeApplicationRepository;
         this.storeApplicationService = storeApplicationService;
         this.userRepository = userRepository;
-        this.executiveProfileRepository = executiveProfileRepository;
+        this.agentProfileRepository = agentProfileRepository;
         this.merchantProfileRepository = merchantProfileRepository;
         this.storeCreditRepository = storeCreditRepository;
         this.commissionRepository = commissionRepository;
@@ -85,7 +86,7 @@ public class AdminStoreController {
         }
         model.addAttribute("applications", applications);
 
-        model.addAttribute("executives", executiveProfileRepository.findAll());
+        model.addAttribute("agents", agentProfileRepository.findAll());
         model.addAttribute("merchants", merchantProfileRepository.findAll());
         model.addAttribute("wallets", walletRepository.findAll());
         model.addAttribute("storeCredits", storeCreditRepository.findAll());
@@ -95,7 +96,7 @@ public class AdminStoreController {
         long pendingApps = storeApplicationRepository.findAllByStatus(ApplicationStatus.PENDING).size();
         long approvedApps = storeApplicationRepository.findAllByStatus(ApplicationStatus.APPROVED).size();
         long rejectedApps = storeApplicationRepository.findAllByStatus(ApplicationStatus.REJECTED).size();
-        long totalExecutives = executiveProfileRepository.count();
+        long totalAgents = agentProfileRepository.count();
         long totalMerchants = merchantProfileRepository.count();
 
         BigDecimal totalWalletBalance = walletRepository.findAll().stream()
@@ -114,7 +115,7 @@ public class AdminStoreController {
         model.addAttribute("pendingApps", pendingApps);
         model.addAttribute("approvedApps", approvedApps);
         model.addAttribute("rejectedApps", rejectedApps);
-        model.addAttribute("totalExecutives", totalExecutives);
+        model.addAttribute("totalAgents", totalAgents);
         model.addAttribute("totalMerchants", totalMerchants);
         model.addAttribute("totalWalletBalance", totalWalletBalance);
         model.addAttribute("totalStoreCredits", totalStoreCredits);
@@ -161,8 +162,8 @@ public class AdminStoreController {
         if (storeApplicationRepository.existsById(id)) {
             StoreApplication app = storeApplicationRepository.findById(id).get();
             User user = app.getUser();
-            if (app.getType() == ApplicationType.EXECUTIVE) {
-                user.setExecutiveStatus("NOT_APPLIED");
+            if (app.getType() == ApplicationType.AGENT) {
+                user.setAgentStatus("NOT_APPLIED");
             } else if (app.getType() == ApplicationType.MERCHANT) {
                 user.setMerchantStatus("NOT_APPLIED");
             }
@@ -175,20 +176,20 @@ public class AdminStoreController {
         return "redirect:/admin/store-management?tab=applications";
     }
 
-    @PostMapping("/store/executive/{id}/delete")
-    public String deleteExecutive(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        if (executiveProfileRepository.existsById(id)) {
-            ExecutiveProfile exe = executiveProfileRepository.findById(id).get();
-            // Reset user executive status
+    @PostMapping("/store/agent/{id}/delete")
+    public String deleteAgent(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        if (agentProfileRepository.existsById(id)) {
+            AgentProfile exe = agentProfileRepository.findById(id).get();
+            // Reset user agent status
             User user = exe.getUser();
-            user.setExecutiveStatus("NOT_APPLIED");
+            user.setAgentStatus("NOT_APPLIED");
             userRepository.save(user);
-            executiveProfileRepository.deleteById(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Executive " + exe.getExecutiveId() + " deleted successfully.");
+            agentProfileRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Agent " + exe.getAgentId() + " deleted successfully.");
         } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "Executive not found.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Agent not found.");
         }
-        return "redirect:/admin/store-management?tab=executives";
+        return "redirect:/admin/store-management?tab=agents";
     }
 
     @PostMapping("/store/merchant/{id}/delete")

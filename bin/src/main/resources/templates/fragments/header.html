@@ -1,0 +1,306 @@
+<th:block th:fragment="header" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+    <nav class="navbar navbar-expand-lg navbar-light bg-beige py-3 sticky-top shadow-sm">
+ 
+    <!-- ✅ FIX: Bootstrap JS loaded HERE (in header) so offcanvas works before page scripts run -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+ 
+    <style>
+        .cart-item-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px dashed rgba(0,0,0,0.06);
+        }
+        .cart-item-row img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1.5px solid var(--beige-dark);
+        }
+        .cart-qty-btn {
+            background: none;
+            border: 1px solid var(--beige-dark);
+            color: var(--dark);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .cart-qty-btn:hover {
+            background: var(--gold);
+            color: white;
+            border-color: var(--gold);
+        }
+    </style>
+    <div class="container">
+        <a class="navbar-brand brand-font" href="/" style="display: flex; align-items: center;">
+            <img src="/images/eva-logo.png" alt="EVA Logo" style="height: 40px; width: auto;">
+        </a>
+        
+        <div class="d-flex align-items-center gap-2">
+            <!-- Mobile/Tablet Cart Actions (Always Visible) -->
+            <div class="mobile-nav-actions d-lg-none me-1">
+                <a class="nav-link position-relative p-2" href="#" onclick="toggleCartDrawer(event)">
+                    <i class="bi bi-cart3" style="font-size: 1.35rem; color: var(--gold);"></i>
+                    <span id="cartCountBadgeMobile" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark text-white px-2" style="font-size:0.62rem; display:none;">0</span>
+                </a>
+            </div>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    style="padding: 6px 10px; border-radius:10px; background: rgba(201,168,76,0.08);">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+
+        <div class="collapse navbar-collapse justify-content-between align-items-center" id="navbarNav">
+            <!-- Main Nav Links -->
+            <ul class="navbar-nav align-items-lg-center navbar-menu">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="/about">About Us</a></li>
+                <li class="nav-item"><a class="nav-link" href="/shop">Products</a></li>
+                <li class="nav-item"><a class="nav-link" href="/salon">Salon</a></li>
+                <li class="nav-item"><a class="nav-link" href="/franchise">Franchise</a></li>
+                <li class="nav-item"><a class="nav-link" href="/membership">Membership</a></li>
+				<li class="nav-item"><a class="nav-link" href="/store">Store</a></li>
+                <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+            </ul>
+                
+            <!-- User Section -->
+            <ul class="navbar-nav align-items-lg-center user-navbar-section justify-content-lg-end">
+            
+                <!-- Desktop Cart Icon -->
+                <li class="nav-item position-relative d-none d-lg-flex align-items-center me-2">
+                    <a class="nav-link position-relative p-2" href="#" onclick="toggleCartDrawer(event)">
+                        <i class="bi bi-cart3 fs-5" style="color: var(--gold);"></i>
+                        <span id="cartCountBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark text-white px-2" style="font-size:0.62rem; display:none;">0</span>
+                    </a>
+                </li>
+ 
+                <!-- Guest: Sign In / Sign Up -->
+                <th:block th:if="${currentUser == null}">
+					<li class="nav-item ms-lg-1">
+					    <a class="nav-auth-btn signin-btn" href="/auth/login">Sign In</a>
+					</li>
+					<li class="nav-item ms-lg-2">
+					    <a class="nav-auth-btn signup-btn" href="/auth/register">Sign Up</a>
+					</li>
+                </th:block>
+
+                <!-- Logged In: Profile Dropdown -->
+                <th:block th:if="${currentUser != null}">
+                    <li class="nav-item dropdown ms-lg-2 w-100 w-lg-auto mt-3 mt-lg-0">
+                        <a class="nav-link dropdown-toggle nav-auth-btn profile-dropdown-btn d-flex align-items-center justify-content-between gap-2 px-3 py-2 w-100" 
+                           href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                           style="background: rgba(201,168,76,0.08); color: var(--gold-dark) !important; border: 1.5px solid rgba(201,168,76,0.25);">
+                            <span><i class="bi bi-person-circle me-1"></i><span th:text="${currentUser.name}">User</span></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow p-3 mt-2" aria-labelledby="profileDropdown" style="min-width: 260px; border-radius: 18px !important;">
+                            <!-- Wallet quick view -->
+                            <li class="mb-3">
+                                <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.15);">
+                                    <div class="d-flex align-items-center justify-content-center rounded-2" style="width:36px; height:36px; background: rgba(201,168,76,0.12); font-size:1.1rem; flex-shrink:0;">👛</div>
+                                    <div>
+                                        <div style="font-size:0.65rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); font-weight:600;">Rewards Wallet</div>
+                                        <div class="fw-bold text-gold" style="font-size:1rem; font-family:'Playfair Display',serif;">₹<span th:text="${#numbers.formatDecimal(currentUser.walletBalance, 1, 2)}">0.00</span></div>
+                                    </div>
+                                    <a href="/wallet/topup" class="ms-auto" style="font-size:0.7rem; color:var(--gold); font-weight:600; text-decoration:none; white-space:nowrap;">+ Add</a>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li><a class="dropdown-item py-2 rounded-2" href="/dashboard"><i class="bi bi-speedometer2 me-2 text-gold"></i>My Dashboard</a></li>
+                            <li><a class="dropdown-item py-2 rounded-2" href="/wallet/topup"><i class="bi bi-wallet2 me-2 text-gold"></i>Add to Wallet</a></li>
+                            <li><a class="dropdown-item py-2 rounded-2" href="/shop"><i class="bi bi-bag me-2"></i>Shop Boutique</a></li>
+                            <li><a class="dropdown-item py-2 rounded-2" href="/salon"><i class="bi bi-scissors me-2"></i>Book Salon</a></li>
+                            <li><a class="dropdown-item py-2 rounded-2" href="/membership"><i class="bi bi-crown me-2" style="color:#c9a84c;"></i>Membership</a></li>
+                            <li><a class="dropdown-item py-2 rounded-2" href="/store"><i class="bi bi-shop me-2 text-gold"></i>Store Opportunity</a></li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li><a class="dropdown-item py-2 rounded-2 text-danger" href="/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                        </ul>
+                    </li>
+                </th:block>
+            </ul>
+        </div>
+    </div>
+    </nav>
+ 
+    <!-- CART OFFCANVAS DRAWER -->
+	<div class="offcanvas offcanvas-end"
+	     tabindex="-1"
+	     id="cartDrawer"
+	     aria-labelledby="cartDrawerLabel"
+	     style="background:#fdfdfd;
+	            border-left:2px solid var(--beige-dark);
+	            z-index:1055;
+	            max-width:380px;">
+		<div class="offcanvas-header border-bottom py-4" style="background: var(--beige);">
+            <h5 class="offcanvas-title brand-font fs-4 text-dark" id="cartDrawerLabel">👜 Your Shopping Bag</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close" id="closeCartDrawerBtn"></button>
+        </div>
+        <div class="offcanvas-body p-4 d-flex flex-column" id="cartDrawerBody" style="overflow-y: auto;">
+            <!-- Cart Empty State -->
+            <div class="text-center py-5 my-auto" id="cartEmptyState">
+                <span style="font-size: 3.5rem;">🛍️</span>
+                <h5 class="brand-font mt-3">Your Bag is Empty</h5>
+                <p class="text-muted small">Explore our luxury beauty collections and add premium products to your bag.</p>
+                <a href="/shop" class="btn btn-gold btn-sm px-4 mt-2" onclick="closeCartAndBrowse(event)">Browse Products</a>
+            </div>
+            <!-- Cart Items List -->
+            <div class="d-flex flex-column gap-2" id="cartItemsList" style="display:none !important;"></div>
+        </div>
+        <!-- Cart Footer -->
+        <div class="p-4 border-top bg-light" id="cartDrawerFooter" style="display:none !important;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="text-muted small font-weight-bold text-uppercase">Estimated Subtotal</span>
+                <span class="fs-4 brand-font text-gold font-weight-bold" id="cartDrawerSubtotal">₹0.00</span>
+            </div>
+            <div class="d-flex flex-column gap-3">
+                <a href="/checkout" class="btn btn-gold w-100 py-3 font-weight-bold" style="border-radius: 12px; letter-spacing:1px; font-size:0.88rem;">
+                    <i class="bi bi-shield-lock-fill me-2"></i> Proceed to Checkout
+                </a>
+                <button class="btn btn-outline-danger btn-sm text-uppercase py-2" onclick="clearCartSession()" style="border-radius: 8px; font-size: 0.75rem; font-weight: 600;">
+                    Clear All Items
+                </button>
+            </div>
+        </div>
+    </div>
+ 
+    <!-- CART SCRIPTS -->
+    <script th:inline="javascript">
+        const isUserAuthenticated = [[${currentUser != null}]];
+ 
+        function toggleCartDrawer(event) {
+            if (event) event.preventDefault();
+            const cartDrawerElement = document.getElementById('cartDrawer');
+            if (cartDrawerElement) {
+                const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(cartDrawerElement);
+                bsOffcanvas.show();
+                loadCartItems();
+            }
+        }
+ 
+        function closeCartAndBrowse(event) {
+            event.preventDefault();
+            const cartDrawerElement = document.getElementById('cartDrawer');
+            if (cartDrawerElement) {
+                const bsOffcanvas = bootstrap.Offcanvas.getInstance(cartDrawerElement);
+                if (bsOffcanvas) bsOffcanvas.hide();
+            }
+            window.location.href = "/shop";
+        }
+ 
+        function updateCartBadge(size) {
+            const badge = document.getElementById('cartCountBadge');
+            const badgeMobile = document.getElementById('cartCountBadgeMobile');
+            [badge, badgeMobile].forEach(b => {
+                if (b) {
+                    if (size > 0) {
+                        b.innerText = size;
+                        b.style.display = 'inline-block';
+                    } else {
+                        b.style.display = 'none';
+                    }
+                }
+            });
+        }
+ 
+        function loadCartItems() {
+            if (!isUserAuthenticated) {
+                document.getElementById('cartEmptyState').style.setProperty('display', 'block', 'important');
+                document.getElementById('cartItemsList').style.setProperty('display', 'none', 'important');
+                document.getElementById('cartDrawerFooter').style.setProperty('display', 'none', 'important');
+                updateCartBadge(0);
+                return;
+            }
+            fetch('/checkout/cart/items')
+                .then(res => res.json())
+                .then(data => renderCartDrawer(data))
+                .catch(err => console.error("Error loading cart: ", err));
+        }
+ 
+        function renderCartDrawer(data) {
+            const emptyState = document.getElementById('cartEmptyState');
+            const itemsList  = document.getElementById('cartItemsList');
+            const footer     = document.getElementById('cartDrawerFooter');
+            const subtotalDisp = document.getElementById('cartDrawerSubtotal');
+ 
+            updateCartBadge(data.cartSize);
+ 
+            if (!data.items || data.items.length === 0) {
+                emptyState.style.setProperty('display', 'block', 'important');
+                itemsList.style.setProperty('display', 'none', 'important');
+                footer.style.setProperty('display', 'none', 'important');
+                return;
+            }
+ 
+            emptyState.style.setProperty('display', 'none', 'important');
+            itemsList.style.setProperty('display', 'flex', 'important');
+            footer.style.setProperty('display', 'block', 'important');
+            subtotalDisp.innerText = '₹' + parseFloat(data.subtotal).toFixed(2);
+ 
+            itemsList.innerHTML = '';
+            data.items.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'cart-item-row';
+                row.innerHTML = `
+                    <img src="${item.imageUrl}" alt="${item.name}">
+                    <div style="flex:1;">
+                        <div class="brand-font" style="font-weight:600; font-size:0.92rem; color:var(--dark);">${item.name}</div>
+                        <div class="text-gold fw-bold" style="font-size:0.85rem; margin-top:2px;">₹${parseFloat(item.price).toFixed(0)}</div>
+                        <div class="d-flex align-items-center gap-2 mt-2">
+                            <button class="cart-qty-btn" onclick="updateQty(${item.productId}, ${item.quantity - 1})">-</button>
+                            <span class="fw-bold" style="font-size:0.85rem; width:20px; text-align:center;">${item.quantity}</span>
+                            <button class="cart-qty-btn" onclick="updateQty(${item.productId}, ${item.quantity + 1})">+</button>
+                        </div>
+                    </div>
+                    <div class="text-end d-flex flex-column align-items-end gap-2">
+                        <span class="brand-font fw-bold text-dark" style="font-size:0.95rem;">₹${parseFloat(item.total).toFixed(0)}</span>
+                        <button style="background:none; border:none; color:var(--text-muted); cursor:pointer;" onclick="updateQty(${item.productId}, 0)">
+                            <i class="bi bi-trash3 fs-6"></i>
+                        </button>
+                    </div>
+                `;
+                itemsList.appendChild(row);
+            });
+        }
+ 
+        function updateQty(productId, newQty) {
+            const formData = new FormData();
+            formData.append("productId", productId);
+            formData.append("quantity", newQty);
+            fetch('/checkout/cart/update', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    renderCartDrawer(data);
+                    window.dispatchEvent(new CustomEvent('LLB_CartUpdated', { detail: data }));
+                })
+                .catch(err => console.error("Error updating cart: ", err));
+        }
+ 
+        function clearCartSession() {
+            fetch('/checkout/cart/clear', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    renderCartDrawer(data);
+                    window.dispatchEvent(new CustomEvent('LLB_CartUpdated', { detail: data }));
+                })
+                .catch(err => console.error("Error clearing cart: ", err));
+        }
+ 
+        document.addEventListener("DOMContentLoaded", function () {
+            if (isUserAuthenticated) {
+                fetch('/checkout/cart/items')
+                    .then(res => res.json())
+                    .then(data => updateCartBadge(data.cartSize))
+                    .catch(err => console.error("Badge init error: ", err));
+            }
+        });
+    </script>
+</th:block>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Status – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .status-page {
+            background-color: #0c0c0c;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .status-card {
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            margin: 80px auto;
+        }
+    </style>
+</head>
+<body class="status-page">
+
+    <!-- NAVBAR -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="container flex-grow-1 d-flex align-items-center justify-content-center">
+        <div class="status-card animate-fade-up">
+            <span style="font-size: 3.5rem;" th:text="${status == 'PENDING' ? '⏳' : (status == 'APPROVED' ? '✅' : '❌')}">⏳</span>
+            
+            <h3 class="brand-font mt-3 mb-2" style="color: #c9a84c;">Application Submitted</h3>
+            
+            <div class="my-4 text-start p-4 rounded bg-dark border border-secondary" style="font-size: 0.9rem; background: rgba(255,255,255,0.02) !important; border-color: rgba(201, 168, 76, 0.2) !important;">
+                <div class="mb-2 d-flex justify-content-between">
+                    <span class="text-white-50">Application Type:</span>
+                    <span class="fw-bold" th:text="${appType}">Executive</span>
+                </div>
+                <div class="mb-2 d-flex justify-content-between">
+                    <span class="text-white-50">Application Number:</span>
+                    <span class="fw-bold text-gold" th:text="${application.id}">123</span>
+                </div>
+                <div class="mb-2 d-flex justify-content-between">
+                    <span class="text-white-50">Submission Date:</span>
+                    <span class="fw-bold" th:text="${#temporals.format(application.createdAt, 'dd MMM yyyy, hh:mm a')}">Date</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-white-50">Status:</span>
+                    <span class="badge bg-warning text-dark" th:if="${status == 'PENDING'}">PENDING</span>
+                    <span class="badge bg-success" th:if="${status == 'APPROVED'}">APPROVED</span>
+                    <span class="badge bg-danger" th:if="${status == 'REJECTED'}">REJECTED</span>
+                </div>
+            </div>
+            
+            <p class="text-white-50 small mb-4" th:if="${status == 'PENDING'}">
+                We have received your application. It is currently under review by our operations team. You will be redirected to your dashboard once approved.
+            </p>
+            <p class="text-white-50 small mb-4" th:if="${status == 'REJECTED'}">
+                Unfortunately, your application was not approved at this time. Please check your email or contact support for further information.
+            </p>
+
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="/store" class="btn btn-sm btn-outline-gold px-4 py-2 rounded-pill">
+                    <i class="bi bi-shop me-1"></i> Store Options
+                </a>
+                <a href="/dashboard" class="btn btn-sm btn-gold px-4 py-2 rounded-pill">
+                    <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

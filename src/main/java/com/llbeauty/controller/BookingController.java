@@ -2,6 +2,7 @@ package com.llbeauty.controller;
 
 import com.llbeauty.entity.Appointment;
 
+
 import com.llbeauty.entity.FranchiseLead;
 import com.llbeauty.entity.User;
 import com.llbeauty.repository.AppointmentRepository;
@@ -73,7 +74,8 @@ public class BookingController {
     public String bookAppointment(@RequestParam("services") String services,
                                   @RequestParam("appointmentDate") String appointmentDateStr,
                                   @RequestParam("timeSlot") String timeSlot,
-                                  RedirectAttributes redirectAttributes) {
+                                  RedirectAttributes redirectAttributes,@RequestParam(value = "referralCode", required = false)
+    String referralCode) {
         User user = getAuthenticatedUser();
         if (user == null) {
             return "redirect:/auth/login?redirect=/salon";
@@ -95,6 +97,8 @@ public class BookingController {
                 .advancePaid(100.0)
                 .build();
 
+        appointment.setReferralCode(referralCode);
+        System.out.println("SALON REF RECEIVED = " + referralCode);
         Appointment saved = appointmentRepository.save(appointment);
         log.info("Appointment created, pending ₹100 payment. ID: {}", saved.getId());
         

@@ -1,7 +1,8 @@
 package com.llbeauty.controller;
 
 import com.llbeauty.dto.ApplicationStatusResponse;
-import com.llbeauty.dto.ExecutiveApplicationRequest;
+
+import com.llbeauty.dto.AgentApplicationRequest;
 import com.llbeauty.dto.MerchantApplicationRequest;
 import com.llbeauty.dto.StoreApplicationResponse;
 import com.llbeauty.entity.User;
@@ -29,12 +30,12 @@ public class StoreController {
                 .orElseThrow(() -> new IllegalArgumentException("Authenticated user not found"));
     }
 
-    @PostMapping("/executive/apply")
-    public ResponseEntity<StoreApplicationResponse> applyExecutive(
+    @PostMapping("/agent/apply")
+    public ResponseEntity<StoreApplicationResponse> applyAgent(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails,
-            @Valid @RequestBody ExecutiveApplicationRequest request) {
+            @Valid @RequestBody AgentApplicationRequest request) {
         User user = getCurrentUser(userDetails);
-        StoreApplicationResponse response = storeService.applyExecutive(user.getId(), request);
+        StoreApplicationResponse response = storeService.applyAgent(user.getId(), request);
         return ResponseEntity.ok(response);
     }
 

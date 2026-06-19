@@ -1,5 +1,9 @@
 package com.llbeauty.controller;
 
+import com.llbeauty.entity.AgentProfile;
+import com.llbeauty.entity.Commission;
+import com.llbeauty.repository.AgentProfileRepository;
+import com.llbeauty.repository.CommissionRepository;
 import com.llbeauty.entity.*;
 import com.llbeauty.repository.*;
 import com.llbeauty.service.MembershipService;
@@ -35,6 +39,8 @@ public class CheckoutController {
     private final com.llbeauty.service.PaymentService paymentService;
     private final OrderItemRepository orderItemRepository;
     private final com.llbeauty.service.RewardService rewardService;
+    private final AgentProfileRepository agentProfileRepository;
+    private final CommissionRepository commissionRepository;
 
     @Value("${razorpay.key.id:rzp_test_dummy}")
     private String razorpayKeyId;
@@ -47,7 +53,8 @@ public class CheckoutController {
                               UserMembershipRepository userMembershipRepository,
                               com.llbeauty.service.PaymentService paymentService,
                               OrderItemRepository orderItemRepository,
-                              com.llbeauty.service.RewardService rewardService) {
+                              com.llbeauty.service.RewardService rewardService,AgentProfileRepository agentProfileRepository,
+                              CommissionRepository commissionRepository) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
@@ -57,6 +64,8 @@ public class CheckoutController {
         this.paymentService = paymentService;
         this.orderItemRepository = orderItemRepository;
         this.rewardService = rewardService;
+        this.agentProfileRepository = agentProfileRepository;
+        this.commissionRepository = commissionRepository;
     }
 
     private User getAuthenticatedUser() {
@@ -245,6 +254,8 @@ public class CheckoutController {
     @ResponseBody
     public ResponseEntity<?> placeOrder(@RequestParam(value = "directProductId", required = false) Long directProductId,
                                         @RequestParam("useWallet") boolean useWallet,
+                                        @RequestParam(value = "referralCode", required = false)
+                                        String referralCode,
                                         HttpSession session) {
         User user = getAuthenticatedUser();
         if (user == null) {
@@ -302,6 +313,15 @@ public class CheckoutController {
         order.setTotalAmount(grandTotal); // Total value of order
         order.setStatus("PENDING");
         order.setPaymentId(null);
+        if (referralCode != null) {
+            referralCode = referralCode.trim();
+        }
+
+        order.setReferralCode(
+            (referralCode != null && !referralCode.isBlank())
+                ? referralCode
+                : null
+        );
         Order savedOrder = orderRepository.save(order);
 
         // Save Order Items
@@ -464,6 +484,36 @@ public class CheckoutController {
         order.setStatus("SUCCESS");
         order.setPaymentId(paymentId);
         orderRepository.save(order);
+        String referralCode = order.getReferralCode();
+
+        if (referralCode == null || referralCode.isBlank()) {
+            referralCode = user.getReferralCode();
+        }
+
+        if (referralCode != null && !referralCode.isBlank()) {
+
+            agentProfileRepository
+                .findByReferralCode(referralCode)
+                .ifPresent(agent -> {
+
+                    double commissionAmount =
+                            order.getTotalAmount() * 0.05; // 5%
+
+                    Commission commission = new Commission();
+
+                    commission.setAgent(agent);
+
+                    commission.setAmount(
+                            BigDecimal.valueOf(commissionAmount));
+
+                    commission.setDescription(
+                            "Product Order #" + order.getId());
+
+                    commission.setStatus("APPROVED");
+
+                    commissionRepository.save(commission);
+                });
+        }
 
         // Award membership cashback
         Optional<UserMembership> activeOpt = membershipService.getActiveMembership(user);

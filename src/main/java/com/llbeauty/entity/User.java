@@ -1,6 +1,7 @@
 package com.llbeauty.entity;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
 
@@ -23,16 +24,27 @@ public class User {
 
     private Boolean active = true;
 
-    @Column(name = "executive_status", length = 20)
-    private String executiveStatus = "NOT_APPLIED";
+    @Column(name = "agent_status", length = 20)
+    private String agentStatus = "NOT_APPLIED";
 
     @Column(name = "merchant_status", length = 20)
     private String merchantStatus = "NOT_APPLIED";
 
     @Column(name = "membership_status", length = 20)
     private String membershipStatus = "NOT_APPLIED";
+    
+    @Column(name = "referral_code")
+    private String referralCode;
 
-    @PrePersist
+    public String getReferralCode() {
+		return referralCode;
+	}
+
+	public void setReferralCode(String referralCode) {
+		this.referralCode = referralCode;
+	}
+
+	@PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
         if (this.role == null) {
@@ -270,8 +282,8 @@ public class User {
         this.role = role;
     }
 
-    public String getExecutiveStatus() { return this.executiveStatus; }
-    public void setExecutiveStatus(String executiveStatus) { this.executiveStatus = executiveStatus; }
+    public String getAgentStatus() { return this.agentStatus; }
+    public void setAgentStatus(String agentStatus) { this.agentStatus = agentStatus; }
 
     public String getMerchantStatus() { return this.merchantStatus; }
     public void setMerchantStatus(String merchantStatus) { this.merchantStatus = merchantStatus; }
@@ -366,7 +378,7 @@ public class User {
         this.id = id;
         this.name = name;
         this.email = email;
-        this.mobile = mobile;
+        this.mobile = mobile; 
         this.password = password;
         this.walletBalance = walletBalance;
         this.createdAt = createdAt;

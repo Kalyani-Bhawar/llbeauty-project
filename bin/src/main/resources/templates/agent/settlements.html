@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settlements – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .agent-sidebar {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid rgba(201,168,76,0.15);
+            padding: 24px;
+        }
+        .nav-pills-gold .nav-link {
+            color: var(--text-dark);
+            border-radius: 8px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .nav-pills-gold .nav-link:hover {
+            background: rgba(201,168,76,0.06);
+            color: var(--gold-dark);
+        }
+        .nav-pills-gold .nav-link.active {
+            background: var(--gold);
+            color: var(--white);
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- NAVBAR -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <section class="container my-5">
+        <div class="row g-4">
+            <!-- SIDEBAR -->
+            <div class="col-lg-3">
+                <div class="agent-sidebar">
+                    <div class="text-center mb-4">
+                        <div class="position-relative d-inline-block">
+                            <img src="/images/about_vision.png" class="rounded-circle border border-3 border-warning" style="width: 85px; height: 85px; object-fit: cover;">
+                        </div>
+                        <h5 class="brand-font mt-3 text-gold" th:text="${agent.user.name}">Agent Name</h5>
+                        <p class="text-muted small mb-0" th:text="${agent.agentId}">EVAAG000001</p>
+                    </div>
+                    <hr class="my-4">
+                    <div class="nav flex-column nav-pills-gold">
+                        <a href="/agent/dashboard" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                        <a href="/agent/wallet" class="nav-link"><i class="bi bi-wallet2"></i> Wallet &amp; Earnings</a>
+                        <a href="/agent/referrals" class="nav-link"><i class="bi bi-share"></i> My Referrals</a>
+                        <a href="/agent/commissions" class="nav-link"><i class="bi bi-cash-stack"></i> Commission Ledger</a>
+                        <a href="/agent/settlements" class="nav-link active"><i class="bi bi-bank"></i> Settlements</a>
+                        <a href="/agent/profile" class="nav-link"><i class="bi bi-person-gear"></i> Manage Profile</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN CONTENT -->
+            <div class="col-lg-9">
+                <div class="mb-4">
+                    <h2 class="brand-font text-gold mb-1"><i class="bi bi-bank me-2"></i> Monthly Settlements</h2>
+                    <p class="text-muted mb-0">Your monthly payout summary. Settlements are generated at the end of each month and processed by admin.</p>
+                </div>
+
+                <!-- INFO CARD -->
+                <div class="card border-0 rounded-4 p-4 mb-4 shadow-sm" style="background: linear-gradient(135deg, #fff8e8, #fffdf5);">
+                    <div class="d-flex align-items-start gap-3">
+                        <i class="bi bi-info-circle-fill text-warning fs-4 mt-1"></i>
+                        <div>
+                            <h6 class="fw-semibold mb-1">How Settlements Work</h6>
+                            <p class="text-muted small mb-0">At the end of every month, all your <strong>approved</strong> commissions are aggregated into a settlement. The admin reviews and processes the payment. Once paid, the transaction reference is shared here.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SETTLEMENTS TABLE -->
+                <div class="card border-0 rounded-4 p-4 shadow-sm bg-white">
+                    <div class="table-responsive">
+                        <table class="table align-middle table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Settlement ID</th>
+                                    <th>Month</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Transfer Date</th>
+                                    <th>Txn Reference</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="s : ${settlements}">
+                                    <td class="fw-semibold text-dark" th:text="${s.settlementId}">EVAPAY000001</td>
+                                    <td th:text="${s.month}">2026-06</td>
+                                    <td class="fw-bold text-gold">₹<span th:text="${#numbers.formatDecimal(s.totalAmount, 1, 2)}">0.00</span></td>
+                                    <td>
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-1 rounded-pill" th:if="${s.status == 'PENDING'}">Pending</span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill" th:if="${s.status == 'PAID'}">Paid</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${s.transferDate != null}" th:text="${#temporals.format(s.transferDate, 'dd MMM yyyy')}">Date</span>
+                                        <span th:if="${s.transferDate == null}" class="text-muted">—</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${s.transactionReference != null && !s.transactionReference.isEmpty()}" th:text="${s.transactionReference}">TXN123</span>
+                                        <span th:if="${s.transactionReference == null || s.transactionReference.isEmpty()}" class="text-muted">—</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${settlements == null || settlements.isEmpty()}">
+                                    <td colspan="6" class="text-center text-muted py-5">
+                                        <span style="font-size: 2.5rem;">🏦</span>
+                                        <h5 class="brand-font mt-3">No Settlements Yet</h5>
+                                        <p class="small text-muted mb-0">Your monthly settlement records will appear here once generated by the admin.</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

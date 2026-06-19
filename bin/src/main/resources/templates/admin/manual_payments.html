@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::div})}">
+<head>
+    <title>Manual Payment Requests</title>
+    <link rel="icon" type="image/png" href="/images/eva-logo.png">
+</head>
+<body>
+    <div>
+        <h3 class="page-title">Manual Payment Approvals</h3>
+        <p class="page-subtitle">Verify user UTR and screenshots for GPay transactions.</p>
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="data-card">
+            <div class="data-card-header">
+                <h6>GPay Manual Payments</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>User</th>
+                            <th>Purpose</th>
+                            <th>Amount</th>
+                            <th>UTR Number</th>
+                            <th>Screenshot</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="req : ${payments}">
+                            <td th:text="${#temporals.format(req.createdAt, 'dd MMM, HH:mm')}">Date</td>
+                            <td>
+                                <span th:text="${req.user.name}"></span><br>
+                                <small style="color:#aaa;" th:text="${req.user.mobile}"></small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary" th:text="${req.paymentPurpose}"></span>
+                                <div th:if="${req.referenceId != null}" class="small mt-1" style="color:#aaa;">Ref: <span th:text="${req.referenceId}"></span></div>
+                            </td>
+                            <td class="fw-bold" style="color:#2ecc71;" th:text="'₹' + ${req.amount}">Amount</td>
+                            <td th:text="${req.utrNumber}">UTR</td>
+                            <td>
+                                <a th:if="${req.screenshotPath != null}" th:href="${req.screenshotPath}" target="_blank" class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <span th:if="${req.screenshotPath == null}" class="small" style="color:#666;">No file</span>
+                            </td>
+                            <td>
+                                <span th:if="${req.status == 'PENDING'}" class="badge-status badge-pending">PENDING</span>
+                                <span th:if="${req.status == 'APPROVED'}" class="badge-status badge-completed">APPROVED</span>
+                                <span th:if="${req.status == 'REJECTED'}" class="badge-status badge-cancelled">REJECTED</span>
+                            </td>
+                            <td class="text-end">
+                                <div th:if="${req.status == 'PENDING'}" class="d-flex justify-content-end gap-2">
+                                    <form th:action="@{/admin/manual-payments/{id}/approve(id=${req.id})}" method="post">
+                                        <button type="submit" class="btn btn-sm btn-success" title="Approve" onclick="return confirm('Approve this payment?');">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/admin/manual-payments/{id}/reject(id=${req.id})}" method="post">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Reject" onclick="return confirm('Reject this payment?');">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(payments)}">
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <i class="bi bi-inbox"></i>
+                                    No manual payment requests found.
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

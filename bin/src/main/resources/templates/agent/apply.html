@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Apply as an EVA Agent and start earning premium commissions on referrals.">
+    <title>Become an Agent – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .apply-hero {
+            background: linear-gradient(rgba(17,17,17,0.7), rgba(17,17,17,0.7)), url('/images/salon_hero.png') no-repeat center center;
+            background-size: cover;
+            height: 35vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+        }
+        .form-card {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            border: 1px solid rgba(201,168,76,0.15);
+            padding: 40px;
+            margin-top: -80px;
+            margin-bottom: 50px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- NAVBAR -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <!-- HERO -->
+    <section class="apply-hero text-center">
+        <div class="container animate-fade-up">
+            <h1 class="brand-font fs-1 text-gold">EVA Agent Program</h1>
+            <p class="cursive text-white-50 fs-4">Share the beauty, grow your wealth.</p>
+        </div>
+    </section>
+
+    <!-- FORM SECTION -->
+    <section class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+
+                <!-- Success / Error Notifications -->
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <span th:text="${successMessage}">Success!</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span th:text="${errorMessage}">Error!</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <!-- Case 1: Under Review or Applied status -->
+                <div th:if="${agent != null && (agent.status == 'Applied' || agent.status == 'UNDER_REVIEW')}" class="form-card text-center py-5">
+                    <span style="font-size: 4rem;">⏳</span>
+                    <h2 class="brand-font mt-3 text-gold">Application Under Review</h2>
+                    <p class="text-muted mt-2">Thank you for applying to the EVA Agent Program. Our administration team is currently verifying your profile and credentials.</p>
+                    <p class="small text-muted">Submitted on: <span th:text="${#temporals.format(agent.createdAt, 'dd MMM yyyy, hh:mm a')}">Date</span></p>
+                    <a href="/" class="btn btn-gold px-5 mt-4">Back to Home</a>
+                </div>
+
+                <!-- Case 2: Rejected status -->
+                <div th:if="${agent != null && agent.status == 'Rejected'}" class="form-card text-center py-5">
+                    <span style="font-size: 4rem;">❌</span>
+                    <h2 class="brand-font mt-3 text-danger">Application Rejected</h2>
+                    <p class="text-muted mt-2">Unfortunately, your application to the EVA Agent Program was not approved at this time. You can contact support for details.</p>
+                    <a href="/contact" class="btn btn-gold px-5 mt-4">Contact Support</a>
+                </div>
+
+                <!-- Case 3: Suspended status -->
+                <div th:if="${agent != null && agent.status == 'Suspended'}" class="form-card text-center py-5">
+                    <span style="font-size: 4rem;">⛔</span>
+                    <h2 class="brand-font mt-3 text-danger">Account Suspended</h2>
+                    <p class="text-muted mt-2">Your Agent account has been suspended by the administrator. Please reach out to support for resolution.</p>
+                    <a href="/contact" class="btn btn-gold px-5 mt-4">Contact Support</a>
+                </div>
+
+                <!-- Case 4: No Agent profile or not active -> show form -->
+                <div th:if="${agent == null || agent.status == 'NOT_APPLIED' || agent.status == 'Inactive'}" class="form-card">
+                    <div class="text-center mb-5">
+                        <h2 class="brand-font text-gold">Agent Registration</h2>
+                        <p class="text-muted">Fill out the form below to apply for the premium EVA Agent Partnership program.</p>
+                    </div>
+
+                    <form th:action="@{/agent/apply}" th:object="${applyRequest}" method="POST">
+                        <div class="row g-4">
+                            <!-- Personal Info -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Full Name *</label>
+                                <input type="text" th:field="*{fullName}" class="form-control py-2 rounded-3" placeholder="Enter your full name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Mobile Number *</label>
+                                <input type="tel" th:field="*{mobileNumber}" class="form-control py-2 rounded-3" placeholder="Enter mobile number" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Email Address *</label>
+                                <input type="email" th:field="*{email}" class="form-control py-2 rounded-3" placeholder="Enter email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Date of Birth</label>
+                                <input type="date" th:field="*{dob}" class="form-control py-2 rounded-3">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Gender</label>
+                                <select th:field="*{gender}" class="form-select py-2 rounded-3">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Occupation</label>
+                                <input type="text" th:field="*{occupation}" class="form-control py-2 rounded-3" placeholder="e.g. Beauty Blogger, Consultant">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Address *</label>
+                                <input type="text" th:field="*{address}" class="form-control py-2 rounded-3" placeholder="House/Flat No, Street, Landmark" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">City *</label>
+                                <input type="text" th:field="*{city}" class="form-control py-2 rounded-3" placeholder="City" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">State *</label>
+                                <input type="text" th:field="*{state}" class="form-control py-2 rounded-3" placeholder="State" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Pincode *</label>
+                                <input type="text" th:field="*{pincode}" class="form-control py-2 rounded-3" placeholder="Pincode" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Experience Details (Years / Domain)</label>
+                                <input type="text" th:field="*{experience}" class="form-control py-2 rounded-3" placeholder="e.g. 3 years in Cosmetic sales">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Registration Package *</label>
+                                <select th:field="*{registrationType}" class="form-select py-2 rounded-3" required>
+                                    <option value="REGISTRATION_PACKAGE">Basic Agent Program (Free)</option>
+                                    <option value="STARTER_KIT">Agent Starter Kit (Includes catalogs & samples)</option>
+                                </select>
+                            </div>
+
+                            <!-- Document Upload Mocks -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Profile Photo URL</label>
+                                <input type="text" th:field="*{profilePhotoUrl}" class="form-control py-2 rounded-3" placeholder="Paste photo link or default will be used">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Identity Proof URL (Aadhar/PAN)</label>
+                                <input type="text" th:field="*{identityProofUrl}" class="form-control py-2 rounded-3" placeholder="Paste doc link" required>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold">Referred by (Referral Code)</label>
+                                <input type="text" th:field="*{referralCode}" class="form-control py-2 rounded-3" placeholder="Enter referral code if referred by another agent">
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" th:field="*{termsAccepted}" id="termsCheck" required>
+                                    <label class="form-check-label text-muted small" for="termsCheck">
+                                        I accept all the Agent terms and conditions of L.L. Beauty and verify that the provided details are true.
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-12 text-center mt-5">
+                                <button type="submit" class="btn btn-gold btn-lg px-5 rounded-pill shadow-sm">Submit Application</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

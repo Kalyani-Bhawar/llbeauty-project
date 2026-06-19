@@ -1,6 +1,7 @@
 package com.llbeauty.entity;
 
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -13,8 +14,8 @@ public class Commission {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "executive_profile_id", nullable = false)
-    private ExecutiveProfile executive;
+    @JoinColumn(name = "agent_profile_id", nullable = false)
+    private AgentProfile agent;
 
     @Column(name = "amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
@@ -30,8 +31,8 @@ public class Commission {
 
     public Commission() {}
 
-    public Commission(ExecutiveProfile executive, BigDecimal amount, String description, String status) {
-        this.executive = executive;
+    public Commission(AgentProfile agent, BigDecimal amount, String description, String status) {
+        this.agent = agent;
         this.amount = amount;
         this.description = description;
         this.status = status;
@@ -46,12 +47,12 @@ public class Commission {
         this.id = id;
     }
 
-    public ExecutiveProfile getExecutive() {
-        return executive;
+    public AgentProfile getAgent() {
+        return agent;
     }
 
-    public void setExecutive(ExecutiveProfile executive) {
-        this.executive = executive;
+    public void setAgent(AgentProfile agent) {
+        this.agent = agent;
     }
 
     public BigDecimal getAmount() {

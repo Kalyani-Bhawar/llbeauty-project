@@ -27,6 +27,16 @@ public class Appointment {
     
     private Long beauticianId;
     private String beauticianName;
+    @Column(name = "referral_code")
+    private String referralCode;
+
+    public String getReferralCode() {
+        return referralCode;
+    }
+
+    public void setReferralCode(String referralCode) {
+        this.referralCode = referralCode;
+    }
 
     @PrePersist
     public void prePersist() {

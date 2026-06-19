@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eva Club Membership – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .membership-page {
+            background-color: #fcf9f5;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        
+        .section-header {
+            background-color: #b78a2e; /* Gold header background */
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            letter-spacing: 2px;
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        /* Member Card Styling */
+        .membership-card-wrap {
+            text-align: center;
+            background: #fff;
+            padding-bottom: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .col-md-4:last-child .membership-card-wrap {
+            border-right: none;
+        }
+        
+        @media (max-width: 768px) {
+            .membership-card-wrap {
+                border-right: none;
+                border-bottom: 1px solid rgba(0,0,0,0.1);
+                margin-bottom: 30px;
+            }
+            .col-md-4:last-child .membership-card-wrap {
+                border-bottom: none;
+            }
+        }
+        
+        .card-visual {
+            width: 90%;
+            max-width: 300px;
+            height: 190px;
+            margin: 0 auto 20px;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card-visual:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 45px rgba(0,0,0,0.3);
+        }
+        
+        .card-visual.pink {
+            background: linear-gradient(135deg, #e75a7c 0%, #f98ca4 100%);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .card-visual.gold {
+            background: linear-gradient(135deg, #d4af37 0%, #f3e5ab 50%, #d4af37 100%);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: #111;
+        }
+        
+        .card-visual.black {
+            background: radial-gradient(circle at top right, #333 0%, #111 50%, #000 100%);
+            border: 1px solid rgba(201,168,76,0.5);
+        }
+        
+        .card-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 400;
+            line-height: 1;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+        
+        .card-crown {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .card-tier-name {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .price-tag {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #4a3b2c;
+            margin-bottom: 20px;
+        }
+        
+        .price-tag span {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #666;
+        }
+        
+        .benefits-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 auto 30px;
+            text-align: left;
+            display: inline-block;
+        }
+        
+        .benefits-list li {
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+        
+        .benefits-list li::before {
+            content: "•";
+            color: #b78a2e; /* Dot color */
+            font-size: 1.5rem;
+            line-height: 0.5;
+            margin-right: 10px;
+        }
+        
+        .buy-btn-wrap {
+            margin-top: auto;
+            padding-top: 20px;
+        }
+        
+        .btn-buy {
+            background-color: transparent;
+            border: 2px solid #b78a2e;
+            color: #b78a2e;
+            padding: 8px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-buy:hover {
+            background-color: #b78a2e;
+            color: white;
+        }
+    </style>
+</head>
+<body class="membership-page">
+
+    <!-- NAVBAR -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="container mt-5">
+        <div class="section-header rounded-top">
+            EVA CLUB MEMBERSHIP CARDS
+        </div>
+        
+        <div class="row g-0 bg-white rounded-bottom shadow-sm" style="border: 1px solid rgba(0,0,0,0.1); border-top: none;">
+            
+            <!-- EVA PINK CARD -->
+            <div class="col-md-4 pt-4" th:each="plan : ${plans}" th:if="${plan.name == 'Eva Pink Card'}">
+                <div class="membership-card-wrap">
+                    <div class="card-visual pink">
+                        <div class="card-crown">👑</div>
+                        <div class="card-logo">EVA</div>
+                        <div class="card-tier-name">PINK CARD</div>
+                    </div>
+                    
+                    <div class="price-tag">
+                        ₹<span th:text="${#numbers.formatDecimal(plan.price, 1, 0)}" style="font-size: 1.4rem; color: #4a3b2c;">2,999</span> <span>/ Year</span>
+                        <div style="font-size: 0.75rem; color: #777; margin-top: 2px;">+ 18% GST</div>
+                    </div>
+                    
+                    <ul class="benefits-list">
+                        <li>5% Discount</li>
+                        <li>Early Access</li>
+                        <li>Birthday Offers</li>
+                        <li>Reward Points</li>
+                        <li>Member Support</li>
+                    </ul>
+                    
+                    <div class="buy-btn-wrap">
+                        <button class="btn-buy" th:onclick="'initiateMembershipPayment(' + ${plan.id} + ')'">Select Plan</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EVA GOLD CARD -->
+            <div class="col-md-4 pt-4" th:each="plan : ${plans}" th:if="${plan.name == 'Eva Gold Card'}">
+                <div class="membership-card-wrap">
+                    <div class="card-visual gold">
+                        <div class="card-crown">👑</div>
+                        <div class="card-logo">EVA</div>
+                        <div class="card-tier-name">GOLD CARD</div>
+                    </div>
+                    
+                    <div class="price-tag">
+                        ₹<span th:text="${#numbers.formatDecimal(plan.price, 1, 0)}" style="font-size: 1.4rem; color: #4a3b2c;">9,999</span> <span>/ Year</span>
+                        <div style="font-size: 0.75rem; color: #777; margin-top: 2px;">+ 18% GST</div>
+                    </div>
+                    
+                    <ul class="benefits-list">
+                        <li>15% Discount</li>
+                        <li>Free Delivery</li>
+                        <li>VIP Launch Access</li>
+                        <li>Double Rewards</li>
+                        <li>Event Invitations</li>
+                    </ul>
+                    
+                    <div class="buy-btn-wrap">
+                        <button class="btn-buy" th:onclick="'initiateMembershipPayment(' + ${plan.id} + ')'" style="background-color: #b78a2e; color: white;">Select Plan</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EVA BLACK CARD -->
+            <div class="col-md-4 pt-4" th:each="plan : ${plans}" th:if="${plan.name == 'Eva Black Card'}">
+                <div class="membership-card-wrap">
+                    <div class="card-visual black">
+                        <div class="card-crown text-gold">👑</div>
+                        <div class="card-logo text-gold">EVA</div>
+                        <div class="card-tier-name text-gold">BLACK CARD</div>
+                    </div>
+                    
+                    <div class="price-tag">
+                        ₹<span th:text="${#numbers.formatDecimal(plan.price, 1, 0)}" style="font-size: 1.4rem; color: #4a3b2c;">24,999</span> <span>/ Year</span>
+                        <div style="font-size: 0.75rem; color: #777; margin-top: 2px;">+ 18% GST</div>
+                    </div>
+                    
+                    <ul class="benefits-list">
+                        <li>25% Discount</li>
+                        <li>Concierge Support</li>
+                        <li>Luxury Gifts</li>
+                        <li>Triple Rewards</li>
+                        <li>VIP Lounge Access</li>
+                    </ul>
+                    
+                    <div class="buy-btn-wrap">
+                        <button class="btn-buy" th:onclick="'initiateMembershipPayment(' + ${plan.id} + ')'">Select Plan</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Hidden form for successful verification -->
+    <form id="verifyForm" th:action="@{/membership/confirm}" method="post">
+        <input type="hidden" name="planId" id="verify_planId">
+        <input type="hidden" name="paymentId" id="verify_paymentId">
+        <input type="hidden" name="orderId" id="verify_orderId">
+    </form>
+
+    <!-- FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}" class="mt-5"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script th:inline="javascript">
+        function initiateMembershipPayment(planId) {
+            const formData = new FormData();
+            formData.append('planId', planId);
+
+            fetch('/membership/buy', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json().then(data => ({status: res.status, body: data})))
+            .then(response => {
+                const data = response.body;
+                if (response.status === 401) {
+                    window.location.href = '/auth/login?redirect=/membership';
+                    return;
+                }
+                if (response.status !== 200) {
+                    alert("Error: " + (data.message || 'Payment initiation failed'));
+                    return;
+                }
+
+                if (data.price === 0) {
+                    // Free upgrade or something
+                    verifyPaymentOnServer(planId, 'free_upgrade', 'free_order');
+                    return;
+                }
+
+                var options = {
+                    "key": data.key,
+                    "amount": data.price * 100, 
+                    "currency": "INR",
+                    "name": "EVA",
+                    "description": data.planName + " Subscription",
+                    "image": "/images/logo.png",
+                    "order_id": data.razorpayOrderId,
+                    "handler": function (rzp_res){
+                        verifyPaymentOnServer(planId, rzp_res.razorpay_payment_id, rzp_res.razorpay_order_id, rzp_res.razorpay_signature);
+                    },
+                    "prefill": {
+                        "name": data.userName,
+                        "email": data.userEmail,
+                        "contact": data.userMobile
+                    },
+                    "theme": {
+                        "color": "#c9a84c"
+                    }
+                };
+                
+                if (data.useMock) {
+                    alert("Payment Gateway Key not configured. Simulating success in mock mode.");
+                    verifyPaymentOnServer(planId, 'mock_payment_' + Date.now(), data.razorpayOrderId, null);
+                } else {
+                    var rzp1 = new Razorpay(options);
+                    rzp1.open();
+                }
+            })
+            .catch(err => {
+                console.error("Payment initiation failed:", err);
+                alert("Payment initiation failed. Please try again.");
+            });
+        }
+
+        function verifyPaymentOnServer(planId, paymentId, orderId, signature) {
+            const verifyFormData = new FormData();
+            verifyFormData.append('planId', planId);
+            verifyFormData.append('paymentId', paymentId);
+            verifyFormData.append('orderId', orderId);
+            if (signature) {
+                verifyFormData.append('razorpaySignature', signature);
+            }
+
+            fetch('/membership/confirm', {
+                method: 'POST',
+                body: verifyFormData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = data.redirectUrl + '?successMessage=' + encodeURIComponent(data.message);
+                } else {
+                    alert("Error activating membership: " + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error("Verification failed:", err);
+                alert("Error verifying payment on server.");
+            });
+        }
+    </script>
+</body>
+</html>

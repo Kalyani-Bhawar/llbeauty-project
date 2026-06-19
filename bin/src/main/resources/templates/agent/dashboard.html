@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Dashboard – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .agent-sidebar {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid rgba(201,168,76,0.15);
+            padding: 24px;
+        }
+        .stat-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid rgba(201,168,76,0.12);
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(201,168,76,0.08);
+            border-color: var(--gold);
+        }
+        .nav-pills-gold .nav-link {
+            color: var(--text-dark);
+            border-radius: 8px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .nav-pills-gold .nav-link:hover {
+            background: rgba(201,168,76,0.06);
+            color: var(--gold-dark);
+        }
+        .nav-pills-gold .nav-link.active {
+            background: var(--gold);
+            color: var(--white);
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- NAVBAR -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <section class="container my-5">
+        <div class="row g-4">
+            <!-- SIDE NAVIGATION -->
+            <div class="col-lg-3">
+                <div class="agent-sidebar">
+                    <div class="text-center mb-4">
+                        <div class="position-relative d-inline-block">
+                            <img th:src="${profile != null && profile.profilePhotoUrl != null && !profile.profilePhotoUrl.isEmpty() ? profile.profilePhotoUrl : '/images/about_vision.png'}" 
+                                 class="rounded-circle border border-3 border-warning" style="width: 85px; height: 85px; object-fit: cover;">
+                        </div>
+                        <h5 class="brand-font mt-3 text-gold" th:text="${profile != null ? profile.fullName : agent.user.name}">Agent Name</h5>
+                        <p class="text-muted small mb-0" th:text="${agent.agentId}">EVAAG000001</p>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill mt-2">Active Agent</span>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- SIDE MENU -->
+                    <div class="nav flex-column nav-pills-gold">
+                        <a href="/agent/dashboard" class="nav-link active"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                        <a href="/agent/wallet" class="nav-link"><i class="bi bi-wallet2"></i> Wallet & Earnings</a>
+                        <a href="/agent/referrals" class="nav-link"><i class="bi bi-share"></i> My Referrals</a>
+                        <a href="/agent/commissions" class="nav-link"><i class="bi bi-cash-stack"></i> Commission Ledger</a>
+                        <a href="/agent/settlements" class="nav-link"><i class="bi bi-bank"></i> Settlements</a>
+                        <a href="/agent/profile" class="nav-link"><i class="bi bi-person-gear"></i> Manage Profile</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DASHBOARD CONTENTS -->
+            <div class="col-lg-9">
+
+                <!-- WELCOME BANNER -->
+                <div class="card border-0 rounded-4 p-4 text-white mb-4 shadow-sm" style="background: linear-gradient(135deg, #2d2d2d, #111111);">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="brand-font text-gold fs-3">Welcome back, <span th:text="${profile != null ? profile.fullName : agent.user.name}">Partner</span>!</h3>
+                            <p class="small text-white-50 mb-0">Track your performance, manage earnings and generate your referral code stats here.</p>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <div class="bg-gold-subtle text-gold d-inline-block px-4 py-2 rounded-3 border border-warning">
+                                <span class="small d-block text-white-50 uppercase tracking-widest" style="font-size:0.6rem;">REFERRAL CODE</span>
+                                <span class="fw-bold fs-5 tracking-wide" th:text="${agent.referralCode}">CODE123</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTIFICATIONS ALERTS -->
+                <div th:if="${unreadNotifCount > 0}" class="alert alert-warning alert-dismissible fade show rounded-3 py-3 px-4 mb-4" role="alert">
+                    <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                        <div>
+                            <i class="bi bi-bell-fill me-2 text-warning fs-5"></i>
+                            You have <strong th:text="${unreadNotifCount}">3</strong> new unread notification(s).
+                        </div>
+                        <form th:action="@{/agent/notifications/read}" method="POST" class="m-0">
+                            <button type="submit" class="btn btn-outline-warning btn-sm rounded-pill px-3">Mark all as read</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- SHARING SECTION -->
+                <div class="card border-0 rounded-4 p-4 mb-4 shadow-sm bg-white">
+                    <h5 class="brand-font text-gold mb-3"><i class="bi bi-link-45deg me-1"></i> Your Referral Link</h5>
+                    <p class="text-muted small">Copy your unique link to share with prospects. Anyone buying beauty products, memberships or booking appointments via this link awards you commission!</p>
+                    <div class="input-group">
+                        <input type="text" class="form-control" th:value="${agent.referralLink}" id="refLinkInput" readonly style="background: #f8f9fa;">
+                        <button class="btn btn-gold px-4" onclick="copyReferralLink()"><i class="bi bi-copy me-1"></i> Copy Link</button>
+                    </div>
+                </div>
+
+                <!-- KEY STATS GRID -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <span class="fs-1">👥</span>
+                            <h6 class="text-muted small mt-2 uppercase tracking-wide">Total Referrals</h6>
+                            <h3 class="fw-bold brand-font text-gold mt-1" th:text="${totalReferrals}">0</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <span class="fs-1">👛</span>
+                            <h6 class="text-muted small mt-2 uppercase tracking-wide">Wallet Balance</h6>
+                            <h3 class="fw-bold brand-font text-gold mt-1">₹<span th:text="${#numbers.formatDecimal(walletBalance, 1, 2)}">0.00</span></h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <span class="fs-1">⏳</span>
+                            <h6 class="text-muted small mt-2 uppercase tracking-wide">Pending Earnings</h6>
+                            <h3 class="fw-bold brand-font text-muted mt-1">₹<span th:text="${#numbers.formatDecimal(pendingEarnings, 1, 2)}">0.00</span></h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card text-center">
+                            <span class="fs-1">🏆</span>
+                            <h6 class="text-muted small mt-2 uppercase tracking-wide">Lifetime Earnings</h6>
+                            <h3 class="fw-bold brand-font text-success mt-1">₹<span th:text="${#numbers.formatDecimal(lifetimeEarnings, 1, 2)}">0.00</span></h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BREAKDOWN CARD -->
+                <div class="card border-0 rounded-4 p-4 mb-4 shadow-sm bg-white">
+                    <h5 class="brand-font text-gold mb-4"><i class="bi bi-pie-chart me-1"></i> Referral Breakdown by Module</h5>
+                    <div class="row g-3 text-center">
+                        <div class="col-md-3 col-6 border-end">
+                            <div class="p-3">
+                                <span class="fs-3">🛍️</span>
+                                <h6 class="text-muted small mt-1">Products</h6>
+                                <h4 class="fw-bold text-dark mt-1" th:text="${productsCount}">0</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 border-end">
+                            <div class="p-3">
+                                <span class="fs-3">💇‍♀️</span>
+                                <h6 class="text-muted small mt-1">Salon Bookings</h6>
+                                <h4 class="fw-bold text-dark mt-1" th:text="${bookingsCount}">0</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 border-end">
+                            <div class="p-3">
+                                <span class="fs-3">👑</span>
+                                <h6 class="text-muted small mt-1">Memberships</h6>
+                                <h4 class="fw-bold text-dark mt-1" th:text="${membershipsCount}">0</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="p-3">
+                                <span class="fs-3">🤝</span>
+                                <h6 class="text-muted small mt-1">Others</h6>
+                                <h4 class="fw-bold text-dark mt-1" th:text="${usersCount + agentsCount + merchantsCount + franchisesCount}">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RECENT TRANSACTIONS / REFERRALS -->
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card border-0 rounded-4 p-4 shadow-sm bg-white" style="height: 100%;">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <h5 class="brand-font text-gold mb-0">Recent Referrals</h5>
+                                <a href="/agent/referrals" class="btn btn-outline-warning btn-sm rounded-pill">View All</a>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table align-middle table-hover" style="font-size: 0.85rem;">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Source</th>
+                                            <th>Status</th>
+                                            <th>Comm.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="ref : ${recentReferrals}">
+                                            <td>
+                                                <span th:text="${ref.sourceModule}">Module</span>
+                                                <small class="text-muted d-block" th:text="${#temporals.format(ref.createdAt, 'dd MMM')}">Date</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary-subtle text-secondary" th:if="${ref.activityStatus == 'Pending'}">Pending</span>
+                                                <span class="badge bg-success-subtle text-success" th:if="${ref.activityStatus == 'Completed' || ref.activityStatus == 'Active' || ref.activityStatus == 'Success' || ref.activityStatus == 'Delivered'}">Completed</span>
+                                            </td>
+                                            <td class="fw-semibold text-gold">₹<span th:text="${ref.commissionAmount}">0.00</span></td>
+                                        </tr>
+                                        <tr th:if="${recentReferrals == null || recentReferrals.isEmpty()}">
+                                            <td colspan="3" class="text-center text-muted py-4">No referrals found yet.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 rounded-4 p-4 shadow-sm bg-white" style="height: 100%;">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <h5 class="brand-font text-gold mb-0">Recent Commissions</h5>
+                                <a href="/agent/commissions" class="btn btn-outline-warning btn-sm rounded-pill">View All</a>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table align-middle table-hover" style="font-size: 0.85rem;">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Description</th>
+                                            <th>Amt</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="comm : ${recentCommissions}">
+                                            <td>
+                                                <span class="text-truncate d-inline-block" style="max-width: 140px;" th:text="${comm.description}">Description</span>
+                                                <small class="text-muted d-block" th:text="${#temporals.format(comm.createdAt, 'dd MMM')}">Date</small>
+                                            </td>
+                                            <td class="fw-semibold text-gold">₹<span th:text="${comm.amount}">0.00</span></td>
+                                            <td>
+                                                <span class="badge bg-warning-subtle text-warning" th:if="${comm.status == 'Pending'}">Pending</span>
+                                                <span class="badge bg-success-subtle text-success" th:if="${comm.status == 'Approved'}">Approved</span>
+                                                <span class="badge bg-info-subtle text-info" th:if="${comm.status == 'Paid'}">Paid</span>
+                                                <span class="badge bg-danger-subtle text-danger" th:if="${comm.status == 'Rejected'}">Rejected</span>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${recentCommissions == null || recentCommissions.isEmpty()}">
+                                            <td colspan="3" class="text-center text-muted py-4">No commission records yet.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyReferralLink() {
+            var copyText = document.getElementById("refLinkInput");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(copyText.value);
+            alert("Referral link copied successfully: " + copyText.value);
+        }
+    </script>
+</body>
+</html>

@@ -1,9 +1,12 @@
 package com.llbeauty.controller;
 
 import com.llbeauty.entity.Appointment;
+import com.llbeauty.entity.Commission;
 import com.llbeauty.entity.User;
 import com.llbeauty.entity.Payment;
+import com.llbeauty.repository.AgentProfileRepository;
 import com.llbeauty.repository.AppointmentRepository;
+import com.llbeauty.repository.CommissionRepository;
 import com.llbeauty.repository.UserRepository;
 import com.llbeauty.repository.PaymentRepository;
 import com.llbeauty.service.WalletService;
@@ -36,19 +39,25 @@ public class SalonPaymentController {
     private final PaymentService paymentService;
     private final RazorpayConfig razorpayConfig;
     private final com.llbeauty.service.RewardService rewardService;
+    private final AgentProfileRepository agentProfileRepository;
+    private final CommissionRepository commissionRepository;
+    private String referralCode;
 
     public SalonPaymentController(AppointmentRepository appointmentRepository,
                                   UserRepository userRepository,
                                   WalletService walletService,
                                   PaymentService paymentService,
                                   RazorpayConfig razorpayConfig,
-                                  com.llbeauty.service.RewardService rewardService) {
+                                  com.llbeauty.service.RewardService rewardService,AgentProfileRepository agentProfileRepository,
+                                  CommissionRepository commissionRepository) {
         this.appointmentRepository = appointmentRepository;
         this.userRepository = userRepository;
         this.walletService = walletService;
         this.paymentService = paymentService;
         this.razorpayConfig = razorpayConfig;
         this.rewardService = rewardService;
+        this.agentProfileRepository = agentProfileRepository;
+        this.commissionRepository = commissionRepository;
     }
 
     private User getAuthenticatedUser() {
@@ -73,6 +82,7 @@ public class SalonPaymentController {
         }
 
         Appointment app = appointmentRepository.findById(appointmentId).orElse(null);
+
         if (app == null || !app.getUserId().equals(user.getId())) {
             return "redirect:/salon";
         }
@@ -86,7 +96,6 @@ public class SalonPaymentController {
         model.addAttribute("appointment", app);
         model.addAttribute("walletBalance", walletService.getBalance(user));
         model.addAttribute("razorpayKeyId", razorpayConfig.getKeyId());
-
         return "salon_payment";
     }
 
@@ -177,6 +186,40 @@ public class SalonPaymentController {
         app.setPaymentStatus("PAID");
         app.setToken(bookingToken);
         appointmentRepository.save(app);
+        String referralCode = app.getReferralCode();
+
+        System.out.println(
+            "SALON REF = " + referralCode
+        );
+
+        if (referralCode != null && !referralCode.isBlank()) {
+
+            agentProfileRepository
+                .findByReferralCode(referralCode)
+                .ifPresent(agent -> {
+
+                    Commission commission =
+                        new Commission();
+
+                    commission.setAgent(agent);
+
+                    commission.setAmount(
+                        new BigDecimal("100"));
+
+                    commission.setDescription(
+                        "Salon Booking Referral");
+
+                    commission.setStatus(
+                        "APPROVED");
+
+                    commissionRepository.save(
+                        commission);
+
+                    System.out.println(
+                        "SALON COMMISSION SAVED"
+                    );
+                });
+        }
 
         // Award Reward Points for Salon Deposit!
         rewardService.awardPoints(user, BigDecimal.valueOf(total));

@@ -1,6 +1,6 @@
 package com.llbeauty.service;
 
-import com.llbeauty.dto.ExecutiveApplicationRequest;
+import com.llbeauty.dto.AgentApplicationRequest;
 import com.llbeauty.dto.MerchantApplicationRequest;
 import com.llbeauty.dto.StoreApplicationResponse;
 import com.llbeauty.dto.ApplicationStatusResponse;
@@ -21,7 +21,7 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
 
     private final StoreApplicationRepository storeApplicationRepository;
     private final UserRepository userRepository;
-    private final ExecutiveProfileRepository executiveProfileRepository;
+    private final AgentProfileRepository agentProfileRepository;
     private final MerchantRepository merchantRepository;
     private final QrCodeRepository qrCodeRepository;
     private final MerchantProfileRepository merchantProfileRepository;
@@ -30,7 +30,7 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
 
     public StoreApplicationServiceImpl(StoreApplicationRepository storeApplicationRepository,
                                        UserRepository userRepository,
-                                       ExecutiveProfileRepository executiveProfileRepository,
+                                       AgentProfileRepository agentProfileRepository,
                                        MerchantRepository merchantRepository,
                                        QrCodeRepository qrCodeRepository,
                                        MerchantProfileRepository merchantProfileRepository,
@@ -38,7 +38,7 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
                                        WalletService walletService) {
         this.storeApplicationRepository = storeApplicationRepository;
         this.userRepository = userRepository;
-        this.executiveProfileRepository = executiveProfileRepository;
+        this.agentProfileRepository = agentProfileRepository;
         this.merchantRepository = merchantRepository;
         this.qrCodeRepository = qrCodeRepository;
         this.merchantProfileRepository = merchantProfileRepository;
@@ -73,13 +73,13 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
 
     @Override
     @Transactional
-    public StoreApplicationResponse applyExecutive(Long userId, ExecutiveApplicationRequest request) throws ResourceNotFoundException {
+    public StoreApplicationResponse applyAgent(Long userId, AgentApplicationRequest request) throws ResourceNotFoundException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
         StoreApplication app = new StoreApplication();
         app.setUser(user);
-        app.setType(ApplicationType.EXECUTIVE);
+        app.setType(ApplicationType.AGENT);
         app.setBusinessName(request.getFullName());
         app.setContactEmail(request.getEmail());
         app.setContactPhone(request.getMobile());
@@ -98,7 +98,7 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
 
         StoreApplication saved = storeApplicationRepository.save(app);
 
-        user.setExecutiveStatus("PENDING");
+        user.setAgentStatus("PENDING");
         userRepository.save(user);
 
         return mapToResponse(saved);
@@ -173,21 +173,21 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
         storeApplicationRepository.save(app);
 
         User user = app.getUser();
-        if (app.getType() == ApplicationType.EXECUTIVE) {
-            user.setExecutiveStatus("ACTIVE");
+        if (app.getType() == ApplicationType.AGENT) {
+            user.setAgentStatus("ACTIVE");
             userRepository.save(user);
 
-            // Create Executive Profile if not exists
-            if (executiveProfileRepository.findByUser(user).isEmpty()) {
-                String executiveId = "LLB-EXE-" + user.getId();
+            // Create Agent Profile if not exists
+            if (agentProfileRepository.findByUser(user).isEmpty()) {
+                String agentId = "LLB-EXE-" + user.getId();
                 String referralCode;
                 do {
                     referralCode = "REF" + user.getId() + (int) (Math.random() * 900 + 100);
-                } while (executiveProfileRepository.findByReferralCode(referralCode).isPresent());
+                } while (agentProfileRepository.findByReferralCode(referralCode).isPresent());
 
-                ExecutiveProfile profile = new ExecutiveProfile(user, executiveId, referralCode);
+                AgentProfile profile = new AgentProfile(user, agentId, referralCode);
                 profile.setStatus("ACTIVE");
-                executiveProfileRepository.save(profile);
+                agentProfileRepository.save(profile);
             }
         } else if (app.getType() == ApplicationType.MERCHANT) {
             user.setMerchantStatus("ACTIVE");
@@ -262,8 +262,8 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
         storeApplicationRepository.save(app);
 
         User user = app.getUser();
-        if (app.getType() == ApplicationType.EXECUTIVE) {
-            user.setExecutiveStatus("REJECTED");
+        if (app.getType() == ApplicationType.AGENT) {
+            user.setAgentStatus("REJECTED");
         } else if (app.getType() == ApplicationType.MERCHANT) {
             user.setMerchantStatus("REJECTED");
         }

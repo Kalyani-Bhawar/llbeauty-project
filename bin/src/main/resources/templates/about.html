@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="About EVA - Our journey, luxury vision, and premium beauty philosophy.">
+    <title>About Us – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .about-hero {
+            background: linear-gradient(rgba(17,17,17,0.6), rgba(17,17,17,0.6)), url('/images/salon_hero.png') no-repeat center center;
+            background-size: cover;
+            height: 50vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--white);
+        }
+        .philosophy-card {
+            background: var(--beige);
+            border-radius: 20px;
+            padding: 50px;
+            border-left: 5px solid var(--gold);
+            margin-top: 40px;
+        }
+    </style>
+    <link rel="icon" type="image/png" href="/images/eva-logo.png">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <!-- ABOUT HERO -->
+    <section class="about-hero">
+        <div class="container animate-fade-up">
+            <h1 class="brand-font fs-1 text-gold">EVA</h1>
+            <p class="cursive text-white-50 fs-3">Crafting Luxury, Celebrating Elegance</p>
+        </div>
+    </section>
+
+    <!-- BRAND STORY -->
+    <section class="section-pad bg-white">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6 animate-fade-up">
+                    <div class="section-label">✦ Our Story</div>
+                    <h2 class="section-title mb-4">Born Out of Passion for Beauty</h2>
+                    <p class="text-muted">
+                        Founded in 2024, EVA began with a single vision: to bring together premium beauty products and world-class professional salon services under one unified, premium ecosystem. We believe that self-care is not a luxury, but a necessity, and every individual deserves to feel confident and pampered.
+                    </p>
+                    <p class="text-muted">
+                        From our signature Rose Gold Elixir to our state-of-the-art flagship salons, every product we formulate and every service we offer is designed to deliver immediate results while maintaining the highest standard of luxury, purity, and certification.
+                    </p>
+                </div>
+                <div class="col-lg-6 animate-fade-up delay-2">
+                    <div class="position-relative">
+                        <img src="/images/spa.png" alt="Luxury Spa Wellness" class="img-fluid rounded-4 shadow-lg premium-img" style="height: 400px; width:100%; object-fit: cover;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PHILOSOPHY CARD -->
+            <div class="philosophy-card animate-fade-up delay-3">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <h4 class="brand-font text-gold">💎 Luxury Standards</h4>
+                        <p class="text-muted mb-0" style="font-size: 0.9rem;">We source only the finest organic ingredients and employ certified experts to guide your glow.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="brand-font text-gold">🌿 Eco-Conscious</h4>
+                        <p class="text-muted mb-0" style="font-size: 0.9rem;">All our premium beauty products are cruelty-free and dermatologically certified.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="brand-font text-gold">🤝 Inclusive Growth</h4>
+                        <p class="text-muted mb-0" style="font-size: 0.9rem;">We support aspiring entrepreneurs through our detailed salon franchise programs.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

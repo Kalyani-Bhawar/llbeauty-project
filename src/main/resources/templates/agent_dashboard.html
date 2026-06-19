@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Console – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0c0c0c;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .dashboard-content {
+            padding: 48px 0 80px;
+        }
+
+        .panel-card {
+            background: rgba(22,22,22,0.95);
+            border: 1px solid rgba(201, 168, 76, 0.15);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+
+        .panel-card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            color: #c9a84c;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 20px;
+        }
+
+        .id-badge {
+            background: linear-gradient(135deg, #a8232c 0%, #701016 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 24px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(112, 16, 22, 0.3);
+        }
+
+        .id-badge::before {
+            content: '';
+            position: absolute;
+            top: -20%; right: -20%;
+            width: 120px; height: 120px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .stat-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #c9a84c;
+        }
+
+        .table-custom {
+            color: rgba(255,255,255,0.85);
+            margin: 0;
+        }
+
+        .table-custom thead th {
+            border-bottom: 1px solid rgba(201,168,76,0.2);
+            color: #c9a84c;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 12px;
+        }
+
+        .table-custom tbody td {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 14px 12px;
+            font-size: 0.85rem;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="dashboard-content">
+        <div class="container">
+            
+            <!-- Welcome Header -->
+            <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
+                <div>
+                    <span class="badge bg-danger text-uppercase px-3 py-2 rounded-pill" style="letter-spacing:1px; font-size:0.68rem;">EVA Agent Partner</span>
+                    <h1 class="brand-font mt-2 mb-1" th:text="${user.name}">Agent Name</h1>
+                    <p class="text-white-50 small mb-0">Manage your leads, events, referrals, and commission metrics.</p>
+                </div>
+                <div>
+                    <a href="/auth/logout" class="btn btn-sm btn-outline-danger px-4 py-2 rounded-pill">Sign Out</a>
+                </div>
+            </div>
+
+            <div class="row">
+                
+                <!-- Left Column -->
+                <div class="col-lg-4">
+                    
+                    <!-- Agent ID Badge -->
+                    <div class="id-badge mb-4">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <div class="small text-uppercase opacity-75 font-weight-bold" style="letter-spacing:1.5px; font-size:0.65rem;">EVA AGENT</div>
+                                <h4 class="brand-font mt-1 mb-0">RED CARD</h4>
+                            </div>
+                            <span style="font-size: 1.8rem;">👑</span>
+                        </div>
+                        <div class="mb-4">
+                            <div class="small opacity-50" style="font-size: 0.7rem;">AGENT ID</div>
+                            <div class="fw-bold tracking-widest" style="font-size: 1.1rem; letter-spacing: 1.5px;" th:text="${profile.agentId}">LLB-EXE-XXXX</div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-end">
+                            <div>
+                                <div class="small opacity-50" style="font-size: 0.7rem;">REFERRAL CODE</div>
+                                <div class="fw-bold text-gold" style="font-size: 1.05rem;" th:text="${profile.referralCode}">REFXXXX</div>
+                            </div>
+                            <span class="badge bg-success" style="font-size:0.65rem;">ACTIVE</span>
+                        </div>
+                    </div>
+
+                    <!-- Earnings Summary -->
+                    <div class="panel-card">
+                        <div class="panel-card-title"><i class="bi bi-graph-up-arrow"></i> Earnings Summary</div>
+                        <div class="row text-center py-2">
+                            <div class="col-6" style="border-right: 1px solid rgba(255,255,255,0.05);">
+                                <div class="small text-white-50 uppercase" style="font-size:0.7rem;">Commissions</div>
+                                <div class="stat-num mt-1" th:text="'₹' + ${#numbers.formatDecimal(totalCommission, 1, 0)}">₹0</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="small text-white-50 uppercase" style="font-size:0.7rem;">Wallet Balance</div>
+                                <div class="stat-num mt-1" style="color: #2ecc71;" th:text="'₹' + ${#numbers.formatDecimal(walletBalance, 1, 0)}">₹0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Tools -->
+                    <div class="panel-card">
+                        <div class="panel-card-title"><i class="bi bi-sliders"></i> Frontliner Tools</div>
+                        <div class="d-flex flex-column gap-2">
+                            <a href="/shop" class="btn btn-sm btn-outline-gold w-100 text-start py-2 px-3"><i class="bi bi-gift me-2"></i> Promote Products</a>
+                            <a href="/membership" class="btn btn-sm btn-outline-gold w-100 text-start py-2 px-3"><i class="bi bi-crown me-2"></i> Enroll VIP Members</a>
+                            <a href="/franchise" class="btn btn-sm btn-outline-gold w-100 text-start py-2 px-3"><i class="bi bi-building me-2"></i> Franchise Promotion</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-lg-8">
+                    
+                    <!-- Referrals Panel -->
+                    <div class="panel-card">
+                        <div class="panel-card-title">
+                            <i class="bi bi-people-fill"></i> My Referrals
+                            <span class="ms-auto badge bg-gold text-dark" th:text="${referrals.size()} + ' Members'">0</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Member ID</th>
+                                        <th>Name</th>
+                                        <th>Plan</th>
+                                        <th>Join Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="ref : ${referrals}">
+                                        <td class="fw-bold" th:text="${ref.memberId}">LLB-MEMBER-0000</td>
+                                        <td th:text="${ref.user.name}">John Doe</td>
+                                        <td><span class="badge bg-danger" th:text="${ref.membership.name}">Plan</span></td>
+                                        <td th:text="${#temporals.format(ref.startDate, 'dd MMM yyyy')}">Date</td>
+                                    </tr>
+                                    <tr th:if="${referrals.isEmpty()}">
+                                        <td colspan="4" class="text-center text-white-50 py-4">No referrals registered yet. Share your code to start!</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Commissions Panel -->
+                    <div class="panel-card">
+                        <div class="panel-card-title"><i class="bi bi-wallet2"></i> Commission History</div>
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="comm : ${commissions}">
+                                        <td th:text="${#temporals.format(comm.createdAt, 'dd MMM yyyy')}">Date</td>
+                                        <td th:text="${comm.description}">Description</td>
+                                        <td>
+                                            <span class="badge bg-success" th:if="${comm.status == 'PAID'}">PAID</span>
+                                            <span class="badge bg-warning text-dark" th:if="${comm.status == 'PENDING'}">PENDING</span>
+                                        </td>
+                                        <td class="text-end fw-bold text-gold" th:text="'₹' + ${#numbers.formatDecimal(comm.amount, 1, 2)}">₹0.00</td>
+                                    </tr>
+                                    <tr th:if="${commissions.isEmpty()}">
+                                        <td colspan="4" class="text-center text-white-50 py-4">No commission payouts on record.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

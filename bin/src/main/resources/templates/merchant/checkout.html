@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVA Beauty - Merchant Checkout</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --eva-gold: #D4AF37;
+            --eva-black: #111111;
+            --eva-dark: #1e1e1e;
+        }
+        body {
+            background-color: var(--eva-black);
+            color: #ffffff;
+            font-family: 'Outfit', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+        .sidebar {
+            background-color: var(--eva-dark);
+            min-height: 100vh;
+            border-right: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        .nav-link {
+            color: #ccc;
+            margin-bottom: 5px;
+            padding: 12px 20px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--eva-gold);
+            background-color: rgba(212, 175, 55, 0.1);
+            border-radius: 5px;
+        }
+        .eva-card {
+            background: linear-gradient(135deg, rgba(30,30,30,0.8) 0%, rgba(20,20,20,0.9) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            backdrop-filter: blur(4px);
+            padding: 24px;
+        }
+        .text-gold { color: var(--eva-gold) !important; }
+        .btn-gold {
+            background: linear-gradient(45deg, var(--eva-gold) 0%, #F1C40F 100%);
+            color: var(--eva-black);
+            font-weight: bold;
+            border: none;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            transition: all 0.3s;
+        }
+        .btn-gold:hover {
+            background: linear-gradient(45deg, #F1C40F 0%, #F39C12 100%);
+            color: var(--eva-black);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+        }
+        .billing-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+        .billing-row.total {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 12px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .wallet-card {
+            background: rgba(212, 175, 55, 0.05);
+            border: 1px dashed var(--eva-gold);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 px-0 sidebar d-none d-md-block">
+                <div class="p-3 text-center border-bottom border-secondary mb-3">
+                    <h2 class="text-gold fw-bold tracking-wide">EVA BEAUTY</h2>
+                    <p class="small text-muted mb-0">Merchant Portal</p>
+                </div>
+                <ul class="nav flex-column px-3">
+                    <li class="nav-item"><a class="nav-link" href="/merchant/dashboard"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/merchant/wallet"><i class="bi bi-wallet2 me-2"></i>NXL Credits</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/merchant/wholesale"><i class="bi bi-bag me-2"></i>Wholesale Catalog</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/merchant/orders"><i class="bi bi-list-ul me-2"></i>Order History</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/merchant/profile"><i class="bi bi-person me-2"></i>Profile & KYC</a></li>
+                    <li class="nav-item mt-5"><a class="nav-link text-danger" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                </ul>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <a href="/merchant/wholesale" class="btn btn-outline-light btn-sm me-3"><i class="bi bi-arrow-left"></i> Back</a>
+                    <div>
+                        <h3 class="text-gold mb-0">Merchant Checkout</h3>
+                        <p class="text-muted small mb-0">Review order details and verify credit balance deduction.</p>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Order Items List -->
+                    <div class="col-lg-8">
+                        <div class="eva-card h-100">
+                            <h5 class="text-gold mb-3"><i class="bi bi-basket2 me-2"></i>Selected Inventory</h5>
+                            <div class="table-responsive">
+                                <table class="table table-dark table-hover align-middle">
+                                    <thead>
+                                        <tr class="text-muted">
+                                            <th>Product Details</th>
+                                            <th>MRP</th>
+                                            <th>Qty</th>
+                                            <th>Discounts</th>
+                                            <th class="text-end">Final Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="item : ${items}">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img th:src="${item.product.imageUrl != null ? item.product.imageUrl : '/images/skincare.png'}" alt="Product" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover; border: 1px solid rgba(212,175,55,0.2)">
+                                                    <div>
+                                                        <h6 class="mb-0 text-white" th:text="${item.product.name}">Product Name</h6>
+                                                        <small class="text-muted" th:text="${item.product.category}">Category</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td th:text="'₹' + ${#numbers.formatDecimal(item.mrp, 1, 2)}">₹0.00</td>
+                                            <td th:text="${item.quantity}">0</td>
+                                            <td>
+                                                <div class="small">
+                                                    <span class="text-info d-block">Base Merchant: <span th:text="${item.merchantDiscountPercent}">0</span>%</span>
+                                                    <span class="text-success d-block" th:if="${item.bulkDiscountPercent > 0}">Bulk Slab: +<span th:text="${item.bulkDiscountPercent}">0</span>%</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-end text-gold fw-bold" th:text="'₹' + ${#numbers.formatDecimal(item.total, 1, 2)}">₹0.00</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Checkout Billing Summary -->
+                    <div class="col-lg-4">
+                        <div class="d-flex flex-column gap-4">
+                            <!-- NXL Credits (Wallet) -->
+                            <div class="eva-card wallet-card">
+                                <h5 class="text-gold mb-3"><i class="bi bi-wallet2 me-2"></i>NXL Credits Balance</h5>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted">Available NXL Credits:</span>
+                                    <span class="fw-bold text-white"><span th:text="${#numbers.formatDecimal(walletBalance, 1, 2)}">0.00</span> Credits</span>
+                                </div>
+                                <div class="form-check form-switch mt-3">
+                                    <input class="form-check-input" type="checkbox" id="useWalletCheckbox" checked onchange="toggleWalletUsage()">
+                                    <label class="form-check-label text-white small" for="useWalletCheckbox">Deduct from NXL Credits balance first</label>
+                                </div>
+                            </div>
+
+                            <!-- Summary Details -->
+                            <div class="eva-card">
+                                <h5 class="text-gold mb-3"><i class="bi bi-file-earmark-text me-2"></i>Bill Summary</h5>
+                                
+                                <div class="billing-row">
+                                    <span class="text-muted">Subtotal (Retail MRP)</span>
+                                    <span th:text="'₹' + ${#numbers.formatDecimal(subtotal, 1, 2)}">₹0.00</span>
+                                </div>
+                                <div class="billing-row text-info">
+                                    <span>Product Discounts</span>
+                                    <span th:text="'-₹' + ${#numbers.formatDecimal(productDiscounts, 1, 2)}">-₹0.00</span>
+                                </div>
+                                <div class="billing-row text-success" th:if="${bulkDiscounts > 0}">
+                                    <span>Bulk slab Discounts</span>
+                                    <span th:text="'-₹' + ${#numbers.formatDecimal(bulkDiscounts, 1, 2)}">-₹0.00</span>
+                                </div>
+                                <div class="billing-row text-warning fw-semibold">
+                                    <span>Total Savings</span>
+                                    <span th:text="'-₹' + ${#numbers.formatDecimal(totalSavings, 1, 2)}">-₹0.00</span>
+                                </div>
+                                
+                                <div class="billing-row total">
+                                    <span>Final Amount</span>
+                                    <span class="text-gold" th:text="'₹' + ${#numbers.formatDecimal(finalAmount, 1, 2)}">₹0.00</span>
+                                </div>
+
+                                <hr class="border-secondary my-3">
+
+                                <div class="billing-row text-white small" id="walletDeductionRow">
+                                    <span>Credits Used:</span>
+                                    <span th:text="'-' + ${#numbers.formatDecimal(walletUsed, 1, 2)} + ' NXL'">-0.00 NXL</span>
+                                </div>
+
+                                <div class="billing-row text-gold fw-bold border-top border-secondary pt-2 mt-2" id="payableRow">
+                                    <span>Remaining Cash Payable:</span>
+                                    <span th:text="'₹' + ${#numbers.formatDecimal(remainingAmount, 1, 2)}">₹0.00</span>
+                                </div>
+
+                                <button class="btn btn-gold btn-lg w-100 mt-4 py-3" onclick="processOrder()"><i class="bi bi-shield-lock me-2"></i>Pay & Confirm Order</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Razorpay Checkout Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        const finalAmount = [[${finalAmount}]];
+        const walletBalance = [[${walletBalance}]];
+        let useWallet = true;
+
+        function toggleWalletUsage() {
+            useWallet = document.getElementById('useWalletCheckbox').checked;
+            const walletDeductionRow = document.getElementById('walletDeductionRow');
+            const payableRow = document.getElementById('payableRow');
+
+            let walletUsed = 0;
+            if (useWallet) {
+                walletUsed = Math.min(walletBalance, finalAmount);
+            }
+            const remaining = finalAmount - walletUsed;
+
+            walletDeductionRow.innerHTML = `<span>Credits Used:</span><span>-${walletUsed.toFixed(2)} NXL</span>`;
+            payableRow.innerHTML = `<span>Remaining Cash Payable:</span><span>₹${remaining.toFixed(2)}</span>`;
+        }
+
+        function processOrder() {
+            // Initiate order on backend
+            const formData = new FormData();
+            formData.append("useWallet", useWallet);
+
+            fetch("/merchant/checkout/place-order", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    // Fully paid via wallet credits
+                    window.location.href = data.redirectUrl;
+                } else if (data.status === "payment_pending") {
+                    if (data.useMock) {
+                        // Bypass payment verification (mock payment modal)
+                        if(confirm("Remaining amount ₹" + data.amountToPay.toFixed(2) + " will be paid via Razorpay (Mock Mode). Click OK to confirm order.")) {
+                            confirmOrder(data.orderId, "mock_pay_" + Date.now(), "mock_order_" + Date.now(), "mock_sig_" + Date.now());
+                        } else {
+                            rollbackOrder(data.orderId);
+                        }
+                    } else {
+                        // Trigger Razorpay payment gateway
+                        const options = {
+                            "key": data.key,
+                            "amount": Math.round(data.amountToPay * 100),
+                            "currency": "INR",
+                            "name": "EVA Beauty",
+                            "description": "Merchant Bulk Purchase",
+                            "order_id": data.razorpayOrderId,
+                            "handler": function (response) {
+                                confirmOrder(data.orderId, response.razorpay_payment_id, response.razorpay_order_id, response.razorpay_signature);
+                            },
+                            "modal": {
+                                "ondismiss": function() {
+                                    rollbackOrder(data.orderId);
+                                }
+                            },
+                            "theme": {
+                                "color": "#D4AF37"
+                            }
+                        };
+                        const rzp = new Razorpay(options);
+                        rzp.on('payment.failed', function (response) {
+                            rollbackOrder(data.orderId);
+                        });
+                        rzp.open();
+                    }
+                } else {
+                    alert("Order placement failed: " + (data.message || "Unknown error"));
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("An error occurred during order checkout.");
+            });
+        }
+
+        function confirmOrder(orderId, paymentId, razorpayOrderId, signature) {
+            const formData = new FormData();
+            formData.append("orderId", orderId);
+            formData.append("paymentId", paymentId);
+            formData.append("razorpayOrderId", razorpayOrderId);
+            formData.append("razorpaySignature", signature);
+
+            fetch("/merchant/checkout/confirm", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    alert("Order verification failed: " + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Failed to confirm order with payment details.");
+            });
+        }
+
+        function rollbackOrder(orderId) {
+            const formData = new FormData();
+            formData.append("orderId", orderId);
+
+            fetch("/merchant/checkout/rollback", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("Payment cancelled/failed. NXL Credits restored to your wallet.");
+                window.location.href = "/merchant/wholesale?error=payment_cancelled";
+            })
+            .catch(err => {
+                console.error(err);
+                window.location.href = "/merchant/wholesale?error=payment_cancelled";
+            });
+        }
+    </script>
+</body>
+</html>

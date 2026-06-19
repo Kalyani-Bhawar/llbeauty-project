@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout :: layout(~{::section})}">
+<head><title>Agent Details – Admin</title></head>
+<body>
+<section>
+    <!-- BREADCRUMB -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb" style="font-size:0.8rem;">
+            <li class="breadcrumb-item"><a href="/admin/agents" style="color:#c9a84c;text-decoration:none;">Agents</a></li>
+            <li class="breadcrumb-item active" style="color:rgba(255,255,255,0.5);" th:text="${agent.agentId != null ? agent.agentId : 'Agent #' + agent.id}">Agent</li>
+        </ol>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert" style="background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.2);color:#2ecc71;">
+        <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}">Success</span>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show rounded-3 mb-4" role="alert" style="background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.2);color:#e74c3c;">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMessage}">Error</span>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- AGENT HEADER CARD -->
+    <div class="stat-card mb-4" style="padding:32px;">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:64px;height:64px;background:rgba(201,168,76,0.15);color:#c9a84c;font-size:1.5rem;font-weight:700;">
+                        <span th:text="${profile.fullName != null ? profile.fullName.substring(0,1) : '?'}">?</span>
+                    </div>
+                    <div>
+                        <h4 style="color:#fff;font-family:'Playfair Display',serif;margin-bottom:4px;" th:text="${profile.fullName != null ? profile.fullName : agent.user.name}">Agent Name</h4>
+                        <div class="d-flex gap-2 align-items-center">
+                            <code style="background:rgba(201,168,76,0.1);color:#c9a84c;padding:3px 10px;border-radius:6px;font-size:0.8rem;" th:text="${agent.agentId != null ? agent.agentId : '—'}">ID</code>
+                            <span class="badge-status badge-completed" th:if="${agent.status == 'ACTIVE'}">Active</span>
+                            <span class="badge-status badge-pending" th:if="${agent.status == 'Applied'}">Applied</span>
+                            <span class="badge-status badge-cancelled" th:if="${agent.status == 'Suspended'}">Suspended</span>
+                            <span class="badge-status badge-cancelled" th:if="${agent.status == 'Rejected'}">Rejected</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <!-- ACTION BUTTONS -->
+                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                    <form th:action="@{/admin/agents/{id}/approve(id=${agent.id})}" method="POST" th:if="${agent.status == 'Applied'}" class="d-inline">
+                        <button type="submit" class="btn btn-sm" style="background:rgba(46,204,113,0.15);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);border-radius:10px;font-size:0.8rem;font-weight:500;padding:8px 18px;">
+                            <i class="bi bi-check-circle me-1"></i> Approve
+                        </button>
+                    </form>
+                    <form th:action="@{/admin/agents/{id}/reject(id=${agent.id})}" method="POST" th:if="${agent.status == 'Applied'}" class="d-inline">
+                        <button type="submit" class="btn btn-sm" style="background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);border-radius:10px;font-size:0.8rem;font-weight:500;padding:8px 18px;">
+                            <i class="bi bi-x-circle me-1"></i> Reject
+                        </button>
+                    </form>
+                    <form th:action="@{/admin/agents/{id}/suspend(id=${agent.id})}" method="POST" th:if="${agent.status == 'ACTIVE'}" class="d-inline">
+                        <button type="submit" class="btn btn-sm" style="background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);border-radius:10px;font-size:0.8rem;font-weight:500;padding:8px 18px;">
+                            <i class="bi bi-pause-circle me-1"></i> Suspend
+                        </button>
+                    </form>
+                    <form th:action="@{/admin/agents/{id}/activate(id=${agent.id})}" method="POST" th:if="${agent.status == 'Suspended'}" class="d-inline">
+                        <button type="submit" class="btn btn-sm" style="background:rgba(46,204,113,0.15);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);border-radius:10px;font-size:0.8rem;font-weight:500;padding:8px 18px;">
+                            <i class="bi bi-play-circle me-1"></i> Activate
+                        </button>
+                    </form>
+                    <form th:action="@{/admin/agents/{id}/reset-referral-code(id=${agent.id})}" method="POST" th:if="${agent.status == 'ACTIVE'}" class="d-inline">
+                        <button type="submit" class="btn btn-sm" style="background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.3);border-radius:10px;font-size:0.8rem;font-weight:500;padding:8px 18px;">
+                            <i class="bi bi-arrow-repeat me-1"></i> Reset Code
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon gold"><i class="bi bi-wallet2"></i></div>
+                <div class="stat-label">Current Balance</div>
+                <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(wallet.currentBalance, 1, 2)}">0.00</span></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon emerald"><i class="bi bi-check-circle"></i></div>
+                <div class="stat-label">Approved Earnings</div>
+                <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(wallet.approvedEarnings, 1, 2)}">0.00</span></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon sapphire"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-label">Pending Earnings</div>
+                <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(wallet.pendingEarnings, 1, 2)}">0.00</span></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon ruby"><i class="bi bi-people"></i></div>
+                <div class="stat-label">Total Referrals</div>
+                <div class="stat-value" th:text="${wallet.totalReferrals}">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROFILE DETAILS -->
+    <div class="data-card mb-4">
+        <div class="data-card-header">
+            <h6><i class="bi bi-person me-2" style="color:#c9a84c;"></i> Profile Details</h6>
+        </div>
+        <div style="padding:20px 24px;">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <small style="color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;font-size:0.65rem;">Email</small>
+                    <p style="color:#ddd;margin-bottom:0;" th:text="${profile.email != null ? profile.email : agent.user.email}">email</p>
+                </div>
+                <div class="col-md-4">
+                    <small style="color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;font-size:0.65rem;">Mobile</small>
+                    <p style="color:#ddd;margin-bottom:0;" th:text="${profile.mobileNumber != null ? profile.mobileNumber : '—'}">mobile</p>
+                </div>
+                <div class="col-md-4">
+                    <small style="color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;font-size:0.65rem;">Referral Code</small>
+                    <p style="color:#c9a84c;font-weight:600;margin-bottom:0;" th:text="${agent.referralCode != null ? agent.referralCode : '—'}">code</p>
+                </div>
+                <div class="col-md-4">
+                    <small style="color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;font-size:0.65rem;">City</small>
+                    <p style="color:#ddd;margin-bottom:0;" th:text="${profile.city != null ? profile.city : '—'}">city</p>
+                </div>
+                <div class="col-md-4">
+                    <small style="color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;font-size:0.65rem;">State</small>
+                    <p style="color:#ddd;margin-bottom:0;" th:text="${profile.state != null ? profile.state : '—'}">state</p>
+                </div>
+                <div class="col-md-4">
+                    <small style="color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;font-size:0.65rem;">Registration Type</small>
+                    <p style="color:#ddd;margin-bottom:0;" th:text="${profile.registrationType != null ? profile.registrationType : '—'}">type</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MANUAL COMMISSION -->
+    <div class="data-card mb-4" th:if="${agent.status == 'ACTIVE'}">
+        <div class="data-card-header">
+            <h6><i class="bi bi-plus-circle me-2" style="color:#c9a84c;"></i> Add Manual Commission</h6>
+        </div>
+        <div style="padding:20px 24px;">
+            <form th:action="@{/admin/agents/{id}/manual-commission(id=${agent.id})}" method="POST" class="d-flex flex-wrap gap-3 align-items-end">
+                <div>
+                    <label style="color:rgba(255,255,255,0.4);font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;display:block;">Amount (₹)</label>
+                    <input type="number" step="0.01" name="amount" required class="form-control"
+                           style="background:rgba(30,30,30,0.8);border:1px solid rgba(201,168,76,0.15);color:#fff;border-radius:10px;width:150px;">
+                </div>
+                <div class="flex-grow-1">
+                    <label style="color:rgba(255,255,255,0.4);font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;display:block;">Description</label>
+                    <input type="text" name="description" required class="form-control"
+                           placeholder="Reason for manual commission..."
+                           style="background:rgba(30,30,30,0.8);border:1px solid rgba(201,168,76,0.15);color:#fff;border-radius:10px;">
+                </div>
+                <button type="submit" class="btn" style="background:rgba(201,168,76,0.15);color:#c9a84c;border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:10px 20px;font-size:0.85rem;font-weight:500;">
+                    <i class="bi bi-plus-lg me-1"></i> Add Commission
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- COMMISSIONS TABLE -->
+    <div class="data-card mb-4">
+        <div class="data-card-header">
+            <h6><i class="bi bi-cash-stack me-2" style="color:#c9a84c;"></i> Commissions</h6>
+            <span style="color:rgba(255,255,255,0.4);font-size:0.8rem;" th:text="${commissions.size()} + ' records'">0 records</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="comm : ${commissions}">
+                        <td th:text="${#temporals.format(comm.createdAt, 'dd MMM yyyy')}">Date</td>
+                        <td th:text="${comm.description}">Description</td>
+                        <td style="color:#c9a84c;font-weight:600;">₹<span th:text="${#numbers.formatDecimal(comm.amount, 1, 2)}">0.00</span></td>
+                        <td>
+                            <span class="badge-status badge-pending" th:if="${comm.status == 'Pending'}">Pending</span>
+                            <span class="badge-status badge-completed" th:if="${comm.status == 'Approved'}">Approved</span>
+                            <span class="badge-status" style="background:rgba(52,152,219,0.15);color:#3498db;" th:if="${comm.status == 'Paid'}">Paid</span>
+                            <span class="badge-status badge-cancelled" th:if="${comm.status == 'Rejected'}">Rejected</span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1" th:if="${comm.status == 'Pending'}">
+                                <form th:action="@{/admin/agents/commissions/{commId}/approve(commId=${comm.id})}" method="POST" class="d-inline">
+                                    <input type="hidden" name="agentId" th:value="${agent.id}">
+                                    <button type="submit" class="btn btn-sm" style="background:rgba(46,204,113,0.15);color:#2ecc71;border:none;border-radius:8px;font-size:0.7rem;padding:4px 10px;">
+                                        <i class="bi bi-check"></i>
+                                    </button>
+                                </form>
+                                <form th:action="@{/admin/agents/commissions/{commId}/reject(commId=${comm.id})}" method="POST" class="d-inline">
+                                    <input type="hidden" name="agentId" th:value="${agent.id}">
+                                    <button type="submit" class="btn btn-sm" style="background:rgba(231,76,60,0.15);color:#e74c3c;border:none;border-radius:8px;font-size:0.7rem;padding:4px 10px;">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            <span th:if="${comm.status != 'Pending'}" style="color:rgba(255,255,255,0.3);font-size:0.8rem;">—</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${commissions == null || commissions.isEmpty()}">
+                        <td colspan="5" class="empty-state">
+                            <i class="bi bi-cash-stack"></i>
+                            <p>No commissions recorded for this agent.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- REFERRALS TABLE -->
+    <div class="data-card mb-4">
+        <div class="data-card-header">
+            <h6><i class="bi bi-share me-2" style="color:#c9a84c;"></i> Referrals</h6>
+            <span style="color:rgba(255,255,255,0.4);font-size:0.8rem;" th:text="${referrals.size()} + ' referrals'">0 referrals</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Module</th>
+                        <th>Referred User</th>
+                        <th>Activity</th>
+                        <th>Commission</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="ref : ${referrals}">
+                        <td th:text="${#temporals.format(ref.createdAt, 'dd MMM yyyy')}">Date</td>
+                        <td>
+                            <span class="badge-status" style="background:rgba(52,152,219,0.15);color:#3498db;" th:text="${ref.sourceModule}">Module</span>
+                        </td>
+                        <td>
+                            <span th:if="${ref.sourceUser != null}" th:text="${ref.sourceUser.name}">User</span>
+                            <span th:if="${ref.sourceUser == null}" style="color:rgba(255,255,255,0.3);">—</span>
+                        </td>
+                        <td>
+                            <span class="badge-status badge-completed" th:if="${ref.activityStatus == 'Completed' || ref.activityStatus == 'Delivered' || ref.activityStatus == 'Active'}" th:text="${ref.activityStatus}">Done</span>
+                            <span class="badge-status badge-pending" th:if="${ref.activityStatus == 'Pending'}">Pending</span>
+                            <span class="badge-status badge-cancelled" th:if="${ref.activityStatus != 'Completed' && ref.activityStatus != 'Delivered' && ref.activityStatus != 'Active' && ref.activityStatus != 'Pending'}" th:text="${ref.activityStatus}">Other</span>
+                        </td>
+                        <td style="color:#c9a84c;font-weight:600;">₹<span th:text="${#numbers.formatDecimal(ref.commissionAmount, 1, 2)}">0.00</span></td>
+                        <td>
+                            <span class="badge-status badge-pending" th:if="${ref.commissionStatus == 'Pending'}">Pending</span>
+                            <span class="badge-status badge-completed" th:if="${ref.commissionStatus == 'Approved'}">Approved</span>
+                            <span class="badge-status" style="background:rgba(52,152,219,0.15);color:#3498db;" th:if="${ref.commissionStatus == 'Paid'}">Paid</span>
+                            <span class="badge-status badge-cancelled" th:if="${ref.commissionStatus == 'Rejected'}">Rejected</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${referrals == null || referrals.isEmpty()}">
+                        <td colspan="6" class="empty-state">
+                            <i class="bi bi-share"></i>
+                            <p>No referrals recorded for this agent.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SETTLEMENTS TABLE -->
+    <div class="data-card">
+        <div class="data-card-header">
+            <h6><i class="bi bi-bank me-2" style="color:#c9a84c;"></i> Settlements</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Settlement ID</th>
+                        <th>Month</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Transfer Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="s : ${settlements}">
+                        <td style="font-weight:600;" th:text="${s.settlementId}">ID</td>
+                        <td th:text="${s.month}">Month</td>
+                        <td style="color:#c9a84c;font-weight:600;">₹<span th:text="${#numbers.formatDecimal(s.totalAmount, 1, 2)}">0.00</span></td>
+                        <td>
+                            <span class="badge-status badge-pending" th:if="${s.status == 'PENDING'}">Pending</span>
+                            <span class="badge-status badge-completed" th:if="${s.status == 'PAID'}">Paid</span>
+                        </td>
+                        <td>
+                            <span th:if="${s.transferDate != null}" th:text="${#temporals.format(s.transferDate, 'dd MMM yyyy')}">Date</span>
+                            <span th:if="${s.transferDate == null}" style="color:rgba(255,255,255,0.3);">—</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${settlements == null || settlements.isEmpty()}">
+                        <td colspan="5" class="empty-state">
+                            <i class="bi bi-bank"></i>
+                            <p>No settlements for this agent.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+</body>
+</html>

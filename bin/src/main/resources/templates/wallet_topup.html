@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Add money to your EVA Rewards Wallet securely via Razorpay.">
+    <title>Add Money to Wallet – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .topup-page {
+            background: radial-gradient(ellipse at top, #141414 0%, #0a0a0a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        .topup-wrapper {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        /* Balance display bar */
+        .balance-bar {
+            background: linear-gradient(135deg, rgba(201,168,76,0.1) 0%, rgba(201,168,76,0.04) 100%);
+            border: 1px solid rgba(201,168,76,0.25);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .balance-bar-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 6px;
+        }
+        .balance-bar-amount {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--gold);
+            line-height: 1;
+        }
+
+        /* Card */
+        .topup-card {
+            background: #111;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 24px;
+            padding: 40px 36px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+
+        .topup-card-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .topup-icon-wrap {
+            width: 72px; height: 72px;
+            background: linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(201,168,76,0.05) 100%);
+            border: 1.5px solid rgba(201,168,76,0.2);
+            border-radius: 22px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem;
+            margin: 0 auto 18px;
+        }
+
+        /* Preset chips */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .preset-chip {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+        }
+        .preset-chip:hover,
+        .preset-chip.selected {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(201,168,76,0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(201,168,76,0.15);
+        }
+
+        /* Input group */
+        .amount-input-group {
+            position: relative;
+            margin-bottom: 28px;
+        }
+        .amount-currency-label {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--gold);
+            pointer-events: none;
+            z-index: 2;
+        }
+        .amount-input {
+            width: 100%;
+            background: rgba(255,255,255,0.03) !important;
+            border: 1.5px solid rgba(255,255,255,0.1) !important;
+            border-radius: 16px !important;
+            padding: 18px 18px 18px 50px !important;
+            font-size: 1.5rem !important;
+            font-weight: 700;
+            color: #fff !important;
+            font-family: 'Playfair Display', serif;
+            transition: all 0.3s ease !important;
+        }
+        .amount-input:focus {
+            border-color: var(--gold) !important;
+            background: rgba(201,168,76,0.04) !important;
+            box-shadow: 0 0 0 4px rgba(201,168,76,0.12) !important;
+            outline: none !important;
+        }
+        .amount-input::placeholder { color: rgba(255,255,255,0.2) !important; font-size: 1.2rem !important; }
+
+        /* Pay button */
+        .btn-pay {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #c9a84c 0%, #a8872a 100%);
+            border: none;
+            border-radius: 16px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .btn-pay:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(201,168,76,0.35);
+        }
+        .btn-pay:active { transform: translateY(-1px); }
+        .btn-pay:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Payment Methods */
+        .payment-methods {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .payment-methods-label {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .pm-badge {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 4px 12px;
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.45);
+            font-weight: 600;
+        }
+
+        /* Security badge */
+        .security-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: rgba(46,204,113,0.06);
+            border: 1px solid rgba(46,204,113,0.15);
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        /* Toast */
+        .topup-toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: linear-gradient(135deg, #1a2e1a, #0d1f0d);
+            border: 1px solid rgba(46,204,113,0.3);
+            border-radius: 16px;
+            padding: 18px 24px;
+            color: #2ecc71;
+            font-size: 0.88rem;
+            font-weight: 600;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 320px;
+            animation: toastIn 0.4s ease;
+        }
+        @keyframes toastIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .topup-toast.show { display: flex; }
+        .topup-toast i { font-size: 1.5rem; }
+
+        @media (max-width: 575px) {
+            .topup-card { padding: 28px 20px; }
+            .preset-grid { grid-template-columns: repeat(2, 1fr); }
+            .balance-bar { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="topup-page">
+        <div class="topup-wrapper animate-fade-up">
+
+            <!-- Back link -->
+            <a href="/dashboard" class="d-inline-flex align-items-center gap-2 mb-4 text-decoration-none"
+               style="color: rgba(255,255,255,0.5); font-size:0.82rem; font-weight:600; transition:color 0.2s;"
+               onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+
+            <!-- Balance Bar -->
+            <div class="balance-bar">
+                <div>
+                    <div class="balance-bar-label">Current Balance</div>
+                    <div class="balance-bar-amount">
+                        ₹<span id="currentBalanceText" th:text="${#numbers.formatDecimal(user.walletBalance, 1, 2)}">0.00</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center justify-content-center rounded-circle" 
+                     style="width:52px; height:52px; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%); font-size:1.5rem; flex-shrink:0;">
+                    👛
+                </div>
+            </div>
+
+            <!-- Top-up Card -->
+            <div class="topup-card">
+                <div class="topup-card-header">
+                    <div class="topup-icon-wrap">💳</div>
+                    <h2 class="brand-font text-white mb-1" style="font-size: 1.5rem;">Add Money to Wallet</h2>
+                    <p class="mb-0" style="color: rgba(255,255,255,0.4); font-size:0.85rem;">
+                        Top up securely via Razorpay — UPI, Cards, Net Banking &amp; more
+                    </p>
+                </div>
+
+                <!-- Preset Amount Chips -->
+                <label style="font-size:0.72rem; font-weight:700; letter-spacing:1.2px; color:rgba(255,255,255,0.35); text-transform:uppercase; display:block; margin-bottom:10px;">
+                    Select Amount
+                </label>
+                <div class="preset-grid">
+                    <div class="preset-chip" onclick="setPreset(100, this)">₹100</div>
+                    <div class="preset-chip" onclick="setPreset(200, this)">₹200</div>
+                    <div class="preset-chip" onclick="setPreset(500, this)">₹500</div>
+                    <div class="preset-chip" onclick="setPreset(1000, this)">₹1,000</div>
+                    <div class="preset-chip" onclick="setPreset(2000, this)">₹2,000</div>
+                    <div class="preset-chip" onclick="setPreset(5000, this)">₹5,000</div>
+                    <div class="preset-chip" onclick="setPreset(7500, this)">₹7,500</div>
+                    <div class="preset-chip" onclick="setPreset(10000, this)">₹10,000</div>
+                </div>
+
+                <!-- Custom Amount Input -->
+                <label style="font-size:0.72rem; font-weight:700; letter-spacing:1.2px; color:rgba(255,255,255,0.35); text-transform:uppercase; display:block; margin-bottom:10px;">
+                    Or Enter Custom Amount
+                </label>
+                <div class="amount-input-group">
+                    <span class="amount-currency-label">₹</span>
+                    <input type="number" id="topupAmount" class="form-control amount-input"
+                           placeholder="10 – 10,000" min="10" max="10000" step="1"
+                           oninput="clearPresetHighlight()">
+                </div>
+
+                <!-- Pay Buttons -->
+                <button id="rzp-button" class="btn-pay" onclick="initiatePayment()">
+                    <i class="bi bi-shield-lock-fill" style="font-size:1.1rem;"></i>
+                    <span>Pay Securely with Razorpay</span>
+                    <span id="payAmountBadge" style="background: rgba(0,0,0,0.2); padding:3px 10px; border-radius:50px; font-size:0.8rem; display:none;"></span>
+                </button>
+                <button id="gpay-button" class="btn btn-outline-light w-100 py-3 mt-2 mb-2 d-flex align-items-center justify-content-center gap-2" onclick="initiateGPayManual()" style="border-radius: 16px; border-color: rgba(255,255,255,0.2);">
+                    <i class="bi bi-qr-code-scan"></i>
+                    <span>Pay via GPay Manual QR</span>
+                </button>
+                <a href="/dashboard" class="d-block text-center text-decoration-none mt-2" 
+                   style="color: rgba(255,255,255,0.3); font-size:0.8rem; transition:color 0.2s;"
+                   onmouseover="this.style.color='rgba(255,255,255,0.6)'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">
+                    Cancel &amp; go back
+                </a>
+
+                <!-- Payment Methods Row -->
+                <div class="payment-methods">
+                    <span class="payment-methods-label">Accepts</span>
+                    <span class="pm-badge">UPI</span>
+                    <span class="pm-badge">Google Pay</span>
+                    <span class="pm-badge">PhonePe</span>
+                    <span class="pm-badge">Cards</span>
+                    <span class="pm-badge">Net Banking</span>
+                </div>
+
+                <!-- Security Badge -->
+                <div class="security-badge">
+                    <i class="bi bi-shield-fill-check" style="color:#2ecc71; font-size:1rem;"></i>
+                    <span style="font-size:0.75rem; color:#2ecc71;">256-bit SSL Encrypted · Secured by Razorpay</span>
+                </div>
+            </div>
+
+            <!-- Min/Max hint -->
+            <p class="text-center mt-3" style="font-size:0.72rem; color: rgba(255,255,255,0.2);">
+                Minimum ₹10 · Maximum ₹10,000 per transaction
+            </p>
+        </div>
+    </div>
+
+    <!-- GPAY MANUAL UTR SUBMISSION MODAL -->
+    <div class="modal fade" id="gpayModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-dark">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title brand-font text-gold"><i class="bi bi-google me-2"></i>Manual GPay Submission</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <div class="text-center mb-4">
+                        <img src="/images/gpay-qr.png" alt="GPay QR" style="max-width: 200px; border: 2px solid #eee; border-radius: 12px;">
+                        <p class="mt-3 mb-0 fw-bold" style="font-size: 1.2rem;">Amount to Pay: <span id="gpayModalAmount" class="text-gold">₹0</span></p>
+                        <p class="text-muted small">Please scan the QR code and transfer the exact amount.</p>
+                    </div>
+                    
+                    <form id="gpaySubmitForm" enctype="multipart/form-data">
+                        <input type="hidden" name="paymentPurpose" value="WALLET_TOPUP">
+                        <input type="hidden" name="referenceId" id="gpayReferenceId" value="">
+                        <input type="hidden" name="amount" id="gpayFormAmount">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Amount Paid</label>
+                            <input type="text" class="form-control" id="gpayDisplayAmount" disabled>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">12-Digit UTR / Reference Number <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="utrNumber" required pattern="\d{12}" placeholder="e.g. 312345678901" maxlength="12">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Payment Screenshot <span class="text-muted">(Optional)</span></label>
+                            <input type="file" class="form-control" name="screenshot" accept="image/*">
+                        </div>
+                        
+                        <button type="button" class="btn btn-gold w-100 py-2 fw-bold" onclick="submitGPayUTR()">Submit Payment Verification</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div class="topup-toast" id="successToast">
+        <i class="bi bi-check-circle-fill"></i>
+        <div>
+            <div style="font-weight:700; font-size:0.9rem;">Payment Successful!</div>
+            <div id="toastMessage" style="font-size:0.8rem; opacity:0.8; margin-top:2px;">Money added to wallet.</div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script th:inline="javascript">
+        
+        const userName   = [[${user.name}]];
+        const userEmail  = [[${user.email}]];
+        const userMobile = [[${user.mobile}]];
+
+        function setPreset(val, el) {
+            document.getElementById('topupAmount').value = val;
+            document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('selected'));
+            if (el) el.classList.add('selected');
+            updatePayBadge(val);
+        }
+
+        function clearPresetHighlight() {
+            document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('selected'));
+            const val = parseFloat(document.getElementById('topupAmount').value);
+            if (!isNaN(val)) updatePayBadge(val);
+        }
+
+        function updatePayBadge(val) {
+            const badge = document.getElementById('payAmountBadge');
+            if (val > 0) {
+                badge.style.display = 'inline-block';
+                badge.textContent = '₹' + val.toFixed(2);
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function showSuccessToast(message) {
+            const toast = document.getElementById('successToast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 5000);
+        }
+
+        function initiatePayment() {
+            const amountInput = document.getElementById('topupAmount').value;
+            const amount = parseFloat(amountInput);
+
+            if (isNaN(amount) || amount < 10 || amount > 10000) {
+                alert('Please enter a valid amount between ₹10 and ₹10,000.');
+                return;
+            }
+
+            const btn = document.getElementById('rzp-button');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-arrow-repeat" style="animation: spin 1s linear infinite;"></i> Processing...';
+
+            // Call backend to create Razorpay order
+            fetch('/wallet/topup/initiate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ amount: amount })
+            })
+            .then(res => res.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-shield-lock-fill" style="font-size:1.1rem;"></i><span>Pay Securely with Razorpay</span>';
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                const options = {
+                    key: data.razorpayKeyId,
+                    amount: Math.round(data.amount * 100), // paise
+                    currency: 'INR',
+                    name: 'EVA',
+                    description: 'Wallet Top-up',
+                    image: '/images/logo.png',
+                    order_id: data.razorpayOrderId,
+                    handler: function(response) {
+                        // Verify payment on backend
+                        fetch('/wallet/topup/verify', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                
+                            },
+                            body: JSON.stringify({
+                                razorpayOrderId: response.razorpay_order_id,
+                                razorpayPaymentId: response.razorpay_payment_id,
+                                razorpaySignature: response.razorpay_signature
+                            })
+                        })
+                        .then(r => r.json())
+                        .then(vData => {
+                            if (vData.success) {
+                                // Update balance in both places
+                                document.getElementById('currentBalanceText').textContent =
+                                    parseFloat(vData.newBalance).toFixed(2);
+
+                                // Clear input
+                                document.getElementById('topupAmount').value = '';
+                                document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('selected'));
+                                document.getElementById('payAmountBadge').style.display = 'none';
+
+                                // Show toast
+                                showSuccessToast(`₹${amount.toFixed(2)} added successfully! New balance: ₹${parseFloat(vData.newBalance).toFixed(2)}`);
+                            } else {
+                                alert('Verification failed: ' + (vData.error || 'Unknown error'));
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Verify error:', err);
+                            alert('Payment verification error. Please contact support.');
+                        });
+                    },
+                    prefill: {
+                        name: userName,
+                        email: userEmail || '',
+                        contact: userMobile
+                    },
+                    theme: { color: '#c9a84c' },
+                    modal: {
+                        ondismiss: function() {
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bi bi-shield-lock-fill" style="font-size:1.1rem;"></i><span>Pay Securely with Razorpay</span>';
+                        }
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function(resp) {
+                    alert('Payment failed: ' + (resp.error.description || 'Please try again.'));
+                });
+                rzp.open();
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-shield-lock-fill" style="font-size:1.1rem;"></i><span>Pay Securely with Razorpay</span>';
+                console.error('Initiate error:', err);
+                alert('Could not initiate payment. Please try again.');
+            });
+        }
+
+        function initiateGPayManual() {
+            const amountInput = document.getElementById('topupAmount').value;
+            const amount = parseFloat(amountInput);
+
+            if (isNaN(amount) || amount < 10 || amount > 10000) {
+                alert('Please enter a valid amount between ₹10 and ₹10,000.');
+                return;
+            }
+
+            document.getElementById('gpayModalAmount').innerText = '₹' + amount.toFixed(2);
+            document.getElementById('gpayDisplayAmount').value = '₹' + amount.toFixed(2);
+            document.getElementById('gpayFormAmount').value = amount;
+
+            new bootstrap.Modal(document.getElementById('gpayModal')).show();
+        }
+
+        function submitGPayUTR() {
+            const form = document.getElementById('gpaySubmitForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const formData = new FormData(form);
+            fetch('/manual-payment/submit', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(err => {
+                console.error("GPay submit error: ", err);
+                alert("Failed to submit request.");
+            });
+        }
+
+        // Spin animation for loading state
+        const style = document.createElement('style');
+        style.textContent = '@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }';
+        document.head.appendChild(style);
+
+        // Pre-fill amount from URL param
+        const urlParams = new URLSearchParams(window.location.search);
+        const preAmount = urlParams.get('amount');
+        if (preAmount) {
+            document.getElementById('topupAmount').value = preAmount;
+            updatePayBadge(parseFloat(preAmount));
+            // Highlight matching preset
+            document.querySelectorAll('.preset-chip').forEach(c => {
+                if (c.textContent.replace(/[^0-9]/g, '') === preAmount) {
+                    c.classList.add('selected');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
