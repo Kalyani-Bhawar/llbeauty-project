@@ -22,4 +22,7 @@ public interface FranchiseLeadRepository extends JpaRepository<FranchiseLead, Lo
            "(:search IS NULL OR :search = '' OR LOWER(f.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(f.email) LIKE LOWER(CONCAT('%', :search, '%')) OR f.mobile LIKE %:search% OR LOWER(f.city) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
            "(:status IS NULL OR :status = '' OR f.status = :status) ORDER BY f.createdAt DESC")
     List<FranchiseLead> searchLeadsList(@Param("search") String search, @Param("status") String status);
+
+    List<FranchiseLead> findByReferralCodeOrderByCreatedAtDesc(String referralCode);
 }
+

@@ -1,7 +1,9 @@
 package com.llbeauty.controller;
 
 import com.llbeauty.entity.User;
+
 import com.llbeauty.entity.UserMembership;
+import com.llbeauty.repository.AgentProfileRepository;
 import com.llbeauty.repository.UserRepository;
 import com.llbeauty.service.MembershipService;
 import org.springframework.http.HttpStatus;
@@ -22,11 +24,13 @@ public class MembershipController {
     private final MembershipService membershipService;
     private final UserRepository userRepository;
     private final com.llbeauty.service.WalletService walletService;
+    private final AgentProfileRepository agentProfileRepository;
 
-    public MembershipController(MembershipService membershipService, UserRepository userRepository, com.llbeauty.service.WalletService walletService) {
+    public MembershipController(MembershipService membershipService, UserRepository userRepository, com.llbeauty.service.WalletService walletService, AgentProfileRepository agentProfileRepository) {
         this.membershipService = membershipService;
         this.userRepository = userRepository;
         this.walletService = walletService;
+        this.agentProfileRepository=agentProfileRepository;
     }
 
     private User getAuthenticatedUser() {
@@ -50,6 +54,24 @@ public class MembershipController {
             model.addAttribute("walletBalance", 0);
         }
         return "membership";
+    }
+    
+    @GetMapping("/validate-referral")
+    @ResponseBody
+    public Map<String,Object> validateReferral(
+            @RequestParam String code){
+
+        boolean valid =
+                agentProfileRepository
+                        .findByReferralCode(code)
+                        .isPresent();
+
+        Map<String,Object> response =
+                new HashMap<>();
+
+        response.put("valid", valid);
+
+        return response;
     }
 
     // Initiate purchase - returns Razorpay order options in JSON

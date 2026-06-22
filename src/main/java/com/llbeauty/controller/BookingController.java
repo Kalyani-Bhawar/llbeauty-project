@@ -8,6 +8,9 @@ import com.llbeauty.entity.User;
 import com.llbeauty.repository.AppointmentRepository;
 import com.llbeauty.repository.FranchiseLeadRepository;
 import com.llbeauty.repository.UserRepository;
+import com.llbeauty.repository.SalonServiceRepository;
+import com.llbeauty.repository.AgentProfileRepository;
+import com.llbeauty.entity.AgentProfile;
 import com.llbeauty.service.WalletService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +20,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import com.llbeauty.config.RazorpayConfig;
 
 /**
@@ -40,17 +46,23 @@ public class BookingController {
     private final UserRepository userRepository;
     private final WalletService walletService;
     private final RazorpayConfig razorpayConfig;
+    private final SalonServiceRepository salonServiceRepository;
+    private final AgentProfileRepository agentProfileRepository;
 
     public BookingController(AppointmentRepository appointmentRepository,
             FranchiseLeadRepository franchiseLeadRepository,
             UserRepository userRepository,
             WalletService walletService,
-            RazorpayConfig razorpayConfig) {
+            RazorpayConfig razorpayConfig,
+            SalonServiceRepository salonServiceRepository,
+            AgentProfileRepository agentProfileRepository) {
         this.appointmentRepository = appointmentRepository;
         this.franchiseLeadRepository = franchiseLeadRepository;
         this.userRepository = userRepository;
         this.walletService = walletService;
         this.razorpayConfig = razorpayConfig;
+        this.salonServiceRepository = salonServiceRepository;
+        this.agentProfileRepository = agentProfileRepository;
     }
 
     private User getAuthenticatedUser() {
@@ -81,6 +93,29 @@ public class BookingController {
             return "redirect:/auth/login?redirect=/salon";
         }
 
+        // 1. Validate Duplicate Slot
+        boolean slotTaken = appointmentRepository.existsByAppointmentDateAndTimeSlotAndStatusIn(
+            LocalDate.parse(appointmentDateStr), timeSlot, Arrays.asList("CONFIRMED", "PAYMENT_PENDING"));
+        if (slotTaken) {
+            redirectAttributes.addFlashAttribute("errorMessage", "The selected time slot is already booked. Please choose another.");
+            return "redirect:/salon";
+        }
+
+        // 2. Compute Total Amount
+        double totalAmount = 0.0;
+        if (services != null && !services.trim().isEmpty()) {
+            List<String> serviceNames = Arrays.asList(services.split(","));
+            for (int i = 0; i < serviceNames.size(); i++) {
+                serviceNames.set(i, serviceNames.get(i).trim());
+            }
+            List<com.llbeauty.entity.SalonService> dbServices = salonServiceRepository.findByNameIn(serviceNames);
+            for (com.llbeauty.entity.SalonService s : dbServices) {
+                if (s.getPrice() != null) {
+                    totalAmount += s.getPrice();
+                }
+            }
+        }
+
         // Keep serviceName as first element in comma separated list for backwards compatibility
         String firstService = services.split(",")[0].trim();
 
@@ -95,6 +130,7 @@ public class BookingController {
                 .status("PAYMENT_PENDING")
                 .paymentStatus("PENDING")
                 .advancePaid(100.0)
+                .totalAmount(totalAmount)
                 .build();
 
         appointment.setReferralCode(referralCode);
@@ -127,7 +163,30 @@ public class BookingController {
                                  @RequestParam("budget") String budget,
                                  @RequestParam("preferredLocation") String preferredLocation,
                                  @RequestParam("franchiseType") String franchiseType,
+                                 @RequestParam(value = "referralCode", required = false) String referralCode,
                                  RedirectAttributes redirectAttributes) {
+        User user = getAuthenticatedUser();
+        if (user == null) {
+            return "redirect:/auth/login?redirect=/franchise";
+        }
+
+        if (referralCode != null && !referralCode.trim().isEmpty()) {
+            Optional<AgentProfile> agentOpt = agentProfileRepository.findByReferralCode(referralCode.trim());
+            if (agentOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Invalid Referral Code");
+                redirectAttributes.addFlashAttribute("name", name);
+                redirectAttributes.addFlashAttribute("mobile", mobile);
+                redirectAttributes.addFlashAttribute("email", email);
+                redirectAttributes.addFlashAttribute("city", city);
+                redirectAttributes.addFlashAttribute("budget", budget);
+                redirectAttributes.addFlashAttribute("preferredLocation", preferredLocation);
+                redirectAttributes.addFlashAttribute("franchiseType", franchiseType);
+                redirectAttributes.addFlashAttribute("referralCode", referralCode);
+                redirectAttributes.addFlashAttribute("highlightReferral", true);
+                return "redirect:/franchise";
+            }
+        }
+
         FranchiseLead lead = FranchiseLead.builder()
                 .name(name)
                 .mobile(mobile)
@@ -137,6 +196,12 @@ public class BookingController {
                 .preferredLocation(preferredLocation)
                 .franchiseType(franchiseType)
                 .build();
+        if (referralCode != null && !referralCode.trim().isEmpty()) {
+            lead.setReferralCode(referralCode.trim());
+        }
+        lead.setStatus("NEW");
+        lead.setCommissionGenerated(false);
+
         franchiseLeadRepository.save(lead);
         log.info("Franchise lead submitted by: {}", name);
         redirectAttributes.addFlashAttribute("successMessage", "Your Franchise inquiry has been submitted! Our team will contact you soon.");

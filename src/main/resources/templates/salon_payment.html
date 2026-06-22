@@ -102,29 +102,15 @@
 					            <div class="p-2 rounded text-center payment-method-card" onclick="selectMethod('gpay_manual', this)" style="background:#fcfaf6; border:1px solid #f0ebe0; cursor:pointer; transition:all 0.2s; position:relative;">
 					                <span style="position:absolute;top:4px;right:4px;font-size:0.55rem;background:#C9A84C;color:#fff;padding:1px 5px;border-radius:20px;font-weight:600;">NEW</span>
 					                <div style="font-size:1.4rem;">📱</div>
-					                <div style="font-size:0.75rem; font-weight:600; margin-top:4px;">GPay Manual QR</div>
-					                <div style="font-size:0.65rem; color:#888;">Scan & submit UTR</div>
+					                <div style="font-size:0.85rem; font-weight:600; margin-top:4px;">Manual GPay QR</div>
+					                <div style="font-size:0.7rem; color:#888;">Scan & submit UTR</div>
 					            </div>
 					        </div>
 					        <div class="col-6">
-					            <div class="p-2 rounded text-center payment-method-card" onclick="selectMethod('card', this)" style="background:#fcfaf6; border:1px solid #f0ebe0; cursor:pointer; transition:all 0.2s;">
-					                <div style="font-size:1.4rem;">💳</div>
-					                <div style="font-size:0.75rem; font-weight:600; margin-top:4px;">Credit / Debit Card</div>
-					                <div style="font-size:0.65rem; color:#888;">Visa, Mastercard, RuPay</div>
-					            </div>
-					        </div>
-					        <div class="col-6">
-					            <div class="p-2 rounded text-center payment-method-card" onclick="selectMethod('netbanking', this)" style="background:#fcfaf6; border:1px solid #f0ebe0; cursor:pointer; transition:all 0.2s;">
-					                <div style="font-size:1.4rem;">🏦</div>
-					                <div style="font-size:0.75rem; font-weight:600; margin-top:4px;">Net Banking</div>
-					                <div style="font-size:0.65rem; color:#888;">All major banks</div>
-					            </div>
-					        </div>
-					        <div class="col-6">
-					            <div class="p-2 rounded text-center payment-method-card" onclick="selectMethod('wallet', this)" style="background:#fcfaf6; border:1px solid #f0ebe0; cursor:pointer; transition:all 0.2s;">
-					                <div style="font-size:1.4rem;">👛</div>
-					                <div style="font-size:0.75rem; font-weight:600; margin-top:4px;">Wallets & QR</div>
-					                <div style="font-size:0.65rem; color:#888;">Mobikwik, Freecharge</div>
+					            <div class="p-2 rounded text-center payment-method-card" onclick="selectMethod('razorpay', this)" style="background:#fcfaf6; border:1px solid #f0ebe0; cursor:pointer; transition:all 0.2s;">
+					                <div style="font-size:1.4rem;">🔒</div>
+					                <div style="font-size:0.85rem; font-weight:600; margin-top:4px;">Razorpay Secure</div>
+					                <div style="font-size:0.7rem; color:#888;">UPI, Cards, Net Banking</div>
 					            </div>
 					        </div>
 					    </div>
@@ -184,7 +170,7 @@
                         </div>
 
                         <!-- Confirm Secure Checkout Button -->
-						<button class="btn btn-gold w-100 py-3 font-weight-bold" onclick="openRazorpay(null)">
+						<button class="btn btn-gold w-100 py-3 font-weight-bold" onclick="proceedToPayment()">
 						    <i class="bi bi-shield-lock-fill me-2"></i> Pay ₹100 &amp; Confirm Slot
 						</button>
                     </div>
@@ -244,9 +230,12 @@
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script th:inline="javascript">
-        const appointmentId = [[${appointment.id}]];
-        const walletBalance = [[${walletBalance}]];
-        const razorpayKeyId = [[${razorpayKeyId}]];
+		const appointmentId = /*[[${appointment.id}]]*/ 0;
+		const walletBalance = /*[[${walletBalance}]]*/ 0;
+		const razorpayKeyId = /*[[${razorpayKeyId}]]*/ '';
+		const userName = '[[${currentUser.name}]]';
+		const userEmail = '[[${currentUser.email}]]';
+		const userMobile = '[[${currentUser.mobile}]]';
         const initialFinalAmount = 100.00;
 
         function toggleWalletRedemption() {
@@ -269,16 +258,23 @@
                 grandTotal.innerText = "₹" + initialFinalAmount.toFixed(2);
             }
         }
+        let selectedPaymentMethod = 'razorpay'; // default to razorpay
+
 		function selectMethod(method, el) {
+            selectedPaymentMethod = method;
 		    // Highlight the clicked card
 		    document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('selected'));
 		    if (el) el.classList.add('selected');
-		    if (method === 'gpay_manual') {
+		}
+
+        function proceedToPayment() {
+		    if (selectedPaymentMethod === 'gpay_manual') {
                 openGPayModal();
             } else {
-                openRazorpay(method);
+                openRazorpay(selectedPaymentMethod);
             }
-		}
+        }
+
 		
 		function openGPayModal() {
 		    const useWallet = document.getElementById('walletCheckbox').checked;
@@ -311,10 +307,6 @@
             let formData = new FormData();
             formData.append("appointmentId", appointmentId);
             formData.append("useWallet", useWallet);
-			formData.append(
-			    "referralCode",
-			    referralCode
-			);
 
             fetch('/salon/create-order', {
                 method: 'POST',
@@ -340,6 +332,11 @@
                     theme: {
                         color: "#C9A84C"
                     },
+                    prefill: {
+                        name: userName,
+                        email: userEmail,
+                        contact: userMobile
+                    },
                     modal: {
                         ondismiss: function() {
                             document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('selected'));
@@ -347,17 +344,6 @@
                         }
                     }
                 };
-
-                // Pre-select method tab using prefill.method
-                if (method === 'upi') {
-                    options.prefill = { method: 'upi' };
-                } else if (method === 'card') {
-                    options.prefill = { method: 'card' };
-                } else if (method === 'netbanking') {
-                    options.prefill = { method: 'netbanking' };
-                } else if (method === 'wallet') {
-                    options.prefill = { method: 'wallet' };
-                }
             
                 const rzp = new Razorpay(options);
                 rzp.open();

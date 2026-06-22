@@ -29,6 +29,29 @@ public class Commission {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "appointment_id")
+    private Appointment appointment;
+
+    @Column(name = "commission_type")
+    private String commissionType = "SALON_BOOKING";
+
+    public Appointment getAppointment() {
+        return appointment;
+    }
+
+    public void setAppointment(Appointment appointment) {
+        this.appointment = appointment;
+    }
+
+    public String getCommissionType() {
+        return commissionType;
+    }
+
+    public void setCommissionType(String commissionType) {
+        this.commissionType = commissionType;
+    }
+
     public Commission() {}
 
     public Commission(AgentProfile agent, BigDecimal amount, String description, String status) {

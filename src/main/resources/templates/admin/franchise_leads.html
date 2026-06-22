@@ -5,6 +5,19 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="mb-0">Franchise Leads</h2>
         </div>
+
+        <!-- Alerts -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show border-0 rounded-3 mb-4" style="background: rgba(46,204,113,0.15); color: #2ecc71;">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show border-0 rounded-3 mb-4" style="background: rgba(231,76,60,0.15); color: #e74c3c;">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         <div class="card p-4">
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
@@ -17,6 +30,9 @@
                             <th>City</th>
                             <th>Location</th>
                             <th>Type</th>
+                            <th>Budget</th>
+                            <th>Final Amount</th>
+                            <th>Referral Code</th>
                             <th>Status</th>
                             <th>Applied At</th>
                             <th>Actions</th>
@@ -31,6 +47,17 @@
                             <td th:text="${lead.city}">Mumbai</td>
                             <td th:text="${lead.preferredLocation}">Bandra West</td>
                             <td><span class="badge bg-info text-dark" th:text="${lead.franchiseType}">Studio</span></td>
+                            <td th:text="${lead.budget}">₹5L - ₹10L</td>
+							<td>
+							    <span th:if="${lead.finalFranchiseAmount != null}"
+							          th:text="'₹' + ${lead.finalFranchiseAmount}">
+							    </span>
+							
+							    <span th:if="${lead.finalFranchiseAmount == null}">
+							        -
+							    </span>
+							</td>
+                            <td th:text="${lead.referralCode != null && !lead.referralCode.isEmpty()} ? ${lead.referralCode} : '-'">-</td>
                             <td>
                                 <span class="badge bg-secondary" th:if="${lead.status == 'NEW'}">NEW</span>
                                 <span class="badge bg-warning text-dark" th:if="${lead.status == 'CONTACTED'}">CONTACTED</span>
@@ -52,44 +79,9 @@
                                 </div>
                             </td>
                         </tr>
-                        
-                        <!-- Update Lead Modal -->
-                        <div th:each="lead : ${leads}" class="modal fade" th:id="'updateLeadModal' + ${lead.id}" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <form th:action="@{/admin/franchise-leads/{id}/update(id=${lead.id})}" method="post">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title text-dark">Update Lead <span th:text="${lead.name}"></span></h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body text-dark">
-                                            <p><strong>Message:</strong> <span th:text="${lead.message}"></span></p>
-                                            <div class="mb-3">
-                                                <label class="form-label">Status</label>
-                                                <select name="status" class="form-select" required>
-                                                    <option value="NEW" th:selected="${lead.status == 'NEW'}">New</option>
-                                                    <option value="CONTACTED" th:selected="${lead.status == 'CONTACTED'}">Contacted</option>
-                                                    <option value="IN_PROGRESS" th:selected="${lead.status == 'IN_PROGRESS'}">In Progress</option>
-                                                    <option value="APPROVED" th:selected="${lead.status == 'APPROVED'}">Approved</option>
-                                                    <option value="REJECTED" th:selected="${lead.status == 'REJECTED'}">Rejected</option>
-                                                </select>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Admin Remarks</label>
-                                                <textarea name="remarks" class="form-control" rows="3" th:text="${lead.adminRemarks}"></textarea>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                            <button type="submit" class="btn btn-info">Update Lead</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
 
                         <tr th:if="${#lists.isEmpty(leads)}">
-                            <td colspan="10" class="text-center py-4 text-muted">No franchise leads found.</td>
+                            <td colspan="13" class="text-center py-4 text-muted">No franchise leads found.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -111,6 +103,76 @@
                 </ul>
             </nav>
         </div>
+
+        <!-- Update Lead Modals (Placed outside table to prevent browser tag nesting bugs) -->
+        <div th:each="lead : ${leads}" class="modal fade" th:id="'updateLeadModal' + ${lead.id}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form th:action="@{/admin/franchise-leads/{id}/update(id=${lead.id})}" method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-dark">Update Lead <span th:text="${lead.name}"></span></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-dark">
+                            <div class="mb-3 border-bottom pb-2">
+                                <p class="mb-1"><strong>Preferred Model:</strong> <span th:text="${lead.franchiseType}"></span></p>
+                                <p class="mb-1"><strong>Budget Range:</strong> <span th:text="${lead.budget}"></span></p>
+                                <p class="mb-1" th:if="${lead.finalFranchiseAmount != null && lead.finalFranchiseAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0}"><strong>Final Franchise Amount:</strong> ₹<span th:text="${#numbers.formatDecimal(lead.finalFranchiseAmount, 1, 0)}"></span></p>
+                                <p class="mb-1"><strong>Referral Code:</strong> <span th:text="${lead.referralCode != null && !lead.referralCode.isEmpty()} ? ${lead.referralCode} : 'None'"></span></p>
+                                <p class="mb-1"><strong>Experience:</strong> <span th:text="${lead.experience != null && !lead.experience.isEmpty()} ? ${lead.experience} : 'Not specified'"></span></p>
+                                <p class="mb-1"><strong>Business Type:</strong> <span th:text="${lead.businessType != null && !lead.businessType.isEmpty()} ? ${lead.businessType} : 'Not specified'"></span></p>
+                                <p class="mb-1"><strong>Message:</strong> <span th:text="${lead.message}"></span></p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-select status-select" th:data-lead-id="${lead.id}" onchange="toggleFinalAmount(this)" required>
+                                    <option value="NEW" th:selected="${lead.status == 'NEW'}">New</option>
+                                    <option value="CONTACTED" th:selected="${lead.status == 'CONTACTED'}">Contacted</option>
+                                    <option value="IN_PROGRESS" th:selected="${lead.status == 'IN_PROGRESS'}">In Progress</option>
+                                    <option value="APPROVED" th:selected="${lead.status == 'APPROVED'}">Approved</option>
+                                    <option value="REJECTED" th:selected="${lead.status == 'REJECTED'}">Rejected</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Admin Remarks</label>
+                                <textarea name="remarks" class="form-control" rows="3" th:text="${lead.remarks}"></textarea>
+                            </div>
+                            <div class="mb-3 final-amount-container" th:id="'finalAmountContainer' + ${lead.id}">
+                                <label class="form-label">Final Franchise Amount (₹)</label>
+                                <input type="number" name="finalFranchiseAmount" class="form-control final-amount-input" min="0" placeholder="e.g. 1500000" th:value="${lead.finalFranchiseAmount}">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-info">Update Lead</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
+    
+    <script th:inline="javascript">
+        function toggleFinalAmount(selectEl) {
+            const leadId = selectEl.getAttribute('data-lead-id');
+            const container = document.getElementById('finalAmountContainer' + leadId);
+            if (container) {
+                const input = container.querySelector('.final-amount-input');
+                if (selectEl.value === 'APPROVED') {
+                    container.style.display = 'block';
+                    input.setAttribute('required', 'required');
+                } else {
+                    container.style.display = 'none';
+                    input.removeAttribute('required');
+                }
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll('.status-select').forEach(function(selectEl) {
+                toggleFinalAmount(selectEl);
+            });
+        });
+    </script>
 </body>
 </html>

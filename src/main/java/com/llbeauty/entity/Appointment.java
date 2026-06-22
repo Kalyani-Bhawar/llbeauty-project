@@ -30,12 +30,45 @@ public class Appointment {
     @Column(name = "referral_code")
     private String referralCode;
 
+    @Column(name = "total_amount")
+    private Double totalAmount = 0.0;
+
+    @Column(name = "razorpay_order_id")
+    private String razorpayOrderId;
+
+    @Column(name = "razorpay_payment_id")
+    private String razorpayPaymentId;
+
     public String getReferralCode() {
         return referralCode;
     }
 
     public void setReferralCode(String referralCode) {
         this.referralCode = referralCode;
+    }
+
+    public Double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(Double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public String getRazorpayOrderId() {
+        return razorpayOrderId;
+    }
+
+    public void setRazorpayOrderId(String razorpayOrderId) {
+        this.razorpayOrderId = razorpayOrderId;
+    }
+
+    public String getRazorpayPaymentId() {
+        return razorpayPaymentId;
+    }
+
+    public void setRazorpayPaymentId(String razorpayPaymentId) {
+        this.razorpayPaymentId = razorpayPaymentId;
     }
 
     @PrePersist
@@ -199,6 +232,10 @@ public class Appointment {
         private Double advancePaid;
         private String paymentStatus;
         private String token;
+        private Double totalAmount;
+        private String razorpayOrderId;
+        private String razorpayPaymentId;
+        private String referralCode;
 
         AppointmentBuilder() {
         }
@@ -268,8 +305,33 @@ public class Appointment {
             return this;
         }
 
+        public AppointmentBuilder totalAmount(Double totalAmount) {
+            this.totalAmount = totalAmount;
+            return this;
+        }
+
+        public AppointmentBuilder razorpayOrderId(String razorpayOrderId) {
+            this.razorpayOrderId = razorpayOrderId;
+            return this;
+        }
+
+        public AppointmentBuilder razorpayPaymentId(String razorpayPaymentId) {
+            this.razorpayPaymentId = razorpayPaymentId;
+            return this;
+        }
+
+        public AppointmentBuilder referralCode(String referralCode) {
+            this.referralCode = referralCode;
+            return this;
+        }
+
         public Appointment build() {
-            return new Appointment(id, userId, userName, userMobile, serviceName, appointmentDate, timeSlot, status, createdAt, services, advancePaid, paymentStatus, token);
+            Appointment app = new Appointment(id, userId, userName, userMobile, serviceName, appointmentDate, timeSlot, status, createdAt, services, advancePaid, paymentStatus, token);
+            app.setTotalAmount(this.totalAmount);
+            app.setRazorpayOrderId(this.razorpayOrderId);
+            app.setRazorpayPaymentId(this.razorpayPaymentId);
+            app.setReferralCode(this.referralCode);
+            return app;
         }
     }
 

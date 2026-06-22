@@ -29,7 +29,7 @@ public class HomeController {
 
     @GetMapping("/salon")
     public String salon(Model model) {
-        model.addAttribute("services", salonServiceRepository.findAll());
+        model.addAttribute("services", salonServiceRepository.findByActiveTrue());
         return "salon";
     }
 

@@ -30,6 +30,9 @@ public class MembershipService {
     private final RewardPointRepository rewardPointRepository;
     private final MembershipQRCodeRepository membershipQRCodeRepository;
     private final EmailService emailService;
+    private final AgentProfileRepository agentProfileRepository;
+
+    private final CommissionRepository commissionRepository;
 
     @Value("${razorpay.key.id}")
     private String razorpayKeyId;
@@ -44,7 +47,7 @@ public class MembershipService {
                              MemberProfileRepository memberProfileRepository,
                              RewardPointRepository rewardPointRepository,
                              MembershipQRCodeRepository membershipQRCodeRepository,
-                             EmailService emailService) {
+                             EmailService emailService,AgentProfileRepository agentProfileRepository,CommissionRepository commissionRepository) {
         this.membershipRepository = membershipRepository;
         this.userMembershipRepository = userMembershipRepository;
         this.walletService = walletService;
@@ -56,6 +59,8 @@ public class MembershipService {
         this.rewardPointRepository = rewardPointRepository;
         this.membershipQRCodeRepository = membershipQRCodeRepository;
         this.emailService = emailService;
+        this.agentProfileRepository=agentProfileRepository;
+        this.commissionRepository=commissionRepository;
     }
 
     public List<Membership> getAllPlans() {
@@ -301,6 +306,43 @@ public class MembershipService {
         newMembership.setUuid(secureUuid);
 
         UserMembership saved = userMembershipRepository.save(newMembership);
+        if (referralCode != null && !referralCode.isBlank()) {
+
+            agentProfileRepository
+                    .findByReferralCode(referralCode)
+                    .ifPresent(agent -> {
+
+                        BigDecimal commissionAmount =
+                                BigDecimal.valueOf(plan.getPrice() * 0.05);
+
+                        Commission commission = new Commission();
+
+                        commission.setAgent(agent);
+
+                        commission.setAmount(commissionAmount);
+
+                        commission.setStatus("PAID");
+
+                        commission.setCommissionType("MEMBERSHIP");
+
+                        commission.setDescription(
+                                "Membership Referral - "
+                                        + plan.getName()
+                                        + " - User: "
+                                        + user.getName()
+                        );
+
+                        commissionRepository.save(commission);
+
+                        walletService.credit(
+                                agent.getUser(),
+                                commissionAmount,
+                                "Membership Referral Commission - "
+                                        + plan.getName(),
+                                "MEMBERSHIP_COMMISSION"
+                        );
+                    });
+        }
 
         // Update or create permanent MemberProfile
         MemberProfile profile = memberProfileRepository.findByUser(user).orElseGet(() -> {

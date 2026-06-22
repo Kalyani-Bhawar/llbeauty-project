@@ -137,6 +137,12 @@ public class RazorpayWebhookController {
                     app.setStatus("CONFIRMED");
                     app.setPaymentStatus("PAID");
                     app.setToken("LL-SLOT-" + (1000 + new Random().nextInt(9000)));
+                    if (payment.getRazorpayOrderId() != null) {
+                        app.setRazorpayOrderId(payment.getRazorpayOrderId());
+                    }
+                    if (payment.getRazorpayPaymentId() != null) {
+                        app.setRazorpayPaymentId(payment.getRazorpayPaymentId());
+                    }
                     appointmentRepository.save(app);
                     rewardService.awardPoints(user, BigDecimal.valueOf(payment.getAmount()));
                 }

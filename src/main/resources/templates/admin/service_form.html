@@ -5,10 +5,9 @@
         <h2 class="mb-4" th:text="${service.id != null ? 'Edit Salon Service' : 'Add New Salon Service'}">Salon Service</h2>
         
         <div class="card data-card p-4 mx-auto" style="max-width: 700px;">
-            <form th:action="@{/admin/salon-services/save}" method="POST" enctype="multipart/form-data">
+            <form th:action="@{/admin/salon-services/save}" method="POST">
                 <!-- Keep ID hidden if updating -->
                 <input type="hidden" name="id" th:value="${service.id}">
-                <input type="hidden" name="imageUrl" th:value="${service.imageUrl}">
 
                 <div class="mb-3">
                     <label class="form-label text-white">Service Name</label>
@@ -31,14 +30,7 @@
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <label class="form-label text-white">Service Image</label>
-                    <div th:if="${service.imageUrl != null}" class="mb-2">
-                        <img th:src="${service.imageUrl}" alt="Current Service Image" class="rounded" style="width: 100px; height: 100px; object-fit: cover; border: 1.5px solid var(--gold);">
-                    </div>
-                    <input class="form-control bg-dark text-white border-secondary" type="file" name="imageFile" accept="image/*">
-                    <div class="form-text text-muted">Upload a representative picture for this salon service. Recommended size: 600x600px square.</div>
-                </div>
+
 
                 <div class="d-flex gap-3">
                     <button type="submit" class="btn btn-gold flex-grow-1 py-2">

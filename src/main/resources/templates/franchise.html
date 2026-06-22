@@ -79,6 +79,17 @@
                 </div>
             </div>
 
+            <!-- Error Message Alert -->
+            <div th:if="${errorMessage}" class="alert alert-danger p-4 mb-5 border-0 rounded-4 animate-fade-up" style="background: rgba(220,53,69,0.1); color: #dc3545;">
+                <div class="d-flex align-items-center gap-3">
+                    <span style="font-size: 2rem;">⚠️</span>
+                    <div>
+                        <h5 class="mb-1 fw-bold">Error</h5>
+                        <p class="mb-0" th:text="${errorMessage}"></p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Investment models -->
             <h3 class="brand-font mb-4 text-center">Our Franchise Models</h3>
             <div class="row g-4 mb-5 justify-content-center animate-fade-up">
@@ -128,61 +139,84 @@
                 <div class="col-lg-8 col-md-10">
                     <div class="apply-card animate-fade-up delay-2">
                         <h4 class="brand-font mb-4 text-center">Franchise Inquiry Application</h4>
-                        <p class="text-muted text-center small mb-4">Please submit the form below. Our business expansion team will evaluate and call you within 24 hours.</p>
+                        
+                        <!-- If NOT logged in -->
+                        <div th:if="${currentUser == null}" class="text-center py-4">
+                            <div style="font-size: 3rem; margin-bottom: 14px;">🔐</div>
+                            <h5 class="brand-font mb-2">Authentication Required</h5>
+                            <p class="text-muted small mb-4">Please Sign In to Apply for Franchise</p>
+                            <a href="/auth/login?redirect=/franchise" class="btn-gold text-decoration-none d-inline-block px-5 py-3" style="border-radius: 12px; font-size: 0.9rem;">
+                                Sign In to Apply
+                            </a>
+                        </div>
 
-                        <form th:action="@{/franchise/apply}" method="POST">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="name" class="form-label">Full Name</label>
-                                    <input type="text" class="form-control" id="name" name="name" 
-                                           placeholder="Enter your name" required>
+                        <!-- If logged in -->
+                        <div th:if="${currentUser != null}">
+                            <p class="text-muted text-center small mb-4">Please submit the form below. Our business expansion team will evaluate and call you within 24 hours.</p>
+                            <form th:action="@{/franchise/apply}" method="POST">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="name" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="name" name="name" 
+                                               th:value="${name != null ? name : currentUser.name}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="mobile" class="form-label">Mobile Number</label>
+                                        <input type="tel" class="form-control" id="mobile" name="mobile" 
+                                               th:value="${mobile != null ? mobile : currentUser.mobile}" required
+                                               pattern="^[6-9]\d{9}$">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="email" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="email" name="email" 
+                                               th:value="${email != null ? email : currentUser.email}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="franchiseType" class="form-label">Preferred Model</label>
+                                        <select class="form-control" id="franchiseType" name="franchiseType" required>
+                                            <option value="" disabled th:selected="${franchiseType == null}">Choose model...</option>
+                                            <option value="Kiosk" th:selected="${franchiseType == 'Kiosk'}">Kiosk Model (₹5L - ₹10L)</option>
+                                            <option value="Studio" th:selected="${franchiseType == 'Studio'}">Studio Model (₹15L - ₹25L)</option>
+                                            <option value="Lounge" th:selected="${franchiseType == 'Lounge'}">Lounge Model (₹30L - ₹50L)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="referralCode" class="form-label">Referral Code (Optional)</label>
+                                        <input type="text" class="form-control" id="referralCode" name="referralCode" 
+                                               placeholder="Enter Referral Code" 
+                                               th:value="${referralCode != null ? referralCode : ''}"
+                                               th:classappend="${highlightReferral} ? 'is-invalid' : ''">
+                                        <div th:if="${highlightReferral}" class="invalid-feedback">
+                                            Invalid Referral Code
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="city" class="form-label">Target City</label>
+                                        <input type="text" class="form-control" id="city" name="city" 
+                                               th:value="${city != null ? city : ''}" placeholder="e.g. Pune, Mumbai" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="budget" class="form-label">Investment Budget</label>
+                                        <select class="form-control" id="budget" name="budget" required>
+                                            <option value="" disabled th:selected="${budget == null}">Choose budget...</option>
+                                            <option value="₹5L - ₹10L" th:selected="${budget == '₹5L - ₹10L'}">₹5L - ₹10L</option>
+                                            <option value="₹10L - ₹20L" th:selected="${budget == '₹10L - ₹20L'}">₹10L - ₹20L</option>
+                                            <option value="₹20L - ₹35L" th:selected="${budget == '₹20L - ₹35L'}">₹20L - ₹35L</option>
+                                            <option value="₹35L+" th:selected="${budget == '₹35L+'}">₹35L+</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="preferredLocation" class="form-label">Preferred Location / Area Address</label>
+                                        <textarea class="form-control" id="preferredLocation" name="preferredLocation" rows="3" 
+                                                  placeholder="Specify mall name, high street location, or detailed area address" required th:text="${preferredLocation != null ? preferredLocation : ''}"></textarea>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label for="mobile" class="form-label">Mobile Number</label>
-                                    <input type="tel" class="form-control" id="mobile" name="mobile" 
-                                           placeholder="10-digit mobile number" required
-                                           pattern="^[6-9]\d{9}$">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="email" class="form-label">Email Address</label>
-                                    <input type="email" class="form-control" id="email" name="email" 
-                                           placeholder="name@example.com" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="franchiseType" class="form-label">Preferred Model</label>
-                                    <select class="form-control" id="franchiseType" name="franchiseType" required>
-                                        <option value="" disabled selected>Choose model...</option>
-                                        <option value="Kiosk">Kiosk Model (₹5L - ₹10L)</option>
-                                        <option value="Studio">Studio Model (₹15L - ₹25L)</option>
-                                        <option value="Lounge">Lounge Model (₹30L - ₹50L)</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="city" class="form-label">Target City</label>
-                                    <input type="text" class="form-control" id="city" name="city" 
-                                           placeholder="e.g. Pune, Mumbai" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="budget" class="form-label">Investment Budget</label>
-                                    <select class="form-control" id="budget" name="budget" required>
-                                        <option value="" disabled selected>Choose budget...</option>
-                                        <option value="₹5L - ₹10L">₹5L - ₹10L</option>
-                                        <option value="₹10L - ₹20L">₹10L - ₹20L</option>
-                                        <option value="₹20L - ₹35L">₹20L - ₹35L</option>
-                                        <option value="₹35L+">₹35L+</option>
-                                    </select>
-                                </div>
-                                <div class="col-12">
-                                    <label for="preferredLocation" class="form-label">Preferred Location / Area Address</label>
-                                    <textarea class="form-control" id="preferredLocation" name="preferredLocation" rows="3" 
-                                              placeholder="Specify mall name, high street location, or detailed area address" required></textarea>
-                                </div>
-                            </div>
 
-                            <button type="submit" class="btn-gold w-100 py-3 mt-4" style="border-radius: 12px; font-size: 0.9rem;">
-                                Submit Franchise Application &nbsp;→
-                            </button>
-                        </form>
+                                <button type="submit" class="btn-gold w-100 py-3 mt-4" style="border-radius: 12px; font-size: 0.9rem;">
+                                    Submit Franchise Application &nbsp;→
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

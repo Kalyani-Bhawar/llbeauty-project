@@ -93,69 +93,47 @@
                 <h2 class="brand-font text-dark mb-2">Booking Confirmed!</h2>
                 <p class="text-muted" style="font-size:0.95rem;">Your salon slot has been secured via ₹100 advanced payment.</p>
 
-                <!-- THE VIP QUEUE TICKET -->
-                <div class="vip-ticket text-start">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-gold fw-bold text-uppercase small" style="letter-spacing: 1px; font-size: 0.72rem;">EVA VIP PASS</span>
-                            <h4 class="brand-font text-white mb-0 mt-1">Luxury Salon Studio</h4>
+                <!-- Ticket Card -->
+                <div class="vip-ticket mt-4 mb-4 text-start">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <small class="text-gold" style="font-size:0.75rem; text-transform:uppercase; font-weight:600;">Booking Token</small>
+                            <div class="token-display" th:text="${appointment.token}">LL-SLOT-0000</div>
                         </div>
-                        <i class="bi bi-scissors text-gold-light fs-3"></i>
+                        <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
+                            <small class="text-gold" style="font-size:0.75rem; text-transform:uppercase; font-weight:600;">Date & Time</small>
+                            <div class="fw-bold" style="font-size:1.1rem;" th:text="${appointment.appointmentDate}">YYYY-MM-DD</div>
+                            <div class="" style="font-size:0.9rem;" th:text="${appointment.timeSlot}">10:00 AM</div>
+                        </div>
                     </div>
-
+                    
                     <div class="ticket-dashed-line"></div>
-
-                    <div class="row g-3" style="font-size: 0.85rem;">
-                        <div class="col-6">
-                            <span class="text-white-50 d-block text-uppercase" style="font-size:0.68rem; letter-spacing:0.5px;">Client Name</span>
-                            <strong th:text="${appointment.userName}">User Name</strong>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <small class="text-gold" style="font-size:0.75rem; text-transform:uppercase; font-weight:600;">Services Booked</small>
+                            <div class="fw-bold" style="font-size:1rem;" th:text="${appointment.services}">Hair Care</div>
                         </div>
-                        <div class="col-6 text-end">
-                            <span class="text-white-50 d-block text-uppercase" style="font-size:0.68rem; letter-spacing:0.5px;">Queue Time Slot</span>
-                            <strong class="text-gold" th:text="${appointment.timeSlot}">10:00 AM</strong>
+                        <div class="col-4">
+                            <small class="text-gold" style="font-size:0.75rem; text-transform:uppercase; font-weight:600;">Total</small>
+                            <div class="fw-bold" style="font-size:1rem;">₹<span th:text="${appointment.totalAmount ?: '0.0'}"></span></div>
                         </div>
-                        <div class="col-6 mt-3">
-                            <span class="text-white-50 d-block text-uppercase" style="font-size:0.68rem; letter-spacing:0.5px;">Scheduled Date</span>
-                            <strong th:text="${#temporals.format(appointment.appointmentDate, 'dd MMMM yyyy')}">Date</strong>
+                        <div class="col-4">
+                            <small class="text-gold" style="font-size:0.75rem; text-transform:uppercase; font-weight:600;">Advance Paid</small>
+                            <div class="fw-bold" style="font-size:1rem; color:#28a745;">₹<span th:text="${appointment.advancePaid ?: '0.0'}"></span></div>
                         </div>
-                        <div class="col-6 text-end mt-3">
-                            <span class="text-white-50 d-block text-uppercase" style="font-size:0.68rem; letter-spacing:0.5px;">Deposit Paid</span>
-                            <strong class="text-success">₹100 (PAID)</strong>
-                        </div>
-                    </div>
-
-                    <div class="ticket-dashed-line"></div>
-
-                    <div class="text-center py-2">
-                        <span class="text-white-50 d-block text-uppercase mb-1" style="font-size:0.68rem; letter-spacing:1px;">Unique Slot Token</span>
-                        <div class="token-display" th:text="${appointment.token}">LL-SLOT-0000</div>
-                    </div>
-                </div>
-
-                <!-- Invoice Details -->
-                <div class="text-start p-4 rounded-4 mb-4" style="background:#faf8f5; border: 1.5px solid var(--beige-dark); font-size:0.88rem;">
-                    <h5 class="brand-font fs-5 text-dark mb-3">Appointment Summary</h5>
-                    <div class="d-flex flex-column gap-3">
-                        <div>
-                            <span class="text-muted d-block text-uppercase font-weight-bold" style="font-size:0.7rem;">Booked Services:</span>
-                            <span class="text-dark fw-semibold" style="line-height:1.5;" th:text="${appointment.services ?: appointment.serviceName}">Services</span>
-                        </div>
-                        <div class="border-top pt-2">
-                            <span class="text-muted d-block text-uppercase font-weight-bold" style="font-size:0.7rem;">Address Branch:</span>
-                            <span class="text-dark">📍 EVA Flagship Studio, Aundh, Pune</span>
-                        </div>
-                        <div class="alert alert-info border-0 p-2 mt-2" style="font-size:0.78rem; background:rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.15); color:var(--gold-dark);">
-                            ℹ️ <strong>Arrival Guideline:</strong> Please present this VIP ticket page or mention your Token <strong><span th:text="${appointment.token}">LL-SLOT</span></strong> at the counter on arrival. Your ₹100 deposit is adjusted in the final bill.
+                        <div class="col-4">
+                            <small class="text-gold" style="font-size:0.75rem; text-transform:uppercase; font-weight:600;">Pending</small>
+                            <div class="fw-bold" style="font-size:1rem; color:#dc3545;">₹<span th:text="${(appointment.totalAmount ?: 0.0) - (appointment.advancePaid ?: 0.0)}"></span></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Print & Action buttons -->
-                <div class="d-flex justify-content-center gap-3 no-print mt-5">
-                    <a href="/salon" class="btn btn-outline-dark px-4 py-2" style="border-radius: 50px; font-size: 0.85rem;"><i class="bi bi-arrow-left me-1"></i> Back to Salon</a>
-                    <button onclick="window.print()" class="btn btn-gold px-4 py-2" style="font-size: 0.85rem;"><i class="bi bi-printer-fill me-1"></i> Print VIP Receipt</button>
+                <div class="d-flex justify-content-center gap-3">
+                    <a th:href="@{/salon/receipt/{id}(id=${appointment.id})}" target="_blank" class="btn-gold rounded-pill px-4">
+                        <i class="bi bi-file-earmark-pdf me-2"></i> Download Receipt
+                    </a>
                 </div>
-
             </div>
 
         </div>

@@ -1,6 +1,7 @@
 package com.llbeauty.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,6 +24,15 @@ public class FranchiseLead {
     private String status; // NEW, CONTACTED, INTERESTED, CONVERTED, REJECTED
     private String remarks;
     private LocalDateTime createdAt;
+
+    @Column(name = "referral_code")
+    private String referralCode;
+
+    @Column(name = "final_franchise_amount", precision = 15, scale = 2)
+    private BigDecimal finalFranchiseAmount;
+
+    @Column(name = "commission_generated")
+    private Boolean commissionGenerated = false;
 
     @PrePersist
     public void prePersist() {
@@ -302,6 +312,15 @@ public class FranchiseLead {
     public void setCreatedAt(final LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    public String getReferralCode() { return this.referralCode; }
+    public void setReferralCode(String referralCode) { this.referralCode = referralCode; }
+
+    public BigDecimal getFinalFranchiseAmount() { return this.finalFranchiseAmount; }
+    public void setFinalFranchiseAmount(BigDecimal finalFranchiseAmount) { this.finalFranchiseAmount = finalFranchiseAmount; }
+
+    public Boolean getCommissionGenerated() { return this.commissionGenerated; }
+    public void setCommissionGenerated(Boolean commissionGenerated) { this.commissionGenerated = commissionGenerated; }
 
     @java.lang.Override
     @java.lang.SuppressWarnings("all")

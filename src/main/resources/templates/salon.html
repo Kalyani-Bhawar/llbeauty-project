@@ -69,6 +69,17 @@
                 </div>
             </div>
 
+            <!-- Error Message Alert -->
+            <div th:if="${errorMessage}" class="alert alert-danger p-4 mb-5 border-0 rounded-4 animate-fade-up" style="background: rgba(220,53,69,0.1); color: #dc3545;">
+                <div class="d-flex align-items-center gap-3">
+                    <span style="font-size: 2rem;">⚠️</span>
+                    <div>
+                        <h5 class="mb-1 fw-bold">Booking Error</h5>
+                        <p class="mb-0" th:text="${errorMessage}"></p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Full Width Salon Banner (Dynamic) -->
             <div class="salon-info-card mb-5 animate-fade-up">
                 <div class="row g-4 align-items-center">
@@ -122,48 +133,24 @@
                     <h4 class="brand-font mb-2">Select Services (Multiple Allowed)</h4>
                     <p class="text-muted small mb-4">Click to select or deselect multiple services. The total price and duration will calculate dynamically below.</p>
                     <div class="row g-3">
-                        <div class="col-md-6 col-sm-12">
-                            <div class="service-selection-card active" data-name="Hair Styling & Cut" data-price="899" onclick="toggleService(this)">
+                        <div class="col-md-6 col-sm-12" th:each="srv : ${services}">
+                            <div class="service-selection-card" th:classappend="${srvStat.first ? 'active' : ''}" th:data-name="${srv.name}" th:data-price="${srv.price}" onclick="toggleService(this)">
                                 <div class="d-flex justify-content-between align-items-start">
-                                    <div class="service-icon">💇</div>
-                                    <span class="badge bg-gold text-dark border-pill check-icon" style="font-size:0.65rem;">✓ SELECTED</span>
+                                    <div class="service-icon" th:switch="${srv.category}">
+                                        <span th:case="'Hair Care'">💇</span>
+                                        <span th:case="'Skin Care'">✨</span>
+                                        <span th:case="'Bridal'">👰</span>
+                                        <span th:case="'Makeup'">💄</span>
+                                        <span th:case="'Spa'">🧖</span>
+                                        <span th:case="'Nails'">💅</span>
+                                        <span th:case="'Wellness'">🌿</span>
+                                        <span th:case="*">💆</span>
+                                    </div>
+                                    <span class="badge bg-gold text-dark border-pill check-icon" th:style="${srvStat.first ? 'font-size:0.65rem;' : 'font-size:0.65rem; display:none;'}">✓ SELECTED</span>
                                 </div>
-                                <h5 class="fw-bold mb-1 mt-2" style="font-size: 1rem;">Hair Styling &amp; Cut</h5>
-                                <p class="text-muted small mb-2">Professional cut, shampoo, conditioning and blow-dry styling.</p>
-                                <div class="text-gold fw-bold">₹899 <span class="text-muted small fw-normal">· 45 min</span></div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-sm-12">
-                            <div class="service-selection-card" data-name="Luxury Hair Spa" data-price="1499" onclick="toggleService(this)">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div class="service-icon">🧖</div>
-                                    <span class="badge bg-gold text-dark border-pill check-icon" style="font-size:0.65rem; display:none;">✓ SELECTED</span>
-                                </div>
-                                <h5 class="fw-bold mb-1 mt-2" style="font-size: 1rem;">Luxury Hair Spa</h5>
-                                <p class="text-muted small mb-2">Deep nourishment, repair treatment, and relaxing scalp massage.</p>
-                                <div class="text-gold fw-bold">₹1,499 <span class="text-muted small fw-normal">· 60 min</span></div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-sm-12">
-                            <div class="service-selection-card" data-name="Gold Glow Facial" data-price="1999" onclick="toggleService(this)">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div class="service-icon">✨</div>
-                                    <span class="badge bg-gold text-dark border-pill check-icon" style="font-size:0.65rem; display:none;">✓ SELECTED</span>
-                                </div>
-                                <h5 class="fw-bold mb-1 mt-2" style="font-size: 1rem;">Gold Glow Facial</h5>
-                                <p class="text-muted small mb-2">Premium exfoliating facial with botanical extracts for instant radiance.</p>
-                                <div class="text-gold fw-bold">₹1,999 <span class="text-muted small fw-normal">· 50 min</span></div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-sm-12">
-                            <div class="service-selection-card" data-name="Bridal Makeover" data-price="9999" onclick="toggleService(this)">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div class="service-icon">👰</div>
-                                    <span class="badge bg-gold text-dark border-pill check-icon" style="font-size:0.65rem; display:none;">✓ SELECTED</span>
-                                </div>
-                                <h5 class="fw-bold mb-1 mt-2" style="font-size: 1rem;">Bridal Makeover</h5>
-                                <p class="text-muted small mb-2">Elite luxury bridal makeover including saree draping, hair, and makeup.</p>
-                                <div class="text-gold fw-bold">₹9,999 <span class="text-muted small fw-normal">· 180 min</span></div>
+                                <h5 class="fw-bold mb-1 mt-2" style="font-size: 1rem;" th:text="${srv.name}">Service Name</h5>
+                                <p class="text-muted small mb-2" th:text="${srv.description}">Description</p>
+                                <div class="text-gold fw-bold">₹<span th:text="${srv.price}">0</span> <span class="text-muted small fw-normal">· <span th:text="${srv.durationMinutes}">0</span> min</span></div>
                             </div>
                         </div>
                     </div>
@@ -360,6 +347,9 @@
                 }
             });
         }
+
+        // Trigger on load to set initial values
+        recalculateSelections();
     </script>
 </body>
 </html>

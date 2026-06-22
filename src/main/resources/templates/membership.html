@@ -280,14 +280,75 @@
         <input type="hidden" name="paymentId" id="verify_paymentId">
         <input type="hidden" name="orderId" id="verify_orderId">
     </form>
-
+     
+	<div class="modal fade" id="referralModal">
+	    <div class="modal-dialog modal-dialog-centered">
+	        <div class="modal-content">
+	
+	            <div class="modal-header">
+	                <h5>Membership Referral</h5>
+	            </div>
+	
+	            <div class="modal-body">
+	
+	                <label>Referral Code (Optional)</label>
+	
+	                <input
+	                    type="text"
+	                    id="referralCode"
+	                    class="form-control"
+	                    placeholder="Enter Agent Referral Code">
+	
+						<div id="referralError"
+						     class="alert alert-danger mt-2"
+						     style="display:none;">
+						    <i class="bi bi-exclamation-triangle-fill"></i>
+						    Invalid Referral Code
+						</div>
+	
+	            </div>
+	
+	            <div class="modal-footer">
+	
+	                <button
+	                    class="btn btn-secondary"
+	                    onclick="skipReferral()">
+	                    Skip
+	                </button>
+	
+	                <button
+	                    class="btn btn-gold"
+	                    onclick="validateReferral()">
+	                    Continue
+	                </button>
+	
+	            </div>
+	
+	        </div>
+	    </div>
+	</div>
+	
     <!-- FOOTER -->
     <div th:replace="~{fragments/footer :: footer}" class="mt-5"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script th:inline="javascript">
-        function initiateMembershipPayment(planId) {
+		let selectedPlanId = null;
+		let finalReferralCode = null;
+		function initiateMembershipPayment(planId) {
+		
+		    selectedPlanId = planId;
+		
+		    document.getElementById("referralCode").value = "";
+		
+		    document.getElementById("referralError").style.display = "none";
+		
+		    new bootstrap.Modal(
+		        document.getElementById('referralModal')
+		    ).show();
+		}
+		function startMembershipPayment(planId) {
             const formData = new FormData();
             formData.append('planId', planId);
 
@@ -347,10 +408,66 @@
                 alert("Payment initiation failed. Please try again.");
             });
         }
+		function skipReferral() {
+		
+		    finalReferralCode = null;
+		
+		    bootstrap.Modal.getInstance(
+		        document.getElementById('referralModal')
+		    ).hide();
+		
+		    startMembershipPayment(selectedPlanId);
+		}
+		function validateReferral() {
+		
+		    let code =
+		        document.getElementById(
+		            "referralCode"
+		        ).value.trim();
+		
+		    if(code === ""){
+		
+		        skipReferral();
+		        return;
+		    }
+		
+		    fetch(
+		        '/membership/validate-referral?code=' + code
+		    )
+		    .then(res => res.json())
+		    .then(data => {
+		
+		        if(data.valid){
+		
+		            finalReferralCode = code;
+		
+		            bootstrap.Modal.getInstance(
+		                document.getElementById('referralModal')
+		            ).hide();
+		
+		            startMembershipPayment(
+		                selectedPlanId
+		            );
+		
+		        } else {
+		
+		            document.getElementById(
+		                "referralError"
+		            ).style.display = "block";
+		        }
+		    });
+		}
 
         function verifyPaymentOnServer(planId, paymentId, orderId, signature) {
             const verifyFormData = new FormData();
             verifyFormData.append('planId', planId);
+			if(finalReferralCode){
+			
+			    verifyFormData.append(
+			        'referralCode',
+			        finalReferralCode
+			    );
+			}
             verifyFormData.append('paymentId', paymentId);
             verifyFormData.append('orderId', orderId);
             if (signature) {

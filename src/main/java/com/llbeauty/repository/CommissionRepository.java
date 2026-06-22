@@ -2,6 +2,7 @@ package com.llbeauty.repository;
 
 import com.llbeauty.entity.AgentProfile;
 import com.llbeauty.entity.Commission;
+import com.llbeauty.entity.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +13,8 @@ import java.util.List;
 public interface CommissionRepository extends JpaRepository<Commission, Long> {
 
     List<Commission> findByAgentOrderByCreatedAtDesc(AgentProfile agent);
+
+    boolean existsByAppointment(Appointment appointment);
 
     @Query("""
             SELECT COALESCE(SUM(c.amount), 0)

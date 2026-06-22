@@ -15,45 +15,67 @@
         </div>
 
         <div class="card p-4">
+            <!-- Filter Buttons -->
+            <div class="mb-3 d-flex gap-2">
+                <a th:href="@{/admin/appointments}" class="btn btn-sm" th:classappend="${filter == null} ? 'btn-primary' : 'btn-outline-primary'">All</a>
+                <a th:href="@{/admin/appointments(filter='today')}" class="btn btn-sm" th:classappend="${filter == 'today'} ? 'btn-primary' : 'btn-outline-primary'">Today</a>
+                <a th:href="@{/admin/appointments(filter='week')}" class="btn btn-sm" th:classappend="${filter == 'week'} ? 'btn-primary' : 'btn-outline-primary'">This Week</a>
+                <a th:href="@{/admin/appointments(filter='month')}" class="btn btn-sm" th:classappend="${filter == 'month'} ? 'btn-primary' : 'btn-outline-primary'">This Month</a>
+            </div>
+            
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-dark">
                         <tr>
                             <th>ID</th>
                             <th>Customer Name</th>
-                            <th>Mobile</th>
-                            <th>Service</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Status</th>
-                            <th>Booked At</th>
+                            <th>Services</th>
+                            <th>Total Amount</th>
+                            <th>Referral Code</th>
+                            <th>Referral Status</th>
+                            <th>Booking Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="appointment : ${appointments}">
                             <td th:text="${appointment.id}">1</td>
-                            <td th:text="${appointment.userName}">John Doe</td>
-                            <td th:text="${appointment.userMobile}">9876543210</td>
-                            <td th:text="${appointment.serviceName}">Haircut</td>
-                            <td th:text="${appointment.appointmentDate}">2026-06-01</td>
-                            <td th:text="${appointment.timeSlot}">10:00 AM</td>
                             <td>
-                                <span class="badge bg-warning text-dark" th:if="${appointment.status == 'PENDING'}" th:text="${appointment.status}">PENDING</span>
+                                <div class="fw-bold" th:text="${appointment.userName}">John Doe</div>
+                                <div class="small text-muted" th:text="${appointment.userMobile}">9876543210</div>
+                            </td>
+                            <td>
+                                <div th:text="${appointment.serviceName}">Haircut</div>
+                                <div class="small text-muted" th:text="${appointment.appointmentDate} + ' | ' + ${appointment.timeSlot}">2026-06-01 10:00 AM</div>
+                            </td>
+                            <td class="fw-bold text-success" th:text="'₹' + (${appointment.totalAmount ?: '0.0'})">0.0</td>
+                            <td class="fw-bold" th:text="${appointment.referralCode ?: '-'}">-</td>
+                            <td>
+                                <span class="badge bg-primary" th:if="${appointment.referralCode != null and appointment.referralCode != ''}">REFERRED</span>
+                                <span class="badge bg-secondary" th:if="${appointment.referralCode == null or appointment.referralCode == ''}">DIRECT BOOKING</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-warning text-dark" th:if="${appointment.status == 'PENDING' || appointment.status == 'PAYMENT_PENDING'}" th:text="${appointment.status}">PENDING</span>
+                                <span class="badge bg-info text-dark" th:if="${appointment.status == 'CONFIRMED'}" th:text="${appointment.status}">CONFIRMED</span>
                                 <span class="badge bg-success" th:if="${appointment.status == 'COMPLETED'}" th:text="${appointment.status}">COMPLETED</span>
                                 <span class="badge bg-danger" th:if="${appointment.status == 'CANCELLED'}" th:text="${appointment.status}">CANCELLED</span>
                             </td>
-                            <td th:text="${#temporals.format(appointment.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
                             <td>
                                 <div class="d-flex gap-2 align-items-center">
                                     <!-- Status Update Form -->
                                     <form th:action="@{/admin/appointments/{id}/status(id=${appointment.id})}" method="POST" class="d-inline">
-                                        <select name="status" class="form-select form-select-sm bg-dark text-white border-secondary" style="min-width: 120px;" onchange="this.form.submit()">
-                                            <option value="PENDING" th:selected="${appointment.status == 'PENDING'}">Pending</option>
+                                        <select name="status" class="form-select form-select-sm bg-dark text-white border-secondary" style="min-width: 120px;" onchange="if(this.value === 'COMPLETED') { if(!confirm('Are you sure you want to Complete this booking? This will generate a commission if a referral code is present.')) { this.value = this.getAttribute('data-old-value'); return false; } } this.form.submit()" th:attr="data-old-value=${appointment.status}">
+                                            <option value="PAYMENT_PENDING" th:selected="${appointment.status == 'PAYMENT_PENDING'}">Payment Pending</option>
+                                            <option value="CONFIRMED" th:selected="${appointment.status == 'CONFIRMED'}">Confirmed</option>
                                             <option value="COMPLETED" th:selected="${appointment.status == 'COMPLETED'}">Completed</option>
                                             <option value="CANCELLED" th:selected="${appointment.status == 'CANCELLED'}">Cancelled</option>
                                         </select>
                                     </form>
+                                    
+                                    <!-- Download Receipt -->
+                                    <a th:href="@{/admin/salon/receipt/{id}(id=${appointment.id})}" class="btn btn-sm btn-outline-info" title="Download Receipt" target="_blank">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </a>
                                     
                                     <!-- Delete Appointment Form -->
                                     <form th:action="@{/admin/appointments/{id}/delete(id=${appointment.id})}" method="POST" onsubmit="return confirm('Delete this appointment booking?');" class="d-inline">

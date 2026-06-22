@@ -40,6 +40,7 @@ public class StoreMvcController {
     private final WalletService walletService;
     private final PaymentService paymentService;
     private final RazorpayService razorpayService;
+    private final FranchiseLeadRepository franchiseLeadRepository;
 
     @org.springframework.beans.factory.annotation.Value("${razorpay.key.id}")
     private String razorpayKeyId;
@@ -56,7 +57,8 @@ public class StoreMvcController {
                               OrderRepository orderRepository,
                               WalletService walletService,
                               PaymentService paymentService,
-                              RazorpayService razorpayService) {
+                              RazorpayService razorpayService,
+                              FranchiseLeadRepository franchiseLeadRepository) {
         this.userRepository = userRepository;
         this.storeApplicationService = storeApplicationService;
         this.storeApplicationRepository = storeApplicationRepository;
@@ -70,6 +72,7 @@ public class StoreMvcController {
         this.walletService = walletService;
         this.paymentService = paymentService;
         this.razorpayService = razorpayService;
+        this.franchiseLeadRepository = franchiseLeadRepository;
     }
 
     private User getAuthenticatedUser() {
@@ -405,11 +408,48 @@ public class StoreMvcController {
             .map(Commission::getAmount)
             .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
 
+        // Fetch franchise referral leads and build details map
+        List<Map<String, Object>> franchiseCommissions = new java.util.ArrayList<>();
+        if (profile.getReferralCode() != null && !profile.getReferralCode().isBlank()) {
+            List<FranchiseLead> leads = franchiseLeadRepository.findByReferralCodeOrderByCreatedAtDesc(profile.getReferralCode());
+            for (FranchiseLead lead : leads) {
+                Map<String, Object> map = new java.util.HashMap<>();
+                map.put("applicantName", lead.getName());
+                map.put("franchiseType", lead.getFranchiseType());
+                map.put("budgetRange", lead.getBudget());
+                map.put("finalFranchiseAmount", lead.getFinalFranchiseAmount() != null ? lead.getFinalFranchiseAmount() : java.math.BigDecimal.ZERO);
+                map.put("referralCode", lead.getReferralCode());
+                map.put("status", lead.getStatus());
+                
+                java.math.BigDecimal commAmount = java.math.BigDecimal.ZERO;
+                java.time.LocalDateTime approvalDate = null;
+                if ("APPROVED".equalsIgnoreCase(lead.getStatus())) {
+                    Commission matchingComm = commissions.stream()
+                        .filter(c -> "FRANCHISE".equalsIgnoreCase(c.getCommissionType()) && c.getDescription().contains("Lead #" + lead.getId()))
+                        .findFirst()
+                        .orElse(null);
+                    if (matchingComm != null) {
+                        commAmount = matchingComm.getAmount();
+                        approvalDate = matchingComm.getCreatedAt();
+                    } else {
+                        if (lead.getFinalFranchiseAmount() != null) {
+                            commAmount = lead.getFinalFranchiseAmount().multiply(new java.math.BigDecimal("0.10"));
+                        }
+                        approvalDate = lead.getCreatedAt();
+                    }
+                }
+                map.put("commissionAmount", commAmount);
+                map.put("approvalDate", approvalDate);
+                franchiseCommissions.add(map);
+            }
+        }
+
         model.addAttribute("user", user);
         model.addAttribute("profile", profile);
         model.addAttribute("commissions", commissions);
         model.addAttribute("referrals", referrals);
         model.addAttribute("totalCommission", totalCommission);
+        model.addAttribute("franchiseCommissions", franchiseCommissions);
         model.addAttribute("walletBalance", walletService.getBalance(user));
         model.addAttribute("transactions", walletService.getTransactionHistory(user));
 

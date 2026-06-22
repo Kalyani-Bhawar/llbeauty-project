@@ -45,7 +45,9 @@ public class SecurityConfig {
         	        "/store/agent/pay-initiate",
         	        "/store/merchant/apply-confirm",
         	        "/store/agent/apply-confirm",
-        	        "/api/upload"
+        	        "/api/upload",
+        	        "/salon/create-order",
+        	        "/salon/confirm-payment"
         	    )
         	)
 

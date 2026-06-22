@@ -96,6 +96,7 @@ public class SalonPaymentController {
         model.addAttribute("appointment", app);
         model.addAttribute("walletBalance", walletService.getBalance(user));
         model.addAttribute("razorpayKeyId", razorpayConfig.getKeyId());
+        model.addAttribute("currentUser", user);
         return "salon_payment";
     }
 
@@ -121,15 +122,21 @@ public class SalonPaymentController {
             walletApplied = Math.min(walletBal.doubleValue(), total);
         }
         double amountToPay = total - walletApplied;
-
-        String razorpayOrderId = "mock_order_" + System.currentTimeMillis();
+        String razorpayOrderId = null;
         if (amountToPay > 0 && !isDummyCredentials()) {
             try {
                 Payment payment = paymentService.initiatePayment(user, amountToPay, "SALON_DEPOSIT", String.valueOf(appointmentId), "RAZORPAY" + (useWallet ? "+WALLET" : ""));
                 razorpayOrderId = payment.getRazorpayOrderId();
             } catch (Exception e) {
                 log.error("Failed to create Razorpay order for salon booking", e);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("message", "Could not connect to Razorpay: " + e.getMessage()));
             }
+        } else if (amountToPay > 0) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Razorpay is not configured (dummy credentials)."));
+        } else {
+            razorpayOrderId = "mock_order_" + System.currentTimeMillis();
         }
 
         Map<String, Object> response = new HashMap<>();
@@ -185,41 +192,13 @@ public class SalonPaymentController {
         app.setStatus("CONFIRMED");
         app.setPaymentStatus("PAID");
         app.setToken(bookingToken);
-        appointmentRepository.save(app);
-        String referralCode = app.getReferralCode();
-
-        System.out.println(
-            "SALON REF = " + referralCode
-        );
-
-        if (referralCode != null && !referralCode.isBlank()) {
-
-            agentProfileRepository
-                .findByReferralCode(referralCode)
-                .ifPresent(agent -> {
-
-                    Commission commission =
-                        new Commission();
-
-                    commission.setAgent(agent);
-
-                    commission.setAmount(
-                        new BigDecimal("100"));
-
-                    commission.setDescription(
-                        "Salon Booking Referral");
-
-                    commission.setStatus(
-                        "APPROVED");
-
-                    commissionRepository.save(
-                        commission);
-
-                    System.out.println(
-                        "SALON COMMISSION SAVED"
-                    );
-                });
+        if (razorpayOrderId != null && !razorpayOrderId.isEmpty()) {
+            app.setRazorpayOrderId(razorpayOrderId);
         }
+        if (paymentId != null && !paymentId.isEmpty()) {
+            app.setRazorpayPaymentId(paymentId);
+        }
+        appointmentRepository.save(app);
 
         // Award Reward Points for Salon Deposit!
         rewardService.awardPoints(user, BigDecimal.valueOf(total));

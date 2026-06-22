@@ -20,6 +20,7 @@ import java.io.File;
 import java.nio.file.*;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.math.BigDecimal;
@@ -52,6 +53,8 @@ public class AdminController {
     private final com.llbeauty.service.MembershipService membershipService;
     private final NotificationService notificationService;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final AgentProfileRepository agentProfileRepository;
+    private final CommissionRepository commissionRepository;
 
     @org.springframework.beans.factory.annotation.Value("${app.upload.root}")
     private String projectRoot;
@@ -76,7 +79,9 @@ public class AdminController {
                            com.llbeauty.service.PaymentService paymentService,
                            com.llbeauty.service.MembershipService membershipService,
                            NotificationService notificationService,
-                           BCryptPasswordEncoder passwordEncoder) {
+                           BCryptPasswordEncoder passwordEncoder,
+                           AgentProfileRepository agentProfileRepository,
+                           CommissionRepository commissionRepository) {
         this.appointmentRepository = appointmentRepository;
         this.franchiseLeadRepository = franchiseLeadRepository;
         this.userRepository = userRepository;
@@ -98,6 +103,8 @@ public class AdminController {
         this.membershipService = membershipService;
         this.notificationService = notificationService;
         this.passwordEncoder = passwordEncoder;
+        this.agentProfileRepository = agentProfileRepository;
+        this.commissionRepository = commissionRepository;
     }
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -159,6 +166,23 @@ public class AdminController {
 
         long activeMembers = userMembershipRepository.countByStatus("ACTIVE");
         model.addAttribute("activeMembers", activeMembers);
+
+        // Salon Analytics
+        long todayBookings = appointmentRepository.findAll().stream()
+                .filter(a -> a.getCreatedAt() != null && a.getCreatedAt().toLocalDate().isEqual(LocalDate.now()))
+                .count();
+        model.addAttribute("todayBookings", todayBookings);
+        
+        long referralBookings = appointmentRepository.findAll().stream()
+                .filter(a -> a.getReferralCode() != null && !a.getReferralCode().isBlank())
+                .count();
+        model.addAttribute("referralBookings", referralBookings);
+        
+        double totalCommissionPaid = commissionRepository.findAll().stream()
+                .filter(c -> "APPROVED".equalsIgnoreCase(c.getStatus()))
+                .mapToDouble(c -> c.getAmount() != null ? c.getAmount().doubleValue() : 0.0)
+                .sum();
+        model.addAttribute("totalCommissionPaid", totalCommissionPaid);
 
         // Recent lists (top 5)
         model.addAttribute("recentOrders", orderRepository.findAll().stream()
@@ -337,12 +361,36 @@ public class AdminController {
     @GetMapping("/appointments")
     public String viewAppointments(@RequestParam(value = "search", required = false) String search,
                                    @RequestParam(value = "status", required = false) String status,
+                                   @RequestParam(value = "filter", required = false) String filter,
                                    @RequestParam(value = "page", defaultValue = "0") int page,
                                    @RequestParam(value = "size", defaultValue = "10") int size,
                                    Model model) {
         model.addAttribute("activeTab", "appointments");
         Pageable pageable = PageRequest.of(page, size);
-        Page<Appointment> appPage = appointmentRepository.searchAppointments(search, status, pageable);
+        
+        LocalDate startDate = null;
+        LocalDate endDate = null;
+        
+        if (filter != null) {
+            LocalDate today = LocalDate.now();
+            if ("today".equalsIgnoreCase(filter)) {
+                startDate = today;
+                endDate = today;
+            } else if ("week".equalsIgnoreCase(filter)) {
+                startDate = today.with(java.time.DayOfWeek.MONDAY);
+                endDate = today.with(java.time.DayOfWeek.SUNDAY);
+            } else if ("month".equalsIgnoreCase(filter)) {
+                startDate = today.withDayOfMonth(1);
+                endDate = today.withDayOfMonth(today.lengthOfMonth());
+            }
+        }
+
+        Page<Appointment> appPage;
+        if (startDate != null && endDate != null) {
+            appPage = appointmentRepository.searchAppointmentsWithDate(search, status, startDate, endDate, pageable);
+        } else {
+            appPage = appointmentRepository.searchAppointments(search, status, pageable);
+        }
 
         model.addAttribute("appointments", appPage.getContent());
         model.addAttribute("currentPage", page);
@@ -350,6 +398,7 @@ public class AdminController {
         model.addAttribute("totalElements", appPage.getTotalElements());
         model.addAttribute("search", search);
         model.addAttribute("status", status);
+        model.addAttribute("filter", filter);
         return "admin/appointments";
     }
 
@@ -361,6 +410,28 @@ public class AdminController {
         if (appointmentOpt.isPresent()) {
             Appointment app = appointmentOpt.get();
             app.setStatus(status);
+            
+            // Commission generation logic ONLY when COMPLETED
+            if ("COMPLETED".equalsIgnoreCase(status) && app.getReferralCode() != null && !app.getReferralCode().isBlank()) {
+                // Prevent duplicate commission
+                boolean commissionExists = commissionRepository.findAll().stream()
+                    .anyMatch(c -> c.getAppointment() != null && c.getAppointment().getId().equals(app.getId()));
+                
+                if (!commissionExists) {
+                    agentProfileRepository.findByReferralCode(app.getReferralCode()).ifPresent(agent -> {
+                        Commission commission = new Commission();
+                        commission.setAgent(agent);
+                        commission.setAppointment(app);
+                        
+                        double amount = (app.getTotalAmount() != null ? app.getTotalAmount() : 0.0) * 0.10;
+                        commission.setAmount(BigDecimal.valueOf(amount));
+                        commission.setDescription("Commission for Appointment #" + app.getId());
+                        commission.setStatus("APPROVED");
+                        commissionRepository.save(commission);
+                    });
+                }
+            }
+            
             appointmentRepository.save(app);
             redirectAttributes.addFlashAttribute("successMessage", "Booking status updated successfully to " + status);
         } else {
@@ -432,14 +503,16 @@ public class AdminController {
     public String updateFranchiseLeadStatus(@PathVariable("id") Long id,
                                             @RequestParam("status") String status,
                                             @RequestParam(value = "remarks", required = false) String remarks,
+                                            @RequestParam(value = "finalFranchiseAmount", required = false) BigDecimal finalFranchiseAmount,
                                             RedirectAttributes redirectAttributes) {
         Optional<FranchiseLead> leadOpt = franchiseLeadRepository.findById(id);
         if (leadOpt.isPresent()) {
             FranchiseLead lead = leadOpt.get();
-            lead.setStatus(status);
-            if (remarks != null) {
-                lead.setRemarks(remarks);
+            if ("APPROVED".equalsIgnoreCase(status) && (finalFranchiseAmount == null || finalFranchiseAmount.compareTo(BigDecimal.ZERO) <= 0)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Final Franchise Amount is required for approval.");
+                return "redirect:/admin/franchise-leads";
             }
+            processFranchiseLeadStatusChange(lead, status, remarks, finalFranchiseAmount);
             franchiseLeadRepository.save(lead);
             redirectAttributes.addFlashAttribute("successMessage", "Franchise lead status updated to " + status);
         } else {
@@ -493,13 +566,16 @@ public class AdminController {
     public String updateFranchiseLead(@PathVariable("id") Long id, 
                                       @RequestParam("status") String status, 
                                       @RequestParam(value = "remarks", required = false) String remarks, 
+                                      @RequestParam(value = "finalFranchiseAmount", required = false) BigDecimal finalFranchiseAmount,
                                       RedirectAttributes redirectAttributes) {
         Optional<FranchiseLead> leadOpt = franchiseLeadRepository.findById(id);
         if (leadOpt.isPresent()) {
             FranchiseLead lead = leadOpt.get();
-            lead.setStatus(status);
-            if (remarks != null)
-                lead.setRemarks(remarks);
+            if ("APPROVED".equalsIgnoreCase(status) && (finalFranchiseAmount == null || finalFranchiseAmount.compareTo(BigDecimal.ZERO) <= 0)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Final Franchise Amount is required for approval.");
+                return "redirect:/admin/franchise-leads";
+            }
+            processFranchiseLeadStatusChange(lead, status, remarks, finalFranchiseAmount);
             franchiseLeadRepository.save(lead);
             redirectAttributes.addFlashAttribute("successMessage", "Franchise lead updated successfully.");
         } else {
@@ -507,6 +583,45 @@ public class AdminController {
         }
         return "redirect:/admin/franchise-leads";
     }
+
+    private void processFranchiseLeadStatusChange(FranchiseLead lead, String status, String remarks, BigDecimal finalFranchiseAmount) {
+        lead.setStatus(status);
+        if (remarks != null) {
+            lead.setRemarks(remarks);
+        }
+        
+        if ("APPROVED".equalsIgnoreCase(status)) {
+            if (finalFranchiseAmount != null) {
+                lead.setFinalFranchiseAmount(finalFranchiseAmount);
+            }
+            
+            if (!Boolean.TRUE.equals(lead.getCommissionGenerated())) {
+                String refCode = lead.getReferralCode();
+                if (refCode != null && !refCode.trim().isEmpty()) {
+                    agentProfileRepository.findByReferralCode(refCode.trim()).ifPresent(agent -> {
+                        BigDecimal finalAmount = lead.getFinalFranchiseAmount() != null ? lead.getFinalFranchiseAmount() : BigDecimal.ZERO;
+                        if (finalAmount.compareTo(BigDecimal.ZERO) > 0) {
+                            BigDecimal commissionAmount = finalAmount.multiply(new BigDecimal("0.10"));
+                            
+                            Commission commission = new Commission();
+                            commission.setAgent(agent);
+                            commission.setAmount(commissionAmount);
+                            commission.setDescription("Franchise Referral Commission - Lead #" + lead.getId());
+                            commission.setStatus("APPROVED");
+                            commission.setCommissionType("FRANCHISE");
+                            commissionRepository.save(commission);
+                            
+//                            walletService.credit(agent.getUser(), commissionAmount, 
+//                                "Franchise Referral Commission for " + lead.getName(), "COMMISSION");
+                            
+                            lead.setCommissionGenerated(true);
+                        }
+                    });
+                }
+            }
+        }
+    }
+
 
     // ==========================================
     //  PRODUCTS CRUD & ACTIONS
@@ -1158,21 +1273,9 @@ public class AdminController {
 
     @PostMapping("/salon-services/save")
     public String saveSalonService(@ModelAttribute("service") com.llbeauty.entity.SalonService service,
-                                   @RequestParam("imageFile") MultipartFile imageFile,
                                    RedirectAttributes redirectAttributes) {
-        try {
-            if (!imageFile.isEmpty()) {
-                String imageUrl = saveUploadedFile(imageFile, "services");
-                service.setImageUrl(imageUrl);
-            } else if (service.getImageUrl() == null || service.getImageUrl().isEmpty()) {
-                service.setImageUrl("/images/haircare.png");
-            }
-            salonServiceRepository.save(service);
-            redirectAttributes.addFlashAttribute("successMessage", "Salon service saved successfully!");
-        } catch (IOException e) {
-            e.printStackTrace();
-            redirectAttributes.addFlashAttribute("errorMessage", "Failed to upload image: " + e.getMessage());
-        }
+        salonServiceRepository.save(service);
+        redirectAttributes.addFlashAttribute("successMessage", "Salon service saved successfully!");
         return "redirect:/admin/salon-services";
     }
 
@@ -1189,11 +1292,23 @@ public class AdminController {
         }
     }
 
-    @PostMapping("/salon-services/delete/{id}")
-    public String deleteSalonService(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        if (salonServiceRepository.existsById(id)) {
-            salonServiceRepository.deleteById(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Salon service deleted successfully.");
+    @PostMapping("/salon-services/{action}/{id}")
+    public String toggleSalonServiceStatus(@PathVariable("action") String action, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Optional<com.llbeauty.entity.SalonService> sOpt = salonServiceRepository.findById(id);
+        if (sOpt.isPresent()) {
+            com.llbeauty.entity.SalonService service = sOpt.get();
+            if ("activate".equalsIgnoreCase(action)) {
+                service.setActive(true);
+                redirectAttributes.addFlashAttribute("successMessage", "Salon service activated.");
+            } else if ("deactivate".equalsIgnoreCase(action)) {
+                service.setActive(false);
+                redirectAttributes.addFlashAttribute("successMessage", "Salon service deactivated.");
+            } else if ("delete".equalsIgnoreCase(action)) {
+                salonServiceRepository.delete(service);
+                redirectAttributes.addFlashAttribute("successMessage", "Salon service deleted.");
+                return "redirect:/admin/salon-services";
+            }
+            salonServiceRepository.save(service);
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Salon service not found.");
         }
