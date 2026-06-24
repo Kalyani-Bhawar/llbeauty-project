@@ -7,10 +7,11 @@
             <h1 class="page-title">Store Management</h1>
             <p class="page-subtitle">Process program applications, monitor wallets, store credits, and commissions.</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
             <a th:href="@{/admin/store-management(tab='applications')}" class="btn btn-sm" th:classappend="${currentSubTab == 'applications' ? 'btn-gold' : 'btn-outline-gold'}">Applications</a>
             <a th:href="@{/admin/store-management(tab='agents')}" class="btn btn-sm" th:classappend="${currentSubTab == 'agents' ? 'btn-gold' : 'btn-outline-gold'}">Agents</a>
             <a th:href="@{/admin/store-management(tab='merchants')}" class="btn btn-sm" th:classappend="${currentSubTab == 'merchants' ? 'btn-gold' : 'btn-outline-gold'}">Merchants</a>
+            <a th:href="@{/admin/store-management(tab='commissions')}" class="btn btn-sm" th:classappend="${currentSubTab == 'commissions' ? 'btn-gold' : 'btn-outline-gold'}">Commissions</a>
             <a th:href="@{/admin/store-management(tab='wallets')}" class="btn btn-sm" th:classappend="${currentSubTab == 'wallets' ? 'btn-gold' : 'btn-outline-gold'}">Wallets</a>
             <a th:href="@{/admin/store-management(tab='credits')}" class="btn btn-sm" th:classappend="${currentSubTab == 'credits' ? 'btn-gold' : 'btn-outline-gold'}">Credits</a>
             <a th:href="@{/admin/store-management(tab='reports')}" class="btn btn-sm" th:classappend="${currentSubTab == 'reports' ? 'btn-gold' : 'btn-outline-gold'}">Reports</a>
@@ -178,6 +179,84 @@
                     </tr>
                     <tr th:if="${merchants.isEmpty()}">
                         <td colspan="7" class="text-center py-5 text-white-50">No merchants enrolled.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── COMMISSIONS TAB ── -->
+    <div th:if="${currentSubTab == 'commissions'}" class="data-card animate-fade-up">
+        <div class="data-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h6 class="mb-1">Agent Pending Commissions</h6>
+                <p class="text-white-50 small mb-0">Total Payable Amount across all agents: <strong class="text-gold" th:text="'₹' + ${#numbers.formatDecimal(totalPayableCommissions, 1, 2)}">₹0.00</strong></p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Agent ID</th>
+                        <th>Agent Name</th>
+                        <th>Email</th>
+                        <th>Referral Code</th>
+                        <th class="text-end">Pending Amount</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${agentPendingCommissions}">
+                        <td class="fw-bold text-gold" th:text="${item.agent.agentId}">LLB-EXE-1</td>
+                        <td th:text="${item.agent.user.name}">John Doe</td>
+                        <td th:text="${item.agent.user.email}">john@example.com</td>
+                        <td th:text="${item.agent.referralCode}">REF100</td>
+                        <td class="text-end fw-bold text-gold" th:text="'₹' + ${#numbers.formatDecimal(item.pendingAmount, 1, 2)}">₹0.00</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-gold py-1 px-3" 
+                                    th:data-agent-id="${item.agent.id}" 
+                                    th:data-agent-name="${item.agent.user.name}"
+                                    th:data-agent-code="${item.agent.agentId}"
+                                    th:data-pending-amount="${item.pendingAmount}"
+                                    onclick="openPayoutModal(this)">
+                                Pay Commission
+                            </button>
+                        </td>
+                    </tr>
+                    <tr th:if="${agentPendingCommissions.isEmpty()}">
+                        <td colspan="6" class="text-center py-5 text-white-50">No pending commissions found. All settlements are up to date!</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Payout History inside Commissions Tab -->
+        <div class="data-card-header mt-5 border-top border-secondary pt-4">
+            <h6>Completed Payout Settlements</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Agent ID</th>
+                        <th>Agent Name</th>
+                        <th class="text-end">Amount Paid</th>
+                        <th>UTR / Reference Number</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="pay : ${payoutHistory}">
+                        <td th:text="${#temporals.format(pay.createdAt, 'dd MMM yyyy, hh:mm a')}">Date</td>
+                        <td th:text="${pay.agent.agentId}">Agent ID</td>
+                        <td th:text="${pay.agent.user.name}">Name</td>
+                        <td class="text-end fw-bold text-gold" th:text="'₹' + ${#numbers.formatDecimal(pay.amount, 1, 2)}">₹0.00</td>
+                        <td class="font-monospace" th:text="${pay.utrNumber}">UTR123456</td>
+                        <td th:text="${pay.remarks != null ? pay.remarks : '-'}">Remarks</td>
+                    </tr>
+                    <tr th:if="${payoutHistory.isEmpty()}">
+                        <td colspan="6" class="text-center py-5 text-white-50">No payout settlements recorded yet.</td>
                     </tr>
                 </tbody>
             </table>

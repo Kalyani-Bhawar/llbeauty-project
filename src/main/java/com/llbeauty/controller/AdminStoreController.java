@@ -2,6 +2,9 @@ package com.llbeauty.controller;
 
 import com.llbeauty.entity.*;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
 import com.llbeauty.repository.*;
 import com.llbeauty.service.StoreApplicationService;
 import com.llbeauty.service.WalletService;
@@ -28,6 +31,7 @@ public class AdminStoreController {
     private final WalletRepository walletRepository;
     private final WalletService walletService;
     private final WalletTransactionRepository walletTransactionRepository;
+    private final PayoutRepository payoutRepository;
 
     public AdminStoreController(StoreApplicationRepository storeApplicationRepository,
                                 StoreApplicationService storeApplicationService,
@@ -38,7 +42,8 @@ public class AdminStoreController {
                                 CommissionRepository commissionRepository,
                                 WalletRepository walletRepository,
                                 WalletService walletService,
-                                WalletTransactionRepository walletTransactionRepository) {
+                                WalletTransactionRepository walletTransactionRepository,
+                                PayoutRepository payoutRepository) {
         this.storeApplicationRepository = storeApplicationRepository;
         this.storeApplicationService = storeApplicationService;
         this.userRepository = userRepository;
@@ -49,6 +54,7 @@ public class AdminStoreController {
         this.walletRepository = walletRepository;
         this.walletService = walletService;
         this.walletTransactionRepository = walletTransactionRepository;
+        this.payoutRepository = payoutRepository;
     }
 
     @GetMapping("/store-management")
@@ -91,6 +97,36 @@ public class AdminStoreController {
         model.addAttribute("wallets", walletRepository.findAll());
         model.addAttribute("storeCredits", storeCreditRepository.findAll());
         model.addAttribute("commissions", commissionRepository.findAll());
+
+        // Calculate agent-wise pending commissions
+        List<AgentProfile> agentsList = agentProfileRepository.findAll();
+        List<Map<String, Object>> agentPendingCommissions = new ArrayList<>();
+        BigDecimal totalPayableCommissions = BigDecimal.ZERO;
+
+        List<Commission> allCommissions = commissionRepository.findAll();
+        for (AgentProfile agent : agentsList) {
+            BigDecimal pending = allCommissions.stream()
+                .filter(c -> c.getAgent().getId().equals(agent.getId()) &&
+                             ("PENDING".equalsIgnoreCase(c.getStatus()) || "APPROVED".equalsIgnoreCase(c.getStatus())))
+                .map(Commission::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            if (pending.compareTo(BigDecimal.ZERO) > 0) {
+                Map<String, Object> map = new java.util.HashMap<>();
+                map.put("agent", agent);
+                map.put("pendingAmount", pending);
+                agentPendingCommissions.add(map);
+                totalPayableCommissions = totalPayableCommissions.add(pending);
+            }
+        }
+        model.addAttribute("agentPendingCommissions", agentPendingCommissions);
+        model.addAttribute("totalPayableCommissions", totalPayableCommissions);
+
+        // Fetch payout history
+        List<Payout> payoutHistory = payoutRepository.findAll().stream()
+            .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
+            .collect(Collectors.toList());
+        model.addAttribute("payoutHistory", payoutHistory);
 
         long totalApps = storeApplicationRepository.count();
         long pendingApps = storeApplicationRepository.findAllByStatus(ApplicationStatus.PENDING).size();
@@ -227,5 +263,51 @@ public class AdminStoreController {
             redirectAttributes.addFlashAttribute("errorMessage", "Error adding store credit: " + e.getMessage());
         }
         return "redirect:/admin/store-management?tab=credits";
+    }
+
+    @PostMapping("/store/commissions/pay")
+    public String payCommissions(@RequestParam("agentId") Long agentId,
+                                 @RequestParam("utrNumber") String utrNumber,
+                                 @RequestParam(value = "remarks", required = false) String remarks,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            AgentProfile agent = agentProfileRepository.findById(agentId)
+                .orElseThrow(() -> new IllegalArgumentException("Agent not found: " + agentId));
+            
+            List<Commission> pendingCommissions = commissionRepository.findByAgentOrderByCreatedAtDesc(agent).stream()
+                .filter(c -> "PENDING".equalsIgnoreCase(c.getStatus()) || "APPROVED".equalsIgnoreCase(c.getStatus()))
+                .collect(Collectors.toList());
+            
+            if (pendingCommissions.isEmpty()) {
+                redirectAttributes.addFlashAttribute("errorMessage", "No pending commissions to pay for this agent.");
+                return "redirect:/admin/store-management?tab=commissions";
+            }
+            
+            BigDecimal totalAmount = pendingCommissions.stream()
+                .map(Commission::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            // Mark all pending commissions as PAID
+            for (Commission commission : pendingCommissions) {
+                commission.setStatus("PAID");
+                commissionRepository.save(commission);
+            }
+            
+            // Create Payout record
+            Payout payout = new Payout();
+            payout.setAgent(agent);
+            payout.setAmount(totalAmount);
+            payout.setPaymentMethod("Bank Transfer");
+            payout.setUtrNumber(utrNumber);
+            payout.setStatus("PAID");
+            payout.setRemarks(remarks);
+            payout.setCreatedAt(LocalDateTime.now());
+            payoutRepository.save(payout);
+            
+            redirectAttributes.addFlashAttribute("successMessage", "Payout of ₹" + totalAmount + " for agent " + agent.getAgentId() + " marked completed successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error processing commission payout: " + e.getMessage());
+        }
+        return "redirect:/admin/store-management?tab=commissions";
     }
 }

@@ -98,11 +98,43 @@
         <div class="container">
             
             <!-- Welcome Header -->
-            <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                 <div>
                     <span class="badge bg-danger text-uppercase px-3 py-2 rounded-pill" style="letter-spacing:1px; font-size:0.68rem;">EVA Agent Partner</span>
                     <h1 class="brand-font mt-2 mb-1" th:text="${user.name}">Agent Name</h1>
-                    <p class="text-white-50 small mb-0">Manage your leads, events, referrals, and commission metrics.</p>
+                    <p class="text-white-50 small mb-0">Manage your referrals, payouts, and track commission metrics.</p>
+                </div>
+            </div>
+
+            <!-- Earnings Summary Row -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="panel-card h-100 text-center py-4">
+                        <div class="small text-white-50 text-uppercase" style="font-size:0.75rem; letter-spacing: 0.5px;">Pending Commission</div>
+                        <div class="stat-num mt-2" th:text="'₹' + ${#numbers.formatDecimal(pendingCommission, 1, 2)}">₹0.00</div>
+                        <div class="small text-warning mt-1" style="font-size:0.7rem;"><i class="bi bi-clock-history"></i> Awaiting Payout</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="panel-card h-100 text-center py-4">
+                        <div class="small text-white-50 text-uppercase" style="font-size:0.75rem; letter-spacing: 0.5px;">Lifetime Earnings</div>
+                        <div class="stat-num mt-2" style="color: #2ecc71;" th:text="'₹' + ${#numbers.formatDecimal(lifetimeEarnings, 1, 2)}">₹0.00</div>
+                        <div class="small text-success mt-1" style="font-size:0.7rem;"><i class="bi bi-graph-up"></i> Cumulative Total</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="panel-card h-100 text-center py-4">
+                        <div class="small text-white-50 text-uppercase" style="font-size:0.75rem; letter-spacing: 0.5px;">Total Referrals</div>
+                        <div class="stat-num mt-2" style="color: #3498db;" th:text="${totalReferralsCount}">0</div>
+                        <div class="small text-info mt-1" style="font-size:0.7rem;"><i class="bi bi-people-fill"></i> Referral Code Uses</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="panel-card h-100 text-center py-4">
+                        <div class="small text-white-50 text-uppercase" style="font-size:0.75rem; letter-spacing: 0.5px;">Last Payout</div>
+                        <div class="stat-num mt-2" style="color: #c9a84c;" th:text="${lastPayoutAmount != null && lastPayoutAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0 ? '₹' + #numbers.formatDecimal(lastPayoutAmount, 1, 2) : '-'}">-</div>
+                        <div class="small text-white-50 mt-1" style="font-size:0.7rem;" th:text="${lastPayoutDate != null ? #temporals.format(lastPayoutDate, 'dd-MMM-yyyy') : 'No payouts yet'}">No payouts yet</div>
+                    </div>
                 </div>
             </div>
 
@@ -113,39 +145,51 @@
                     
                     <!-- Agent ID Badge -->
                     <div class="id-badge mb-4">
-                        <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
                             <div>
                                 <div class="small text-uppercase opacity-75 font-weight-bold" style="letter-spacing:1.5px; font-size:0.65rem;">EVA AGENT</div>
                                 <h4 class="brand-font mt-1 mb-0">RED CARD</h4>
                             </div>
                             <span style="font-size: 1.8rem;">👑</span>
                         </div>
-                        <div class="mb-4">
+                        
+                        <div class="mb-2">
+                            <div class="small opacity-50" style="font-size: 0.7rem;">AGENT NAME</div>
+                            <div class="fw-bold" style="font-size: 1.1rem;" th:text="${user.name}">John Doe</div>
+                        </div>
+                        
+                        <div class="mb-2">
                             <div class="small opacity-50" style="font-size: 0.7rem;">AGENT ID</div>
                             <div class="fw-bold tracking-widest" style="font-size: 1.1rem; letter-spacing: 1.5px;" th:text="${profile.agentId}">LLB-EXE-XXXX</div>
                         </div>
-                        <div class="d-flex justify-content-between align-items-end">
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>
                                 <div class="small opacity-50" style="font-size: 0.7rem;">REFERRAL CODE</div>
                                 <div class="fw-bold text-gold" style="font-size: 1.05rem;" th:text="${profile.referralCode}">REFXXXX</div>
                             </div>
-                            <span class="badge bg-success" style="font-size:0.65rem;">ACTIVE</span>
-                        </div>
-                    </div>
-
-                    <!-- Earnings Summary -->
-                    <div class="panel-card">
-                        <div class="panel-card-title"><i class="bi bi-graph-up-arrow"></i> Earnings Summary</div>
-                        <div class="row text-center py-2">
-                            <div class="col-6" style="border-right: 1px solid rgba(255,255,255,0.05);">
-                                <div class="small text-white-50 uppercase" style="font-size:0.7rem;">Commissions</div>
-                                <div class="stat-num mt-1" th:text="'₹' + ${#numbers.formatDecimal(totalCommission, 1, 0)}">₹0</div>
-                            </div>
-                            <div class="col-6">
-                                <div class="small text-white-50 uppercase" style="font-size:0.7rem;">Wallet Balance</div>
-                                <div class="stat-num mt-1" style="color: #2ecc71;" th:text="'₹' + ${#numbers.formatDecimal(walletBalance, 1, 0)}">₹0</div>
+                            <div>
+                                <div class="small opacity-50 text-end" style="font-size: 0.7rem;">STATUS</div>
+                                <span class="badge bg-success px-2 py-1" style="font-size:0.65rem;" th:if="${profile.status == 'ACTIVE'}">ACTIVE</span>
+                                <span class="badge bg-danger px-2 py-1" style="font-size:0.65rem;" th:unless="${profile.status == 'ACTIVE'}">INACTIVE</span>
                             </div>
                         </div>
+						<hr class="my-3 opacity-25">
+						
+						<div class="row g-2">
+						    <div class="col-12">
+						        <div class="small opacity-50" style="font-size: 0.7rem;">REGISTRATION TYPE</div>
+						        <div class="fw-bold" style="font-size: 0.85rem;" th:text="${profile.registrationType}">
+						            AGENT REGISTRATION
+						        </div>
+						    </div>
+						
+						    <div class="col-12 mt-2">
+						        <div class="small opacity-50" style="font-size: 0.7rem;">JOINING DATE</div>
+						        <div style="font-size: 0.85rem;" th:text="${profile.joiningDate != null ? #temporals.format(profile.joiningDate,'dd MMM yyyy') : '-'}">
+						        </div>
+						    </div>
+						</div>
                     </div>
 
                     <!-- Quick Tools -->
@@ -162,109 +206,70 @@
                 <!-- Right Column -->
                 <div class="col-lg-8">
                     
-                    <!-- Referrals Panel -->
+                    <!-- Unified Referral Activity Table -->
                     <div class="panel-card">
                         <div class="panel-card-title">
-                            <i class="bi bi-people-fill"></i> My Referrals
-                            <span class="ms-auto badge bg-gold text-dark" th:text="${referrals.size()} + ' Members'">0</span>
+                            <i class="bi bi-people-fill"></i> Referral Activity
+                            <span class="ms-auto badge bg-gold text-dark" th:text="${totalReferralsCount} + ' Entries'">0</span>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-custom">
-                                <thead>
-                                    <tr>
-                                        <th>Member ID</th>
-                                        <th>Name</th>
-                                        <th>Plan</th>
-                                        <th>Join Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="ref : ${referrals}">
-                                        <td class="fw-bold" th:text="${ref.memberId}">LLB-MEMBER-0000</td>
-                                        <td th:text="${ref.user.name}">John Doe</td>
-                                        <td><span class="badge bg-danger" th:text="${ref.membership.name}">Plan</span></td>
-                                        <td th:text="${#temporals.format(ref.startDate, 'dd MMM yyyy')}">Date</td>
-                                    </tr>
-                                    <tr th:if="${referrals.isEmpty()}">
-                                        <td colspan="4" class="text-center text-white-50 py-4">No referrals registered yet. Share your code to start!</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Commissions Panel -->
-                    <div class="panel-card">
-                        <div class="panel-card-title"><i class="bi bi-wallet2"></i> Commission History</div>
                         <div class="table-responsive">
                             <table class="table table-custom">
                                 <thead>
                                     <tr>
                                         <th>Date</th>
-                                        <th>Description</th>
+                                        <th>Referral Type</th>
+                                        <th>User Name</th>
+                                        <th>Reference</th>
+                                        <th class="text-end">Tx Amount</th>
+                                        <th class="text-center">Comm %</th>
+                                        <th class="text-end">Commission</th>
                                         <th>Status</th>
-                                        <th class="text-end">Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="comm : ${commissions}">
-                                        <td th:text="${#temporals.format(comm.createdAt, 'dd MMM yyyy')}">Date</td>
-                                        <td th:text="${comm.description}">Description</td>
+                                    <tr th:each="act : ${activityList}">
+                                        <td th:text="${#temporals.format(act.date, 'dd-MMM-yyyy')}">Date</td>
+                                        <td th:text="${act.type}">Type</td>
+                                        <td th:text="${act.userName}">User</td>
+                                        <td th:text="${act.reference}">Reference</td>
+                                        <td class="text-end" th:text="${act.transactionAmount != null and act.transactionAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0 ? '₹' + #numbers.formatDecimal(act.transactionAmount, 1, 0) : '-'}">-</td>
+                                        <td class="text-center" th:text="${act.commissionPercent}">-</td>
+                                        <td class="text-end fw-bold text-gold" th:text="${act.commissionAmount != null ? '₹' + #numbers.formatDecimal(act.commissionAmount, 1, 2) : '₹0.00'}">₹0.00</td>
                                         <td>
-                                            <span class="badge bg-success" th:if="${comm.status == 'PAID'}">PAID</span>
-                                            <span class="badge bg-warning text-dark" th:if="${comm.status == 'PENDING'}">PENDING</span>
+                                            <span class="badge bg-success" th:if="${act.status == 'PAID'}">PAID</span>
+                                            <span class="badge bg-warning text-dark" th:if="${act.status == 'PENDING'}">PENDING</span>
                                         </td>
-                                        <td class="text-end fw-bold text-gold" th:text="'₹' + ${#numbers.formatDecimal(comm.amount, 1, 2)}">₹0.00</td>
                                     </tr>
-                                    <tr th:if="${commissions.isEmpty()}">
-                                        <td colspan="4" class="text-center text-white-50 py-4">No commission payouts on record.</td>
+                                    <tr th:if="${activityList.isEmpty()}">
+                                        <td colspan="8" class="text-center text-white-50 py-4">No referral activity found. Share your code to start!</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <!-- Franchise Commissions Panel -->
+                    <!-- Commission Payout History -->
                     <div class="panel-card">
-                        <div class="panel-card-title"><i class="bi bi-building"></i> Franchise Referral Commissions</div>
+                        <div class="panel-card-title"><i class="bi bi-credit-card-2-back"></i> Commission Payout History</div>
                         <div class="table-responsive">
                             <table class="table table-custom">
                                 <thead>
                                     <tr>
-                                        <th>Applicant Name</th>
-                                        <th>Franchise Type</th>
-                                        <th>Budget Range</th>
-                                        <th>Final Amount</th>
-                                        <th>Referral Code</th>
-                                        <th>Commission</th>
-                                        <th>Approval Date</th>
-                                        <th>Status</th>
+                                        <th>Payout Date</th>
+                                        <th class="text-end">Amount Paid</th>
+                                        <th>UTR / Reference Number</th>
+                                        <th>Remarks</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="lead : ${franchiseCommissions}">
-                                        <td th:text="${lead.applicantName}">Jane Doe</td>
-                                        <td th:text="${lead.franchiseType}">Studio</td>
-                                        <td th:text="${lead.budgetRange}">₹15L - ₹25L</td>
-										<td th:text="${lead.finalFranchiseAmount != null and lead.finalFranchiseAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0 ?
-										'₹' + #numbers.formatDecimal(lead.finalFranchiseAmount, 1, 0) : '-'}">-</td>
-                                        <td th:text="${lead.referralCode}">REF101</td>
-										<td class="fw-bold text-gold"
-										th:text="${lead.commissionAmount != null and lead.commissionAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0 ?
-										'₹' + #numbers.formatDecimal(lead.commissionAmount, 1, 0) : '-'}">
-										</td>
-										<td th:text="${lead.approvalDate != null ?
-										#temporals.format(lead.approvalDate, 'dd MMM yyyy') : '-'}">-</td>
-                                        <td>
-                                            <span class="badge bg-success" th:if="${lead.status == 'APPROVED'}">APPROVED</span>
-                                            <span class="badge bg-warning text-dark" th:if="${lead.status == 'NEW'}">NEW</span>
-                                            <span class="badge bg-info text-dark" th:if="${lead.status == 'CONTACTED'}">CONTACTED</span>
-                                            <span class="badge bg-primary" th:if="${lead.status == 'IN_PROGRESS'}">IN_PROGRESS</span>
-                                            <span class="badge bg-danger" th:if="${lead.status == 'REJECTED'}">REJECTED</span>
-                                        </td>
+                                    <tr th:each="pay : ${payoutHistory}">
+                                        <td th:text="${#temporals.format(pay.createdAt, 'dd-MMM-yyyy HH:mm')}">Date</td>
+                                        <td class="text-end fw-bold text-gold" th:text="'₹' + ${#numbers.formatDecimal(pay.amount, 1, 2)}">₹0.00</td>
+                                        <td class="font-monospace" th:text="${pay.utrNumber}">UTR12345</td>
+                                        <td th:text="${pay.remarks != null ? pay.remarks : '-'}">Remarks</td>
                                     </tr>
-                                    <tr th:if="${franchiseCommissions == null || franchiseCommissions.isEmpty()}">
-                                        <td colspan="8" class="text-center text-white-50 py-4">No franchise referral leads found.</td>
+                                    <tr th:if="${payoutHistory.isEmpty()}">
+                                        <td colspan="4" class="text-center text-white-50 py-4">No completed payouts on record.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -279,6 +284,5 @@
     <!-- FOOTER -->
     <div th:replace="~{fragments/footer :: footer}"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

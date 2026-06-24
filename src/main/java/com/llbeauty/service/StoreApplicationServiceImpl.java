@@ -1,6 +1,9 @@
 package com.llbeauty.service;
 
+import com.llbeauty.repository.CommissionRepository;
+import java.math.BigDecimal;
 import com.llbeauty.dto.AgentApplicationRequest;
+import java.math.BigDecimal;
 import com.llbeauty.dto.MerchantApplicationRequest;
 import com.llbeauty.dto.StoreApplicationResponse;
 import com.llbeauty.dto.ApplicationStatusResponse;
@@ -27,6 +30,7 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
     private final MerchantProfileRepository merchantProfileRepository;
     private final StoreCreditRepository storeCreditRepository;
     private final WalletService walletService;
+    private final CommissionRepository commissionRepository;
 
     public StoreApplicationServiceImpl(StoreApplicationRepository storeApplicationRepository,
                                        UserRepository userRepository,
@@ -35,7 +39,8 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
                                        QrCodeRepository qrCodeRepository,
                                        MerchantProfileRepository merchantProfileRepository,
                                        StoreCreditRepository storeCreditRepository,
-                                       WalletService walletService) {
+                                       WalletService walletService,  
+                                       CommissionRepository commissionRepository) {
         this.storeApplicationRepository = storeApplicationRepository;
         this.userRepository = userRepository;
         this.agentProfileRepository = agentProfileRepository;
@@ -44,6 +49,7 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
         this.merchantProfileRepository = merchantProfileRepository;
         this.storeCreditRepository = storeCreditRepository;
         this.walletService = walletService;
+        this.commissionRepository = commissionRepository;
     }
 
     private StoreApplicationResponse mapToResponse(StoreApplication app) {
@@ -73,7 +79,7 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
 
     @Override
     @Transactional
-    public StoreApplicationResponse applyAgent(Long userId, AgentApplicationRequest request) throws ResourceNotFoundException {
+    public StoreApplicationResponse applyAgent(Long userId, AgentApplicationRequest request, Payment payment) throws ResourceNotFoundException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
@@ -85,6 +91,24 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
         app.setContactPhone(request.getMobile());
         app.setStatus(ApplicationStatus.PENDING);
         app.setCreatedAt(LocalDateTime.now());
+
+        // Set direct fields
+        app.setOwnerName(request.getFullName());
+        app.setAddress(request.getAddress());
+        app.setCity(request.getCity());
+        app.setState(request.getState());
+        app.setPanNumber(request.getPan());
+        app.setPincode(request.getPincode());
+        app.setUpiId(request.getUpiId());
+        app.setReferralCode(request.getReferralCode());
+        app.setRegistrationType(request.getRegistrationType());
+
+        if (payment != null) {
+            app.setPaymentAmount(payment.getAmount());
+            app.setPaymentStatus(payment.getStatus());
+            app.setRazorpayPaymentId(payment.getRazorpayPaymentId());
+            app.setPaymentDate(payment.getCreatedAt());
+        }
         
         StringBuilder sb = new StringBuilder();
         sb.append("Address: ").append(request.getAddress()).append("\n")
@@ -93,7 +117,7 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
           .append("Occupation: ").append(request.getOccupation()).append("\n")
           .append("Experience: ").append(request.getExperience()).append("\n")
           .append("Referral Code: ").append(request.getReferralCode() != null ? request.getReferralCode() : "").append("\n")
-          .append("Registration Type: ").append(request.getRegistrationType() != null ? request.getRegistrationType() : "FREE");
+          .append("Registration Type: ").append(request.getRegistrationType() != null ? request.getRegistrationType() : "REGISTRATION");
         app.setDetails(sb.toString());
 
         StoreApplication saved = storeApplicationRepository.save(app);
@@ -113,7 +137,7 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
         StoreApplication app = new StoreApplication();
         app.setUser(user);
         app.setType(ApplicationType.MERCHANT);
-        app.setBusinessName(request.getOwnerName());
+        app.setBusinessName(request.getShopName());
         app.setContactEmail(request.getEmail());
         app.setContactPhone(request.getMobile());
         app.setStatus(ApplicationStatus.PENDING);
@@ -134,12 +158,26 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
         app.setPanDocumentUrl(request.getPanDocumentUrl());
         app.setAadharDocumentUrl(request.getAadharDocumentUrl());
         app.setGstDocumentUrl(request.getGstDocumentUrl());
+        app.setReferralCode(request.getReferralCode());
+        if (request.getReferralCode() != null && !request.getReferralCode().isBlank()) {
+            agentProfileRepository.findByReferralCode(request.getReferralCode().trim())
+                .ifPresentOrElse(
+                    agent -> {},
+                    () -> {
+                        throw new IllegalArgumentException("Invalid referral code");
+                    }
+                );
+        }
+        app.setPincode(request.getPincode());
+        app.setUpiId(request.getUpiId());
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Owner Name: ").append(request.getOwnerName()).append("\n")
+        sb.append("Shop Name: ").append(request.getShopName()).append("\n")
+          .append("Owner Name: ").append(request.getOwnerName()).append("\n")
           .append("Address: ").append(request.getAddress()).append("\n")
           .append("City: ").append(request.getCity()).append("\n")
           .append("State: ").append(request.getState()).append("\n")
+          .append("Pincode: ").append(request.getPincode()).append("\n")
           .append("GST: ").append(request.getGstNumber()).append("\n")
           .append("PAN: ").append(request.getPanNumber()).append("\n")
           .append("Aadhar: ").append(request.getAadharNumber()).append("\n")
@@ -187,6 +225,33 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
 
                 AgentProfile profile = new AgentProfile(user, agentId, referralCode);
                 profile.setStatus("ACTIVE");
+                profile.setRegistrationType(app.getRegistrationType());
+                profile.setPanNumber(app.getPanNumber());
+                profile.setUpiId(app.getUpiId());
+                profile.setJoiningDate(LocalDateTime.now());
+
+                if (app.getReferralCode() != null && !app.getReferralCode().isBlank()) {
+                    agentProfileRepository.findByReferralCode(app.getReferralCode().trim())
+                        .ifPresent(referringAgent -> {
+                            profile.setReferredBy(referringAgent);
+
+                            BigDecimal commissionAmount;
+                            if ("STARTER_KIT".equalsIgnoreCase(app.getRegistrationType())) {
+                                commissionAmount = new BigDecimal("1000.00");
+                            } else {
+                                commissionAmount = new BigDecimal("100.00");
+                            }
+
+                            Commission commission = new Commission();
+                            commission.setAgent(referringAgent);
+                            commission.setAmount(commissionAmount);
+                            commission.setDescription("Agent Referral Commission - " + user.getName());
+                            commission.setStatus("PENDING");
+                            commission.setCommissionType("AGENT");
+                            commissionRepository.save(commission);
+                        });
+                }
+
                 agentProfileRepository.save(profile);
             }
         } else if (app.getType() == ApplicationType.MERCHANT) {
@@ -198,6 +263,12 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
                 String merchantId = "LLB-MER-" + user.getId();
                 String ownerName = app.getOwnerName();
                 if (ownerName == null || ownerName.isEmpty()) ownerName = user.getName();
+                
+                // Add MERCHANT role
+                if (!user.getRole().contains("MERCHANT")) {
+                    user.setRole("MERCHANT");
+                    userRepository.save(user);
+                }
 
                 MerchantProfile mp = new MerchantProfile(
                     user, merchantId, ownerName, app.getContactPhone(), app.getContactEmail(),
@@ -212,21 +283,27 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
                 mp.setIfscCode(app.getIfscCode());
                 mp.setStatus("ACTIVE");
                 merchantProfileRepository.save(mp);
+
+                if (app.getReferralCode() != null && !app.getReferralCode().isBlank()) {
+
+                    agentProfileRepository.findByReferralCode(app.getReferralCode().trim())
+                        .ifPresent(referringAgent -> {
+
+                            Commission commission = new Commission();
+                            commission.setAgent(referringAgent);
+                            commission.setAmount(new BigDecimal("1000.00"));
+                            commission.setDescription("Merchant Referral Commission - " + app.getBusinessName());
+                            commission.setStatus("PENDING");
+                            commission.setCommissionType("MERCHANT");
+
+                            commissionRepository.save(commission);
+                        });
+                }
             }
 
-            // Create or update StoreCredit with 55,000 balance
+            // Create or update Wallet with 55,000 NXL balance
             java.math.BigDecimal creditAmount = java.math.BigDecimal.valueOf(55000);
-            StoreCredit sc = storeCreditRepository.findByUser(user).orElse(null);
-            if (sc == null) {
-                sc = new StoreCredit(user, creditAmount);
-            } else {
-                sc.setBalance(sc.getBalance().add(creditAmount));
-                sc.setUpdatedAt(java.time.LocalDateTime.now());
-            }
-            storeCreditRepository.save(sc);
-
-            // Initialize general wallet balance (creates entry if missing, starts at zero)
-            walletService.getBalance(user);
+            walletService.credit(user, creditAmount, "NXL Security Deposit Bonus", "DEPOSIT");
 
             // Create Merchant entity (for local scanning QR flow)
             if (merchantRepository.findByName(app.getBusinessName()) == null) {

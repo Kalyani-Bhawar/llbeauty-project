@@ -128,7 +128,7 @@ public class StoreMvcController {
             return "redirect:/auth/login?redirect=/store/agent/application-status";
         }
         String status = user.getAgentStatus();
-        if ("ACTIVE".equals(status)) return "redirect:/store/agent/dashboard";
+        if ("ACTIVE".equals(status)) return "redirect:/agent/dashboard";
         if ("NOT_APPLIED".equals(status) || status == null) return "redirect:/store/agent/apply";
 
         StoreApplication latestApp = storeApplicationRepository.findByUser(user).stream()
@@ -181,7 +181,7 @@ public class StoreMvcController {
         }
 
         if ("ACTIVE".equals(user.getAgentStatus())) {
-            return "redirect:/store/agent/dashboard";
+            return "redirect:/agent/dashboard";
         }
 
         List<StoreApplication> pending = storeApplicationRepository.findByUserAndTypeAndStatus(user, ApplicationType.AGENT, ApplicationStatus.PENDING);
@@ -202,21 +202,8 @@ public class StoreMvcController {
             return "redirect:/auth/login";
         }
 
-        if ("STARTER_KIT".equalsIgnoreCase(request.getRegistrationType())) {
-            bindingResult.rejectValue("registrationType", "error.request", "Starter Kit requires payment first");
-        }
-
-        if (bindingResult.hasErrors()) {
-            return "agent_apply";
-        }
-
-        try {
-            storeApplicationService.applyAgent(user.getId(), request);
-            return "redirect:/store/status";
-        } catch (Exception e) {
-            bindingResult.rejectValue("fullName", "error.request", e.getMessage());
-            return "agent_apply";
-        }
+        bindingResult.rejectValue("registrationType", "error.request", "Payment is required. Please submit the form via payment flow.");
+        return "agent_apply";
     }
 
     @PostMapping("/agent/pay-initiate")
@@ -249,13 +236,19 @@ public class StoreMvcController {
         }
 
         try {
+            double amount = 1000.0;
+            String paymentFor = "AGENT_REGISTRATION";
+            if ("STARTER_KIT".equalsIgnoreCase(request.getRegistrationType())) {
+                amount = 10000.0;
+                paymentFor = "AGENT_STARTER";
+            }
             String dummyRefId = "exe_start_" + System.currentTimeMillis();
-            Payment payment = paymentService.initiatePayment(user, 10000.0, "AGENT_STARTER", dummyRefId, "RAZORPAY");
+            Payment payment = paymentService.initiatePayment(user, amount, paymentFor, dummyRefId, "RAZORPAY");
 
             Map<String, Object> response = new HashMap<>();
             response.put("razorpayOrderId", payment.getRazorpayOrderId());
             response.put("razorpayKeyId", razorpayKeyId);
-            response.put("amount", 10000.0);
+            response.put("amount", amount);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -288,8 +281,8 @@ public class StoreMvcController {
         }
 
         try {
-            paymentService.verifyAndProcessPayment(orderId, paymentId, signature);
-            StoreApplicationResponse appResponse = storeApplicationService.applyAgent(user.getId(), request);
+            Payment payment = paymentService.verifyAndProcessPayment(orderId, paymentId, signature);
+            StoreApplicationResponse appResponse = storeApplicationService.applyAgent(user.getId(), request, payment);
             return ResponseEntity.ok(Map.of("success", true, "applicationId", appResponse.getId()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -392,7 +385,7 @@ public class StoreMvcController {
     public String agentDashboard(Model model) {
         User user = getAuthenticatedUser();
         if (user == null) {
-            return "redirect:/auth/login?redirect=/store/agent/dashboard";
+            return "redirect:/auth/login?redirect=/agent/dashboard";
         }
 
         if (!"ACTIVE".equals(user.getAgentStatus())) {

@@ -215,6 +215,15 @@ public class Product {
         return this.wholesalePrice;
     }
 
+    /**
+     * Convenience alias: in this system, `price` is the MRP (list price / retail price).
+     * Returns price, defaulting to 0.0 if null — prevents NPE in cart/checkout templates.
+     */
+    public Double getMrp() {
+        return this.price != null ? this.price : 0.0;
+    }
+
+
     @java.lang.SuppressWarnings("all")
     
     public String getImageUrl() {

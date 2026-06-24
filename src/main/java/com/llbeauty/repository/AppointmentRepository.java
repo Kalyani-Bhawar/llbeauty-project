@@ -50,4 +50,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
         @Param("status") String status, 
         @Param("startDate") LocalDate startDate, 
         @Param("endDate") LocalDate endDate);
+
+    List<Appointment> findByReferralCode(String referralCode);
 }

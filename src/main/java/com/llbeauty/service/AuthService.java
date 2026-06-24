@@ -85,7 +85,8 @@ public class AuthService {
                     commission.setAgent(agent);
                     commission.setAmount(new BigDecimal("50"));
                     commission.setDescription("User Registration Referral");
-                    commission.setStatus("APPROVED");
+                    commission.setStatus("PENDING");
+                    commission.setCommissionType("USER_REGISTRATION");
 
                     commissionRepository.save(commission);
 

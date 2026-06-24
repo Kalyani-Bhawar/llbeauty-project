@@ -43,6 +43,61 @@
                         <label class="text-white-50 small uppercase d-block">Submission Date</label>
                         <span class="fs-6" th:text="${#temporals.format(app.createdAt, 'dd MMM yyyy, hh:mm a')}">Date</span>
                     </div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">Registration Type</label>
+					    <span th:text="${app.registrationType}"></span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">Payment Amount</label>
+					    <span th:text="${app.paymentAmount}"></span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">Payment Status</label>
+					    <span th:text="${app.paymentStatus}"></span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">Payment ID</label>
+					    <span th:text="${app.razorpayPaymentId}"></span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">PAN Number</label>
+					    <span th:text="${app.panNumber}"></span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">UPI ID</label>
+					    <span th:text="${app.upiId}"></span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">Pincode</label>
+					    <span th:text="${app.pincode}"></span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">Referral Code</label>
+					    <span th:text="${app.referralCode}"></span>
+					</div>
+					
+					<div class="col-md-12">
+					    <label class="text-white-50 small uppercase d-block">Address</label>
+					    <span th:text="${app.address}"></span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">City</label>
+					    <span th:text="${app.city}"></span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">State</label>
+					    <span th:text="${app.state}"></span>
+					</div>
 
                     <div class="col-md-12">
                         <hr class="border-secondary">

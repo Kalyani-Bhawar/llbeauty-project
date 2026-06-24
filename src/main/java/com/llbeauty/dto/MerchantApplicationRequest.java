@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 public class MerchantApplicationRequest {
+    @NotBlank(message = "Shop name is required")
+    private String shopName;
+
     @NotBlank(message = "Owner name is required")
     private String ownerName;
 
@@ -24,6 +27,10 @@ public class MerchantApplicationRequest {
 
     @NotBlank(message = "State is required")
     private String state;
+
+    @NotBlank(message = "Pincode is required")
+    @Pattern(regexp = "^\\d{6}$", message = "Enter a valid 6-digit pincode")
+    private String pincode;
 
     private String gstNumber; // Optional
 
@@ -48,21 +55,26 @@ public class MerchantApplicationRequest {
     @Pattern(regexp = "^[A-Z]{4}0[A-Z0-9]{6}$", message = "Enter a valid 11-digit IFSC code")
     private String ifscCode;
 
+    @NotBlank(message = "UPI ID is required")
+    private String upiId;
+
     @NotBlank(message = "PAN upload is required")
     private String panDocumentUrl;
 
     @NotBlank(message = "Aadhar upload is required")
     private String aadharDocumentUrl;
 
-
     private String gstDocumentUrl; // Optional
 
     private Boolean onlineSelling = false;
     private Boolean offlineSelling = false;
+    private String referralCode;
 
     public MerchantApplicationRequest() {}
 
     // Getters and Setters
+    public String getShopName() { return shopName; }
+    public void setShopName(String shopName) { this.shopName = shopName; }
     public String getOwnerName() { return ownerName; }
     public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
     public String getMobile() { return mobile; }
@@ -75,6 +87,8 @@ public class MerchantApplicationRequest {
     public void setCity(String city) { this.city = city; }
     public String getState() { return state; }
     public void setState(String state) { this.state = state; }
+    public String getPincode() { return pincode; }
+    public void setPincode(String pincode) { this.pincode = pincode; }
     public String getGstNumber() { return gstNumber; }
     public void setGstNumber(String gstNumber) { this.gstNumber = gstNumber; }
     public String getPanNumber() { return panNumber; }
@@ -89,6 +103,8 @@ public class MerchantApplicationRequest {
     public void setBankAccountNumber(String bankAccountNumber) { this.bankAccountNumber = bankAccountNumber; }
     public String getIfscCode() { return ifscCode; }
     public void setIfscCode(String ifscCode) { this.ifscCode = ifscCode; }
+    public String getUpiId() { return upiId; }
+    public void setUpiId(String upiId) { this.upiId = upiId; }
     public String getPanDocumentUrl() { return panDocumentUrl; }
     public void setPanDocumentUrl(String panDocumentUrl) { this.panDocumentUrl = panDocumentUrl; }
     public String getAadharDocumentUrl() { return aadharDocumentUrl; }
@@ -99,4 +115,6 @@ public class MerchantApplicationRequest {
     public void setOnlineSelling(Boolean onlineSelling) { this.onlineSelling = onlineSelling; }
     public Boolean getOfflineSelling() { return offlineSelling; }
     public void setOfflineSelling(Boolean offlineSelling) { this.offlineSelling = offlineSelling; }
+    public String getReferralCode() { return referralCode; }
+    public void setReferralCode(String referralCode) { this.referralCode = referralCode; }
 }

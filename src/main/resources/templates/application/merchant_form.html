@@ -59,8 +59,12 @@
                 <div class="eva-card p-5">
                     <form th:action="@{/apply/merchant}" th:object="${merchantApplication}" method="post">
                         
-                        <h5 class="text-gold mb-3 border-bottom border-secondary pb-2">Personal & Contact Info</h5>
+                        <h5 class="text-gold mb-3 border-bottom border-secondary pb-2">Business & Contact Info</h5>
                         <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted">Shop Name</label>
+                                <input type="text" class="form-control" th:field="*{shopName}" required>
+                            </div>
                             <div class="col-md-6">
                                 <label class="form-label text-muted">Owner Name</label>
                                 <input type="text" class="form-control" th:field="*{ownerName}" required>
@@ -93,13 +97,37 @@
                                 <label class="form-label text-muted">Full Address</label>
                                 <textarea class="form-control" th:field="*{address}" rows="2" required></textarea>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label text-muted">City</label>
                                 <input type="text" class="form-control" th:field="*{city}" required>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label text-muted">State</label>
                                 <input type="text" class="form-control" th:field="*{state}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">Pincode</label>
+                                <input type="text" class="form-control" th:field="*{pincode}" required>
+                            </div>
+                        </div>
+
+                        <h5 class="text-gold mb-3 border-bottom border-secondary pb-2">Bank Details</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted">Account Holder Name</label>
+                                <input type="text" class="form-control" th:field="*{bankAccountHolderName}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted">Account Number</label>
+                                <input type="text" class="form-control" th:field="*{bankAccountNumber}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted">IFSC Code</label>
+                                <input type="text" class="form-control" th:field="*{ifscCode}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted">UPI ID</label>
+                                <input type="text" class="form-control" th:field="*{upiId}">
                             </div>
                         </div>
 
@@ -120,6 +148,18 @@
                                 <input type="text" class="form-control" th:field="*{gstNumber}">
                                 <input type="hidden" th:field="*{gstDocumentUrl}" value="/mock/gst.jpg">
                             </div>
+                        </div>
+
+                        <h5 class="text-gold mb-3 border-bottom border-secondary pb-2">Referral</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label text-muted">Referral Code (Optional)</label>
+                                <input type="text" class="form-control" th:field="*{referralCode}">
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning text-dark fw-bold mt-4">
+                            Note: A security deposit of ₹50,000 is required to complete the merchant application.
                         </div>
 
                         <div class="d-grid mt-5">

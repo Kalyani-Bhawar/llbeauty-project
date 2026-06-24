@@ -30,8 +30,6 @@ public class Invoice {
     @Column(name = "product_discounts", nullable = false)
     private Double productDiscounts = 0.0;
 
-    @Column(name = "bulk_discounts", nullable = false)
-    private Double bulkDiscounts = 0.0;
 
     @Column(name = "total_savings", nullable = false)
     private Double totalSavings = 0.0;
@@ -111,13 +109,6 @@ public class Invoice {
         this.productDiscounts = productDiscounts;
     }
 
-    public Double getBulkDiscounts() {
-        return bulkDiscounts;
-    }
-
-    public void setBulkDiscounts(Double bulkDiscounts) {
-        this.bulkDiscounts = bulkDiscounts;
-    }
 
     public Double getTotalSavings() {
         return totalSavings;

@@ -21,6 +21,9 @@ public class MerchantProfile {
     @Column(name = "owner_name", nullable = false)
     private String ownerName;
 
+    @Column(name = "shop_name")
+    private String shopName;
+
     @Column(name = "mobile", nullable = false)
     private String mobile;
 
@@ -120,6 +123,14 @@ public class MerchantProfile {
 
     public void setOwnerName(String ownerName) {
         this.ownerName = ownerName;
+    }
+
+    public String getShopName() {
+        return shopName;
+    }
+
+    public void setShopName(String shopName) {
+        this.shopName = shopName;
     }
 
     public String getMobile() {

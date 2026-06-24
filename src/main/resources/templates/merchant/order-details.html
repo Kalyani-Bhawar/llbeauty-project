@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Order #' + ${order.id} + ' – EVA'">Order Details – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        /* ── Layout: sticky footer ── */
+        html, body {
+            height: 100%;
+        }
+        body {
+            background-color: #0c0c0c;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main.page-content {
+            flex: 1;
+            padding: 48px 0 80px;
+        }
+
+        /* ── Cards ── */
+        .panel-card {
+            background: rgba(22,22,22,0.95);
+            border: 1px solid rgba(201,168,76,0.15);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+        .panel-card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: #c9a84c;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 20px;
+        }
+
+        /* ── Table ── */
+        .table-custom {
+            color: rgba(255,255,255,0.85);
+            margin: 0;
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .table-custom thead th {
+            border-bottom: 1px solid rgba(201,168,76,0.2);
+            color: #c9a84c;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .table-custom tbody td {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 16px 14px;
+            font-size: 0.9rem;
+            vertical-align: middle;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ── Status badges ── */
+        .badge-status {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ── Summary rows ── */
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-label { color: rgba(255,255,255,0.5); }
+        .summary-total {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #c9a84c;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="page-content">
+        <div class="container">
+
+            <!-- ── Breadcrumb / header ── -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="brand-font mb-1" style="color:#c9a84c;">
+                        Order
+                        <span th:text="'#' + ${order.id}">#0</span>
+                    </h2>
+                    <p class="text-white-50 small mb-0"
+                       th:text="${#temporals.format(order.createdAt, 'dd MMMM yyyy, HH:mm')}">Date</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="/merchant/orders" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Orders
+                    </a>
+                    <a href="/merchant/dashboard" class="btn btn-outline-light rounded-pill px-4">Dashboard</a>
+                </div>
+            </div>
+
+            <!-- ── Flash error (if redirected here with a flash) ── -->
+            <div th:if="${errorMessage}" class="alert alert-danger rounded-3 mb-4"
+                 th:text="${errorMessage}"></div>
+
+            <div class="row g-4">
+
+                <!-- ── Left: Items table ── -->
+                <div class="col-lg-8">
+                    <div class="panel-card">
+                        <div class="panel-card-title">
+                            <i class="bi bi-bag-check"></i> Order Items
+                            <span class="ms-auto text-white-50 small fw-normal"
+                                  th:text="${items != null ? items.size() : 0} + ' item(s)'">0 item(s)</span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th style="width:35%">Product</th>
+                                        <th style="width:13%">MRP</th>
+                                        <th style="width:13%">Disc %</th>
+                                        <th style="width:13%">Unit Price</th>
+                                        <th style="width:8%" class="text-center">Qty</th>
+                                        <th style="width:18%" class="text-end">Line Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Items rows -->
+                                    <tr th:each="item : ${items}">
+                                        <td>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <img th:if="${item.product != null and item.product.imageUrl != null}"
+                                                     th:src="${item.product.imageUrl}"
+                                                     style="width:42px;height:42px;object-fit:cover;border-radius:8px;"
+                                                     alt="Product image">
+                                                <div>
+                                                    <div class="fw-bold"
+                                                         th:text="${item.product != null ? item.product.name : 'Unknown Product'}">Product</div>
+                                                </div>
+                                            </div>
+                                        </td>
+										<td th:text="${item.product != null ? '₹' + #numbers.formatDecimal(item.product.mrp, 1, 0) : '₹0'}"></td>
+                                        <td th:text="${item.merchantDiscountPercent != null ? item.merchantDiscountPercent + '%' : '0%'}">0%</td>
+                                        <td class="text-warning fw-bold"
+                                            th:text="${item.finalPrice != null ? '₹' + #numbers.formatDecimal(item.finalPrice, 1, 0) : '₹0'}">₹0</td>
+                                        <td class="text-center fw-bold"
+                                            th:text="${item.quantity != null ? item.quantity : 0}">0</td>
+                                        <td class="text-end fw-bold text-success"
+                                            th:text="${(item.finalPrice != null and item.quantity != null) ? '₹' + #numbers.formatDecimal(item.finalPrice * item.quantity, 1, 0) : '₹0'}">₹0</td>
+                                    </tr>
+
+                                    <!-- Empty state -->
+                                    <tr th:if="${items == null or items.isEmpty()}">
+                                        <td colspan="6" class="text-center text-white-50 py-5">
+                                            <i class="bi bi-box-seam d-block mb-2" style="font-size:2rem;"></i>
+                                            No items found for this order.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Right: Summary & Status ── -->
+                <div class="col-lg-4">
+
+                    <!-- Order Summary -->
+                    <div class="panel-card">
+                        <div class="panel-card-title"><i class="bi bi-receipt"></i> Order Summary</div>
+
+                        <div class="summary-row">
+                            <span class="summary-label">Subtotal (MRP)</span>
+                            <span th:text="${order.subtotal != null ? '₹' + #numbers.formatDecimal(order.subtotal, 1, 0) : '₹0'}">₹0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Product Discounts</span>
+                            <span class="text-success"
+                                  th:text="${order.productDiscounts != null ? '-₹' + #numbers.formatDecimal(order.productDiscounts, 1, 0) : '-₹0'}">-₹0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Bulk Discounts</span>
+                            <span class="text-success"
+                                  th:text="${order.bulkDiscounts != null ? '-₹' + #numbers.formatDecimal(order.bulkDiscounts, 1, 0) : '-₹0'}">-₹0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Total Savings</span>
+                            <span class="text-success fw-bold"
+                                  th:text="${order.totalSavings != null ? '+ ₹' + #numbers.formatDecimal(order.totalSavings, 1, 0) : '+ ₹0'}">+₹0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">NXL Wallet Used</span>
+                            <span class="text-info"
+                                  th:text="${(order.walletAmountUsed != null and order.walletAmountUsed > 0) ? '-₹' + #numbers.formatDecimal(order.walletAmountUsed, 1, 0) : '₹0'}">₹0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Razorpay Paid</span>
+                            <span th:text="${(order.razorpayAmountPaid != null and order.razorpayAmountPaid > 0) ? '₹' + #numbers.formatDecimal(order.razorpayAmountPaid, 1, 0) : '₹0'}">₹0</span>
+                        </div>
+
+                        <!-- Total Amount -->
+                        <div class="summary-row mt-2 pt-2" style="border-top: 1px solid rgba(201,168,76,0.25);">
+                            <span class="summary-total">Total Paid</span>
+                            <span class="summary-total"
+                                  th:text="${order.finalAmount != null ? '₹' + #numbers.formatDecimal(order.finalAmount, 1, 2) : '₹0.00'}">₹0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Order Status -->
+                    <div class="panel-card">
+                        <div class="panel-card-title"><i class="bi bi-info-circle"></i> Order Status</div>
+
+                        <!-- SUCCESS / DELIVERED -->
+                        <span th:if="${order.orderStatus == 'SUCCESS' or order.orderStatus == 'DELIVERED'}"
+                              class="badge badge-status"
+                              style="background:rgba(46,204,113,0.1);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);">
+                            <i class="bi bi-check-circle me-1"></i> COMPLETED
+                        </span>
+                        <!-- PENDING -->
+                        <span th:if="${order.orderStatus == 'PENDING'}"
+                              class="badge badge-status"
+                              style="background:rgba(241,196,15,0.1);color:#f1c40f;border:1px solid rgba(241,196,15,0.3);">
+                            <i class="bi bi-clock me-1"></i> PENDING
+                        </span>
+                        <!-- PAYMENT_FAILED / FAILED / CANCELLED -->
+                        <span th:if="${order.orderStatus == 'PAYMENT_FAILED' or order.orderStatus == 'FAILED' or order.orderStatus == 'CANCELLED'}"
+                              class="badge badge-status"
+                              style="background:rgba(231,76,60,0.1);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);">
+                            <i class="bi bi-x-circle me-1"></i> FAILED
+                        </span>
+                        <!-- Unknown fallback -->
+                        <span th:if="${order.orderStatus != 'SUCCESS' and order.orderStatus != 'DELIVERED' and order.orderStatus != 'PENDING' and order.orderStatus != 'PAYMENT_FAILED' and order.orderStatus != 'FAILED' and order.orderStatus != 'CANCELLED'}"
+                              class="badge badge-status"
+                              style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1);"
+                              th:text="${order.orderStatus != null ? order.orderStatus : 'PENDING'}">
+                            UNKNOWN
+                        </span>
+
+                        <!-- Razorpay ID if present -->
+                        <div th:if="${order.razorpayPaymentId != null and !#strings.isEmpty(order.razorpayPaymentId)}"
+                             class="mt-3 small text-white-50">
+                            <i class="bi bi-credit-card me-1"></i>
+                            Payment ID: <span class="text-white" th:text="${order.razorpayPaymentId}"></span>
+                        </div>
+                    </div>
+
+                </div><!-- /col-lg-4 -->
+            </div><!-- /row -->
+
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

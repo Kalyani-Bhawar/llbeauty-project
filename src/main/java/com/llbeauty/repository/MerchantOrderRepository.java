@@ -14,6 +14,9 @@ public interface MerchantOrderRepository extends JpaRepository<MerchantOrder, Lo
     MerchantOrder findByRazorpayOrderId(String razorpayOrderId);
     long countByUserAndOrderStatus(User user, String orderStatus);
 
-    @Query("SELECT COALESCE(SUM(o.totalSavings), 0) FROM MerchantOrder o WHERE o.user = :user AND o.orderStatus = 'SUCCESS'")
+    @Query("SELECT COALESCE(SUM(o.totalSavings), 0.0) FROM MerchantOrder o WHERE o.user = :user AND o.orderStatus = 'SUCCESS'")
     Double sumTotalSavingsByUser(@Param("user") User user);
+
+    @Query("SELECT COALESCE(SUM(o.finalAmount), 0.0) FROM MerchantOrder o WHERE o.user = :user AND o.orderStatus = 'SUCCESS'")
+    Double sumTotalAmountByUser(@Param("user") User user);
 }

@@ -17,6 +17,7 @@
                 <tr>
                     <th>ID</th>
                     <th>Owner Name</th>
+                    <th>Shop Name</th>
                     <th>Business Type</th>
                     <th>Mobile</th>
                     <th>City/State</th>
@@ -28,6 +29,7 @@
                 <tr th:each="app : ${applications}">
                     <td th:text="${app.id}"></td>
                     <td th:text="${app.ownerName}"></td>
+                    <td th:text="${app.shopName}"></td>
                     <td th:text="${app.businessType}"></td>
                     <td th:text="${app.mobileNumber}"></td>
                     <td th:text="${app.city + ', ' + app.state}"></td>

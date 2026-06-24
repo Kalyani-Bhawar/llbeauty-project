@@ -83,7 +83,48 @@ public class StoreApplication {
     @Column(name = "gst_document_url")
     private String gstDocumentUrl;
 
+    @Column(name = "registration_type")
+    private String registrationType;
+
+    @Column(name = "payment_amount")
+    private Double paymentAmount;
+
+    @Column(name = "payment_status")
+    private String paymentStatus;
+
+    @Column(name = "razorpay_payment_id")
+    private String razorpayPaymentId;
+
+    @Column(name = "payment_date")
+    private LocalDateTime paymentDate;
+
+    @Column(name = "upi_id")
+    private String upiId;
+
+    @Column(name = "pincode")
+    private String pincode;
+
+    @Column(name = "referral_code")
+    private String referralCode;
+
     // Getters & setters
+    public String getRegistrationType() { return registrationType; }
+    public void setRegistrationType(String registrationType) { this.registrationType = registrationType; }
+    public Double getPaymentAmount() { return paymentAmount; }
+    public void setPaymentAmount(Double paymentAmount) { this.paymentAmount = paymentAmount; }
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+    public String getRazorpayPaymentId() { return razorpayPaymentId; }
+    public void setRazorpayPaymentId(String razorpayPaymentId) { this.razorpayPaymentId = razorpayPaymentId; }
+    public LocalDateTime getPaymentDate() { return paymentDate; }
+    public void setPaymentDate(LocalDateTime paymentDate) { this.paymentDate = paymentDate; }
+    public String getUpiId() { return upiId; }
+    public void setUpiId(String upiId) { this.upiId = upiId; }
+    public String getPincode() { return pincode; }
+    public void setPincode(String pincode) { this.pincode = pincode; }
+    public String getReferralCode() { return referralCode; }
+    public void setReferralCode(String referralCode) { this.referralCode = referralCode; }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public User getUser() { return user; }

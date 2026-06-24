@@ -35,7 +35,7 @@ public class StoreController {
             @AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails,
             @Valid @RequestBody AgentApplicationRequest request) {
         User user = getCurrentUser(userDetails);
-        StoreApplicationResponse response = storeService.applyAgent(user.getId(), request);
+        StoreApplicationResponse response = storeService.applyAgent(user.getId(), request, null);
         return ResponseEntity.ok(response);
     }
 

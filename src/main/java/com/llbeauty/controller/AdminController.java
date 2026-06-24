@@ -179,7 +179,7 @@ public class AdminController {
         model.addAttribute("referralBookings", referralBookings);
         
         double totalCommissionPaid = commissionRepository.findAll().stream()
-                .filter(c -> "APPROVED".equalsIgnoreCase(c.getStatus()))
+                .filter(c -> "PAID".equalsIgnoreCase(c.getStatus()))
                 .mapToDouble(c -> c.getAmount() != null ? c.getAmount().doubleValue() : 0.0)
                 .sum();
         model.addAttribute("totalCommissionPaid", totalCommissionPaid);
@@ -426,7 +426,8 @@ public class AdminController {
                         double amount = (app.getTotalAmount() != null ? app.getTotalAmount() : 0.0) * 0.10;
                         commission.setAmount(BigDecimal.valueOf(amount));
                         commission.setDescription("Commission for Appointment #" + app.getId());
-                        commission.setStatus("APPROVED");
+                        commission.setStatus("PENDING");
+                        commission.setCommissionType("SALON_BOOKING");
                         commissionRepository.save(commission);
                     });
                 }
@@ -603,13 +604,13 @@ public class AdminController {
                         if (finalAmount.compareTo(BigDecimal.ZERO) > 0) {
                             BigDecimal commissionAmount = finalAmount.multiply(new BigDecimal("0.10"));
                             
-                            Commission commission = new Commission();
-                            commission.setAgent(agent);
-                            commission.setAmount(commissionAmount);
-                            commission.setDescription("Franchise Referral Commission - Lead #" + lead.getId());
-                            commission.setStatus("APPROVED");
-                            commission.setCommissionType("FRANCHISE");
-                            commissionRepository.save(commission);
+                             Commission commission = new Commission();
+                             commission.setAgent(agent);
+                             commission.setAmount(commissionAmount);
+                             commission.setDescription("Franchise Referral Commission - Lead #" + lead.getId());
+                             commission.setStatus("PENDING");
+                             commission.setCommissionType("FRANCHISE");
+                             commissionRepository.save(commission);
                             
 //                            walletService.credit(agent.getUser(), commissionAmount, 
 //                                "Franchise Referral Commission for " + lead.getName(), "COMMISSION");

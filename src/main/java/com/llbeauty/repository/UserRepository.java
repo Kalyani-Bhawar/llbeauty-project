@@ -26,4 +26,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
            "(:search IS NULL OR :search = '' OR LOWER(u.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR u.mobile LIKE %:search%) AND " +
            "(:blocked IS NULL OR u.isBlocked = :blocked) ORDER BY u.createdAt DESC")
     List<User> searchUsersList(@Param("search") String search, @Param("blocked") Boolean blocked);
+
+    List<User> findByReferralCode(String referralCode);
 }

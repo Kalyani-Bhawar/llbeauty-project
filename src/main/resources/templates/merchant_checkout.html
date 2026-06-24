@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merchant Checkout – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+	<link href="/css/style.css" rel="stylesheet">
+	<style>
+        :root {
+            --eva-gold: #D4AF37;
+            --eva-black: #111111;
+            --eva-dark: #222222;
+        }
+        body {
+            background-color: var(--eva-black);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+        }
+        .eva-card {
+            background-color: var(--eva-dark);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(212, 175, 55, 0.1);
+        }
+        .text-gold { color: var(--eva-gold) !important; }
+        .table-custom {
+            color: rgba(255,255,255,0.85);
+            margin: 0;
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .table-custom thead th {
+            border-bottom: 1px solid rgba(212,175,55,0.2);
+            color: var(--eva-gold);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .table-custom tbody td {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+		html, body {
+		    height: 100%;
+		}
+		
+		body {
+		    display: flex;
+		    flex-direction: column;
+		    min-height: 100vh;
+		}
+		
+		.container.py-5 {
+		    flex: 1;
+		}
+		html, body {
+		    height: 100%;
+		}
+		
+		body {
+		    display: flex;
+		    flex-direction: column;
+		}
+		
+		main {
+		    flex: 1;
+		}
+		footer {
+		    margin-top: auto;
+		}
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+	<main class="flex-grow-1">
+	    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-gold fw-bold mb-0">Merchant Order Checkout</h2>
+            <a href="/merchant/cart" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-left me-1"></i> Back to Cart
+            </a>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="eva-card p-4 mb-4">
+                    <h5 class="mb-4">Order Items</h5>
+                    <div class="table-responsive">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>MRP</th>
+                                    <th>Merchant Disc.</th>
+                                    <th>Final Price</th>
+                                    <th>Qty</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="item : ${items}">
+                                    <td th:text="${item.product.name}">Product</td>
+                                    <td th:text="'₹' + ${#numbers.formatDecimal(item.mrp, 1, 0)}">₹0</td>
+                                    <td th:text="${item.merchantDiscountPercent} + '%'">0%</td>
+                                    <td class="text-gold fw-bold" th:text="'₹' + ${#numbers.formatDecimal(item.bulkPrice, 1, 0)}">₹0</td>
+                                    <td th:text="${item.quantity}">0</td>
+                                    <td class="text-end fw-bold" th:text="'₹' + ${#numbers.formatDecimal(item.total, 1, 0)}">₹0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="eva-card p-4">
+                    <h5 class="mb-4 border-bottom pb-2" style="border-color: rgba(212,175,55,0.2)!important;">Order Summary</h5>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-white-50">Subtotal (MRP)</span>
+                        <span th:text="'₹' + ${#numbers.formatDecimal(subtotal, 1, 0)}">₹0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 text-success">
+                        <span>Merchant Discount</span>
+                        <span th:text="'-₹' + ${#numbers.formatDecimal(productDiscounts, 1, 0)}">-₹0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3 fw-bold fs-5 text-gold mt-2">
+                        <span>Final Amount</span>
+                        <span th:text="'₹' + ${#numbers.formatDecimal(finalAmount, 1, 0)}">₹0</span>
+                    </div>
+
+                    <div class="alert alert-secondary bg-dark border-secondary text-light p-3 mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Wallet Balance (NXL)</span>
+                            <span class="fw-bold text-success" th:text="'₹' + ${#numbers.formatDecimal(walletBalance, 1, 0)}">₹0</span>
+                        </div>
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" id="useWalletCheck" checked>
+                            <label class="form-check-label" for="useWalletCheck">Pay using NXL Wallet</label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Paid from Wallet</span>
+                        <span class="text-success" id="walletUsedDisplay" th:text="'-₹' + ${#numbers.formatDecimal(walletUsed, 1, 0)}">-₹0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4 fw-bold fs-4 text-white border-top pt-2" style="border-color: rgba(212,175,55,0.2)!important;">
+                        <span>To Pay (Razorpay)</span>
+                        <span id="remainingAmountDisplay" th:text="'₹' + ${#numbers.formatDecimal(remainingAmount, 1, 0)}">₹0</span>
+                    </div>
+
+                    <button id="pay-btn" class="btn btn-warning w-100 py-3 fw-bold" style="background-color: var(--eva-gold); border: none;">
+                        Place Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+	</main>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script th:inline="javascript">
+        const finalAmount = [[${finalAmount}]];
+        const maxWalletBal = [[${walletBalance}]];
+        const razorpayKey = [[${razorpayKeyId}]];
+        
+        let useWallet = true;
+        let walletToUse = Math.min(maxWalletBal, finalAmount);
+        let remainingToPay = finalAmount - walletToUse;
+
+        const walletCheck = document.getElementById('useWalletCheck');
+        const walletUsedDisplay = document.getElementById('walletUsedDisplay');
+        const remainingAmountDisplay = document.getElementById('remainingAmountDisplay');
+        const payBtn = document.getElementById('pay-btn');
+
+        walletCheck.addEventListener('change', function() {
+            useWallet = this.checked;
+            if(useWallet) {
+                walletToUse = Math.min(maxWalletBal, finalAmount);
+            } else {
+                walletToUse = 0;
+            }
+            remainingToPay = finalAmount - walletToUse;
+            
+            walletUsedDisplay.innerText = '-₹' + walletToUse.toFixed(0);
+            remainingAmountDisplay.innerText = '₹' + remainingToPay.toFixed(0);
+        });
+
+        payBtn.addEventListener('click', function() {
+            payBtn.disabled = true;
+            payBtn.innerText = 'Processing...';
+
+            fetch('/merchant/checkout/place-order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.content || ''
+                },
+                body: new URLSearchParams({
+                    'useWallet': useWallet
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    window.location.href = data.redirectUrl;
+                } else if(data.status === 'payment_pending') {
+                    if (data.useMock) {
+                        alert("Mock payment flow (Test Mode). Order placed successfully.");
+                        confirmPayment(data.orderId, 'pay_mock_' + Date.now(), data.razorpayOrderId, 'mock_sig');
+                    } else {
+                        var options = {
+                            "key": data.key,
+                            "amount": remainingToPay * 100,
+                            "currency": "INR",
+                            "name": "EVA Merchant",
+                            "description": "Wholesale Purchase",
+                            "order_id": data.razorpayOrderId,
+                            "handler": function (response){
+                                confirmPayment(data.orderId, response.razorpay_payment_id, response.razorpay_order_id, response.razorpay_signature);
+                            },
+                            "modal": {
+                                "ondismiss": function(){
+                                    payBtn.disabled = false;
+                                    payBtn.innerText = 'Place Order';
+                                    fetch('/merchant/checkout/rollback', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                        body: new URLSearchParams({ 'orderId': data.orderId })
+                                    });
+                                }
+                            },
+                            "theme": { "color": "#D4AF37" }
+                        };
+                        var rzp1 = new Razorpay(options);
+                        rzp1.open();
+                    }
+                } else {
+                    alert(data.message || 'Error placing order');
+                    payBtn.disabled = false;
+                    payBtn.innerText = 'Place Order';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Server error occurred');
+                payBtn.disabled = false;
+                payBtn.innerText = 'Place Order';
+            });
+        });
+
+        function confirmPayment(orderId, paymentId, rzpOrderId, rzpSignature) {
+            fetch('/merchant/checkout/confirm', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    'orderId': orderId,
+                    'paymentId': paymentId,
+                    'razorpayOrderId': rzpOrderId || '',
+                    'razorpaySignature': rzpSignature || ''
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    alert(data.message || 'Payment confirmation failed');
+                    payBtn.disabled = false;
+                    payBtn.innerText = 'Place Order';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

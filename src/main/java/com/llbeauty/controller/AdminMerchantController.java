@@ -1,7 +1,9 @@
 package com.llbeauty.controller;
 
-import com.llbeauty.entity.MerchantApplication;
-import com.llbeauty.service.MerchantApplicationService;
+import com.llbeauty.entity.StoreApplication;
+import com.llbeauty.entity.ApplicationType;
+import com.llbeauty.service.StoreApplicationService;
+import com.llbeauty.repository.StoreApplicationRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,15 +17,17 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminMerchantController {
 
-    private final MerchantApplicationService applicationService;
+    private final StoreApplicationService applicationService;
+    private final StoreApplicationRepository applicationRepository;
 
-    public AdminMerchantController(MerchantApplicationService applicationService) {
+    public AdminMerchantController(StoreApplicationService applicationService, StoreApplicationRepository applicationRepository) {
         this.applicationService = applicationService;
+        this.applicationRepository = applicationRepository;
     }
 
     @GetMapping("/applications")
     public String viewApplications(Model model) {
-        List<MerchantApplication> applications = applicationService.getAllApplications();
+        List<StoreApplication> applications = applicationRepository.findAllByType(ApplicationType.MERCHANT);
         model.addAttribute("applications", applications);
         model.addAttribute("activeTab", "merchant-applications");
         return "admin/merchant_applications";
@@ -41,9 +45,9 @@ public class AdminMerchantController {
     }
 
     @PostMapping("/applications/{id}/reject")
-    public String rejectApplication(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String rejectApplication(@PathVariable Long id, @RequestParam(required = false, defaultValue = "Rejected by admin") String remarks, RedirectAttributes redirectAttributes) {
         try {
-            applicationService.rejectApplication(id);
+            applicationService.rejectApplication(id, remarks);
             redirectAttributes.addFlashAttribute("successMessage", "Merchant application rejected.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error rejecting application: " + e.getMessage());

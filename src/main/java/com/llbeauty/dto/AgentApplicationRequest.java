@@ -16,8 +16,18 @@ public class AgentApplicationRequest {
     @Email(message = "Enter a valid email address")
     private String email;
 
+    @NotBlank(message = "PAN number is required")
+    @Pattern(regexp = "^[A-Z]{5}[0-9]{4}[A-Z]{1}$", message = "Enter a valid PAN number")
     private String pan;
+
     private String aadhaar;
+
+    @NotBlank(message = "Pincode is required")
+    @Pattern(regexp = "^[1-9][0-9]{5}$", message = "Enter a valid 6-digit pincode")
+    private String pincode;
+
+    @NotBlank(message = "UPI ID is required")
+    private String upiId;
 
     @NotBlank(message = "Address is required")
     private String address;
@@ -65,4 +75,10 @@ public class AgentApplicationRequest {
     public void setExperience(String experience) { this.experience = experience; }
     public String getReferralCode() { return referralCode; }
     public void setReferralCode(String referralCode) { this.referralCode = referralCode; }
+
+    public String getPincode() { return pincode; }
+    public void setPincode(String pincode) { this.pincode = pincode; }
+
+    public String getUpiId() { return upiId; }
+    public void setUpiId(String upiId) { this.upiId = upiId; }
 }

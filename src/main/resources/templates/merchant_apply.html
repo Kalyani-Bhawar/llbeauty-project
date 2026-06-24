@@ -149,6 +149,7 @@
                     <form id="merchantApplyForm" th:object="${merchantRequest}">
                         
                         <div class="row g-3">
+
                             <!-- Owner Name -->
                             <div class="col-md-6">
                                 <label for="ownerName" class="form-label">Owner Name</label>
@@ -173,6 +174,13 @@
                                        th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''" placeholder="Business email address" required>
                                 <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
                             </div>
+							<!-- Shop Name -->
+							<div class="col-md-6">
+							<label for="shopName" class="form-label">Shop Name</label>
+							<input type="text" th:field="*{shopName}" id="shopName" class="form-control" 
+							 th:classappend="${#fields.hasErrors('shopName')} ? 'is-invalid' : ''" placeholder="Business or Shop name" required>
+							 <div class="invalid-feedback" th:if="${#fields.hasErrors('shopName')}" th:errors="*{shopName}"></div>
+							 </div>
 
                             <!-- Business Type -->
                             <div class="col-md-6">
@@ -188,6 +196,11 @@
                                 </select>
                                 <div class="invalid-feedback" th:if="${#fields.hasErrors('businessType')}" th:errors="*{businessType}"></div>
                             </div>
+							
+							<div class="col-md-6">
+							    <label>Referral Code (Optional)</label>
+							    <input type="text" class="form-control" th:field="*{referralCode}" placeholder="Enter Referral Code" required>
+							</div>
 
                             <!-- Address -->
                             <div class="col-md-12">
@@ -198,7 +211,7 @@
                             </div>
 
                             <!-- City -->
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="city" class="form-label">City</label>
                                 <input type="text" th:field="*{city}" id="city" class="form-control" 
                                        th:classappend="${#fields.hasErrors('city')} ? 'is-invalid' : ''" placeholder="City name" required>
@@ -206,11 +219,20 @@
                             </div>
 
                             <!-- State -->
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="state" class="form-label">State</label>
                                 <input type="text" th:field="*{state}" id="state" class="form-control" 
                                        th:classappend="${#fields.hasErrors('state')} ? 'is-invalid' : ''" placeholder="State name" required>
                                 <div class="invalid-feedback" th:if="${#fields.hasErrors('state')}" th:errors="*{state}"></div>
+                            </div>
+
+                            <!-- Pincode -->
+                            <div class="col-md-4">
+                                <label for="pincode" class="form-label">Pincode</label>
+                                <input type="text" th:field="*{pincode}" id="pincode" class="form-control" 
+                                       th:classappend="${#fields.hasErrors('pincode')} ? 'is-invalid' : ''" placeholder="6-digit PIN" 
+                                       pattern="^\d{6}$" title="Enter a valid 6-digit Pincode" required>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('pincode')}" th:errors="*{pincode}"></div>
                             </div>
 
                             <!-- PAN Number -->
@@ -243,21 +265,27 @@
                             <h5 class="brand-gold fs-6 mt-4 mb-2"><i class="bi bi-bank me-2"></i>Bank Details</h5>
                             
                             <!-- Bank Account Holder Name -->
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="bankAccountHolderName" class="form-label">Account Holder Name</label>
                                 <input type="text" th:field="*{bankAccountHolderName}" id="bankAccountHolderName" class="form-control" required placeholder="Name as per passbook">
                             </div>
 
                             <!-- Bank Account Number -->
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="bankAccountNumber" class="form-label">Account Number</label>
                                 <input type="text" th:field="*{bankAccountNumber}" id="bankAccountNumber" class="form-control" required placeholder="Account number">
                             </div>
 
                             <!-- IFSC Code -->
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="ifscCode" class="form-label">IFSC Code</label>
                                 <input type="text" th:field="*{ifscCode}" id="ifscCode" class="form-control" required placeholder="11-digit IFSC code" pattern="^[A-Z]{4}0[A-Z0-9]{6}$">
+                            </div>
+
+                            <!-- UPI ID -->
+                            <div class="col-md-3">
+                                <label for="upiId" class="form-label">UPI ID</label>
+                                <input type="text" th:field="*{upiId}" id="upiId" class="form-control" required placeholder="example@upi">
                             </div>
 
                             <h5 class="brand-gold fs-6 mt-4 mb-2"><i class="bi bi-file-earmark-arrow-up me-2"></i>Upload Documents</h5>
@@ -334,7 +362,11 @@
                         <p class="text-white-50 small">Please confirm your application details and pay the security deposit of ₹50,000.</p>
                     </div>
                     
-                    <div class="row g-3 animate-fade-up text-white" style="font-size: 0.95rem;">
+                    <div class"row g-3 animate-fade-up text-white" style="font-size: 0.95rem;">
+                        <div class="col-md-6 border-bottom border-secondary pb-2">
+                            <label class="text-white-50 small uppercase d-block">Shop Name</label>
+                            <span id="revShopName" class="fw-bold"></span>
+                        </div>
                         <div class="col-md-6 border-bottom border-secondary pb-2">
                             <label class="text-white-50 small uppercase d-block">Owner Name</label>
                             <span id="revOwnerName" class="fw-bold"></span>
@@ -355,13 +387,17 @@
                             <label class="text-white-50 small uppercase d-block">Address</label>
                             <span id="revAddress" class="fw-bold"></span>
                         </div>
-                        <div class="col-md-6 border-bottom border-secondary pb-2">
+                        <div class="col-md-4 border-bottom border-secondary pb-2">
                             <label class="text-white-50 small uppercase d-block">City</label>
                             <span id="revCity" class="fw-bold"></span>
                         </div>
-                        <div class="col-md-6 border-bottom border-secondary pb-2">
+                        <div class="col-md-4 border-bottom border-secondary pb-2">
                             <label class="text-white-50 small uppercase d-block">State</label>
                             <span id="revState" class="fw-bold"></span>
+                        </div>
+                        <div class="col-md-4 border-bottom border-secondary pb-2">
+                            <label class="text-white-50 small uppercase d-block">Pincode</label>
+                            <span id="revPincode" class="fw-bold"></span>
                         </div>
                         <div class="col-md-6 border-bottom border-secondary pb-2">
                             <label class="text-white-50 small uppercase d-block">GST Number</label>
@@ -388,6 +424,11 @@
                             <span id="revIfsc" class="fw-bold"></span>
                         </div>
                         <div class="col-md-6 border-bottom border-secondary pb-2">
+                            <label class="text-white-50 small uppercase d-block">UPI ID</label>
+                            <span id="revUpi" class="fw-bold"></span>
+                        </div>
+						
+                        <div class="col-md-6 border-bottom border-secondary pb-2">
                             <label class="text-white-50 small uppercase d-block">Online Selling</label>
                             <span id="revOnline" class="fw-bold"></span>
                         </div>
@@ -396,6 +437,7 @@
                             <span id="revOffline" class="fw-bold"></span>
                         </div>
                     </div>
+				
 
                     <div class="deposit-model mt-4 mb-4" style="background: rgba(201,168,76,0.06); border: 1px dashed rgba(201,168,76,0.25); border-radius: 12px; padding: 15px; text-align: center;">
                         <div class="fw-bold text-gold uppercase mb-1">Required Deposit</div>
@@ -420,7 +462,6 @@
     <!-- FOOTER -->
     <div th:replace="~{fragments/footer :: footer}" class="mt-5"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script th:inline="javascript">
         const formCard = document.getElementById('merchantFormCard');
@@ -489,18 +530,21 @@
             }
 
             // Populate Review Card
+            document.getElementById('revShopName').textContent = document.getElementById('shopName').value;
             document.getElementById('revOwnerName').textContent = document.getElementById('ownerName').value;
             document.getElementById('revMobile').textContent = document.getElementById('mobile').value;
             document.getElementById('revEmail').textContent = document.getElementById('email').value;
             document.getElementById('revAddress').textContent = document.getElementById('address').value;
             document.getElementById('revCity').textContent = document.getElementById('city').value;
             document.getElementById('revState').textContent = document.getElementById('state').value;
+            document.getElementById('revPincode').textContent = document.getElementById('pincode').value;
             document.getElementById('revGst').textContent = document.getElementById('gstNumber').value || "N/A";
             document.getElementById('revPan').textContent = document.getElementById('panNumber').value;
             document.getElementById('revAadhar').textContent = document.getElementById('aadharNumber').value;
             document.getElementById('revBankHolder').textContent = document.getElementById('bankAccountHolderName').value;
             document.getElementById('revBankNo').textContent = document.getElementById('bankAccountNumber').value;
             document.getElementById('revIfsc').textContent = document.getElementById('ifscCode').value;
+            document.getElementById('revUpi').textContent = document.getElementById('upiId').value;
             document.getElementById('revBusinessType').textContent = document.getElementById('businessType').value;
             document.getElementById('revOnline').textContent = document.getElementById('onlineSelling').checked ? 'Yes' : 'No';
             document.getElementById('revOffline').textContent = document.getElementById('offlineSelling').checked ? 'Yes' : 'No';
@@ -519,12 +563,14 @@
 
         function getFormData() {
             return {
+                shopName: document.getElementById('shopName').value,
                 ownerName: document.getElementById('ownerName').value,
                 mobile: document.getElementById('mobile').value,
                 email: document.getElementById('email').value,
                 address: document.getElementById('address').value,
                 city: document.getElementById('city').value,
                 state: document.getElementById('state').value,
+                pincode: document.getElementById('pincode').value,
                 gstNumber: document.getElementById('gstNumber').value,
                 panNumber: document.getElementById('panNumber').value,
                 aadharNumber: document.getElementById('aadharNumber').value,
@@ -532,6 +578,7 @@
                 bankAccountHolderName: document.getElementById('bankAccountHolderName').value,
                 bankAccountNumber: document.getElementById('bankAccountNumber').value,
                 ifscCode: document.getElementById('ifscCode').value,
+                upiId: document.getElementById('upiId').value,
                 panDocumentUrl: document.getElementById('panDocumentUrl').value,
                 aadharDocumentUrl: document.getElementById('aadharDocumentUrl').value,
                 gstDocumentUrl: document.getElementById('gstDocumentUrl').value,

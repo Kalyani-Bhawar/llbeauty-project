@@ -13,4 +13,6 @@ public interface StoreApplicationRepository extends JpaRepository<StoreApplicati
     List<StoreApplication> findAllByType(ApplicationType type);
     List<StoreApplication> findByUserAndTypeAndStatus(com.llbeauty.entity.User user, ApplicationType type, ApplicationStatus status);
     List<StoreApplication> findByUser(com.llbeauty.entity.User user);
+    List<StoreApplication> findByReferralCode(String referralCode);
+    List<StoreApplication> findByReferralCodeAndTypeAndStatus(String referralCode, ApplicationType type, ApplicationStatus status);
 }

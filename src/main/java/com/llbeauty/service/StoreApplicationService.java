@@ -7,6 +7,7 @@ import com.llbeauty.dto.StoreApplicationResponse;
 import com.llbeauty.dto.ApplicationStatusResponse;
 import com.llbeauty.entity.ApplicationStatus;
 import com.llbeauty.entity.StoreApplication;
+import com.llbeauty.entity.Payment;
 import com.llbeauty.exception.ResourceNotFoundException;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public interface StoreApplicationService {
     /**
      * User applies for Agent program.
      */
-    StoreApplicationResponse applyAgent(Long userId, AgentApplicationRequest request) throws ResourceNotFoundException;
+    StoreApplicationResponse applyAgent(Long userId, AgentApplicationRequest request, Payment payment) throws ResourceNotFoundException;
 
     /**
      * User applies for Merchant program.

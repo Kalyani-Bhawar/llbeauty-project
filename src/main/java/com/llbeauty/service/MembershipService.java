@@ -321,7 +321,7 @@ public class MembershipService {
 
                         commission.setAmount(commissionAmount);
 
-                        commission.setStatus("PAID");
+                        commission.setStatus("PENDING");
 
                         commission.setCommissionType("MEMBERSHIP");
 
@@ -334,13 +334,14 @@ public class MembershipService {
 
                         commissionRepository.save(commission);
 
-                        walletService.credit(
-                                agent.getUser(),
-                                commissionAmount,
-                                "Membership Referral Commission - "
-                                        + plan.getName(),
-                                "MEMBERSHIP_COMMISSION"
-                        );
+                        // Commented out to support manual admin payout flow instead of automatic wallet credit
+                        // walletService.credit(
+                        //         agent.getUser(),
+                        //         commissionAmount,
+                        //         "Membership Referral Commission - "
+                        //                 + plan.getName(),
+                        //         "MEMBERSHIP_COMMISSION"
+                        // );
                     });
         }
 

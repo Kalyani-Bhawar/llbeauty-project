@@ -10,7 +10,7 @@
     <link href="/css/style.css" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #0f0f0f; color: #e0e0e0; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background: #0f0f0f; color: #e0e0e0; overflow-x: auto; }
 
         /* ─── Sidebar ─── */
         .admin-sidebar {
@@ -123,9 +123,11 @@
         }
 
         /* ─── Content area ─── */
-        .admin-content {
-            padding: 32px;
-        }
+		.admin-content {
+		    padding: 20px;
+		    width: calc(100vw - 260px);
+		    overflow-x: auto;
+		}
 
         /* ─── Dashboard stat cards ─── */
         .stat-card {
@@ -256,6 +258,30 @@
             .admin-main { margin-left: 200px; }
             .admin-content { padding: 20px; }
         }
+		.table-responsive {
+		    overflow-x: auto;
+		}
+		
+		.email-col {
+		    min-width: 220px;
+		}
+		
+		.location-col {
+		    min-width: 300px;
+		}
+		
+		.amount-col {
+		    min-width: 140px;
+		}
+		
+		.action-col {
+		    min-width: 100px;
+		}
+		
+		.franchise-table th,
+		.franchise-table td {
+		    white-space: nowrap;
+		}
     </style>
 </head>
 <body>
@@ -288,7 +314,7 @@
                 </a>
                 <a href="/admin/products"
                    th:classappend="${activeTab == 'products' ? 'active' : ''}">
-                    <i class="bi bi-bag-heart-fill"></i> Products
+				   <i class="bi bi-gem"></i> Products
                 </a>
                 <a href="/admin/orders"
                    th:classappend="${activeTab == 'orders' ? 'active' : ''}">

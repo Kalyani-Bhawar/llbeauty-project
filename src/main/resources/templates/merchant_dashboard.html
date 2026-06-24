@@ -115,9 +115,7 @@
                     <span class="badge bg-warning text-dark text-uppercase px-3 py-2 rounded-pill" style="letter-spacing:1px; font-size:0.68rem;">EVA Merchant Reseller</span>
                     <p class="text-white-50 small mb-0">Manage wholesale inventory, store credits, and order reports.</p>
                 </div>
-                <div>
-                    <a href="/auth/logout" class="btn btn-sm btn-outline-danger px-4 py-2 rounded-pill">Sign Out</a>
-                </div>
+                <!-- Sign Out removed: available via global header -->
             </div>
 
             <div class="row">
@@ -152,12 +150,22 @@
                         <div class="panel-card-title"><i class="bi bi-wallet2"></i> Account Balances</div>
                         <div class="row text-center py-2">
                             <div class="col-6" style="border-right: 1px solid rgba(255,255,255,0.05);">
-                                <div class="small text-white-50 uppercase" style="font-size:0.7rem;">NXL Credits</div>
-                                <div class="stat-num mt-1" style="color: #3498db;" th:text="'₹' + ${#numbers.formatDecimal(storeCredit.balance, 1, 0)}">₹0</div>
+                                <div class="small text-white-50 uppercase" style="font-size:0.7rem;">Total Orders</div>
+                                <div class="stat-num mt-1" style="color: #3498db;" th:text="${totalOrders}">0</div>
                             </div>
                             <div class="col-6">
-                                <div class="small text-white-50 uppercase" style="font-size:0.7rem;">Wallet Balance</div>
+                                <div class="small text-white-50 uppercase" style="font-size:0.7rem;">Wallet Balance (NXL)</div>
                                 <div class="stat-num mt-1" style="color: #2ecc71;" th:text="'₹' + ${#numbers.formatDecimal(walletBalance, 1, 0)}">₹0</div>
+                            </div>
+                        </div>
+                        <div class="row text-center py-2 mt-3" style="border-top: 1px solid rgba(255,255,255,0.05);">
+                            <div class="col-6" style="border-right: 1px solid rgba(255,255,255,0.05);">
+                                <div class="small text-white-50 uppercase" style="font-size:0.7rem;">Total Purchase Value</div>
+                                <div class="stat-num mt-1" style="color: #e67e22;" th:text="'₹' + ${#numbers.formatDecimal(totalPurchaseValue, 1, 0)}">₹0</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="small text-white-50 uppercase" style="font-size:0.7rem;">Total Savings</div>
+                                <div class="stat-num mt-1" style="color: #9b59b6;" th:text="'₹' + ${#numbers.formatDecimal(totalSavings, 1, 0)}">₹0</div>
                             </div>
                         </div>
                     </div>
@@ -166,6 +174,10 @@
                     <div class="panel-card">
                         <div class="panel-card-title"><i class="bi bi-info-circle"></i> Business Information</div>
                         <div class="small d-flex flex-column gap-2 text-white-50">
+                            <div>
+                                <span class="d-block text-white fw-bold">Shop Name:</span>
+                                <span th:text="${profile.shopName}">Shop Name</span>
+                            </div>
                             <div>
                                 <span class="d-block text-white fw-bold">GSTIN:</span>
                                 <span th:text="${profile.gstNumber}">GSTXXXX</span>
@@ -189,76 +201,25 @@
                 <!-- Right Column -->
                 <div class="col-lg-8">
                     
-                    <!-- Products list -->
-                    <div class="panel-card">
-                        <div class="panel-card-title">
-                            <i class="bi bi-bag-check-fill"></i> wholesale Catalog
-                            <span class="ms-auto badge bg-gold text-dark">Wholesale Available</span>
+                    <!-- Quick Actions -->
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="panel-card h-100 d-flex flex-column" style="margin-bottom: 0;">
+                                <div class="panel-card-title"><i class="bi bi-bag-check-fill"></i> Wholesale Catalog</div>
+                                <p class="text-white-50 small mb-4">Access our entire product inventory at exclusive merchant discounted rates.</p>
+                                <div class="mt-auto">
+                                    <a href="/merchant/wholesale" class="btn btn-outline-warning w-100 rounded-pill fw-bold" style="border-color: #c9a84c; color: #c9a84c;">Open Catalog <i class="bi bi-arrow-right ms-2"></i></a>
+                                </div>
+                            </div>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-custom">
-                                <thead>
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Price</th>
-                                        <th>Discount</th>
-                                        <th>Wholesale Price</th>
-                                        <th class="text-end">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="product : ${products}">
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <img th:src="${product.imageUrl}" style="width:40px; height:40px; object-fit:cover; border-radius:6px;" alt="">
-                                                <span th:text="${product.name}">Product Name</span>
-                                            </div>
-                                        </td>
-                                        <td th:text="'₹' + ${#numbers.formatDecimal(product.price, 1, 0)}">₹0</td>
-                                        <td><span class="badge bg-success">15% Merchant Off</span></td>
-                                        <td class="fw-bold text-gold" th:text="'₹' + ${#numbers.formatDecimal(product.price * 0.85, 1, 0)}">₹0</td>
-                                        <td class="text-end">
-                                            <a href="/shop" class="btn btn-sm btn-gold py-1 px-3 rounded-pill" style="font-size:0.75rem;">Order</a>
-                                        </td>
-                                    </tr>
-                                    <tr th:if="${products.isEmpty()}">
-                                        <td colspan="5" class="text-center text-white-50 py-4">No wholesale products catalogued.</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Purchase Orders -->
-                    <div class="panel-card">
-                        <div class="panel-card-title"><i class="bi bi-receipt"></i> Store Orders History</div>
-                        <div class="table-responsive">
-                            <table class="table table-custom">
-                                <thead>
-                                    <tr>
-                                        <th>Order ID</th>
-                                        <th>Date</th>
-                                        <th>Items</th>
-                                        <th>Status</th>
-                                        <th class="text-end">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="order : ${orders}">
-                                        <td class="fw-bold text-gold" th:text="'#' + ${order.id}">#0000</td>
-                                        <td th:text="${#temporals.format(order.createdAt, 'dd MMM yyyy')}">Date</td>
-                                        <td th:text="${order.items.size()} + ' Items'">0 Items</td>
-                                        <td>
-                                            <span class="badge bg-success" th:if="${order.status == 'DELIVERED' || order.status == 'COMPLETED'}">DELIVERED</span>
-                                            <span class="badge bg-warning text-dark" th:if="${order.status == 'PENDING' || order.status == 'PROCESSING'}">PENDING</span>
-                                        </td>
-                                        <td class="text-end fw-bold text-gold" th:text="'₹' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}">₹0.00</td>
-                                    </tr>
-                                    <tr th:if="${orders.isEmpty()}">
-                                        <td colspan="5" class="text-center text-white-50 py-4">No purchase orders placed yet.</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="col-md-6">
+                            <div class="panel-card h-100 d-flex flex-column" style="margin-bottom: 0;">
+                                <div class="panel-card-title"><i class="bi bi-receipt"></i> Order History</div>
+                                <p class="text-white-50 small mb-4">Track your wholesale orders, fulfillment status, and download invoices.</p>
+                                <div class="mt-auto">
+                                    <a href="/merchant/orders" class="btn btn-outline-warning w-100 rounded-pill fw-bold" style="border-color: #c9a84c; color: #c9a84c;">View Orders <i class="bi bi-arrow-right ms-2"></i></a>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -271,6 +232,5 @@
     <!-- FOOTER -->
     <div th:replace="~{fragments/footer :: footer}"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -24,4 +24,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "(:search IS NULL OR :search = '' OR LOWER(o.user.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(o.user.email) LIKE LOWER(CONCAT('%', :search, '%')) OR CAST(o.id AS string) LIKE %:search% OR o.paymentId LIKE %:search%) AND " +
            "(:status IS NULL OR :status = '' OR o.status = :status) ORDER BY o.createdAt DESC")
     List<Order> searchOrdersList(@Param("search") String search, @Param("status") String status);
+
+    List<Order> findByReferralCode(String referralCode);
 }

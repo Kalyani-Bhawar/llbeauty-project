@@ -509,7 +509,8 @@ public class CheckoutController {
                     commission.setDescription(
                             "Product Order #" + order.getId());
 
-                    commission.setStatus("APPROVED");
+                    commission.setStatus("PENDING");
+                    commission.setCommissionType("PRODUCT");
 
                     commissionRepository.save(commission);
                 });
