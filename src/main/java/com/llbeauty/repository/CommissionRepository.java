@@ -22,4 +22,6 @@ public interface CommissionRepository extends JpaRepository<Commission, Long> {
             WHERE c.agent = :agent
             """)
     BigDecimal getTotalCommission(@Param("agent") AgentProfile agent);
+
+    boolean existsByAgentAndCommissionTypeAndDescriptionContaining(AgentProfile agent, String commissionType, String descriptionFragment);
 }

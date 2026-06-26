@@ -53,7 +53,7 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
     }
 
     private StoreApplicationResponse mapToResponse(StoreApplication app) {
-        return new StoreApplicationResponse(
+        StoreApplicationResponse response = new StoreApplicationResponse(
             app.getId(),
             app.getUser().getId(),
             app.getUser().getName(),
@@ -63,8 +63,13 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
             app.getContactPhone(),
             app.getStatus(),
             app.getCreatedAt(),
-            app.getDetails()
+            app.getDetails(),
+            app.getReferralCode()
         );
+        response.setPaymentId(app.getRazorpayPaymentId());
+        response.setPaymentAmount(app.getPaymentAmount());
+        response.setGstNumber(app.getGstNumber());
+        return response;
     }
 
     private String parseDetail(String details, String key) {
@@ -281,22 +286,29 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
                 mp.setBankAccountHolderName(app.getBankAccountHolderName());
                 mp.setBankAccountNumber(app.getBankAccountNumber());
                 mp.setIfscCode(app.getIfscCode());
+                mp.setShopName(app.getBusinessName());
                 mp.setStatus("ACTIVE");
                 merchantProfileRepository.save(mp);
 
                 if (app.getReferralCode() != null && !app.getReferralCode().isBlank()) {
-
-                    agentProfileRepository.findByReferralCode(app.getReferralCode().trim())
+                    String referralCode = app.getReferralCode().trim();
+                    agentProfileRepository.findByReferralCode(referralCode)
                         .ifPresent(referringAgent -> {
+                            // Idempotency: prevent duplicate commission for same merchant application
+                            String descriptionFragment = "Merchant App #" + app.getId();
+                            boolean alreadyExists = commissionRepository
+                                .existsByAgentAndCommissionTypeAndDescriptionContaining(
+                                    referringAgent, "MERCHANT_REGISTRATION", descriptionFragment);
 
-                            Commission commission = new Commission();
-                            commission.setAgent(referringAgent);
-                            commission.setAmount(new BigDecimal("1000.00"));
-                            commission.setDescription("Merchant Referral Commission - " + app.getBusinessName());
-                            commission.setStatus("PENDING");
-                            commission.setCommissionType("MERCHANT");
-
-                            commissionRepository.save(commission);
+                            if (!alreadyExists) {
+                                Commission commission = new Commission();
+                                commission.setAgent(referringAgent);
+                                commission.setAmount(new BigDecimal("1000.00"));
+                                commission.setDescription("Merchant Referral Commission - " + app.getBusinessName() + " - " + descriptionFragment);
+                                commission.setStatus("PENDING");
+                                commission.setCommissionType("MERCHANT_REGISTRATION");
+                                commissionRepository.save(commission);
+                            }
                         });
                 }
             }

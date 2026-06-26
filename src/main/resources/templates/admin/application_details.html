@@ -46,57 +46,100 @@
 					
 					<div class="col-md-6">
 					    <label class="text-white-50 small uppercase d-block">Registration Type</label>
-					    <span th:text="${app.registrationType}"></span>
+					    <span th:text="${app.registrationType} ?: '-'"></span>
 					</div>
 					
 					<div class="col-md-6">
 					    <label class="text-white-50 small uppercase d-block">Payment Amount</label>
-					    <span th:text="${app.paymentAmount}"></span>
+					    <span th:text="${app.paymentAmount != null ? '₹' + app.paymentAmount : '-'}"></span>
 					</div>
 					
 					<div class="col-md-6">
 					    <label class="text-white-50 small uppercase d-block">Payment Status</label>
-					    <span th:text="${app.paymentStatus}"></span>
+					    <span th:text="${app.paymentStatus} ?: '-'"></span>
 					</div>
 					
 					<div class="col-md-6">
 					    <label class="text-white-50 small uppercase d-block">Payment ID</label>
-					    <span th:text="${app.razorpayPaymentId}"></span>
+					    <span th:text="${app.razorpayPaymentId} ?: '-'"></span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">GST Number</label>
+					    <span th:text="${app.gstNumber} ?: '-'"></span>
 					</div>
 					
 					<div class="col-md-6">
 					    <label class="text-white-50 small uppercase d-block">PAN Number</label>
-					    <span th:text="${app.panNumber}"></span>
+					    <span th:text="${app.panNumber} ?: '-'"></span>
+					</div>
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">GST Number</label>
+					    <span th:text="${app.gstNumber}">-</span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">Aadhar Number</label>
+					    <span th:text="${app.aadharNumber}">-</span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">Business Type</label>
+					    <span th:text="${app.businessType}">-</span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">Bank Account Holder</label>
+					    <span th:text="${app.bankAccountHolderName}">-</span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">Bank Account Number</label>
+					    <span th:text="${app.bankAccountNumber}">-</span>
+					</div>
+					
+					<div class="col-md-6">
+					    <label class="text-white-50 small uppercase d-block">IFSC Code</label>
+					    <span th:text="${app.ifscCode}">-</span>
+					</div>
+					
+					<div class="col-md-12">
+					    <label class="text-white-50 small uppercase d-block mb-2">Uploaded Documents</label>
+					    <div class="d-flex gap-2 flex-wrap">
+					        <a th:if="${app.panDocumentUrl}" th:href="${app.panDocumentUrl}" target="_blank" class="btn btn-sm btn-outline-gold">PAN Document</a>
+					        <a th:if="${app.aadharDocumentUrl}" th:href="${app.aadharDocumentUrl}" target="_blank" class="btn btn-sm btn-outline-gold">Aadhar Document</a>
+					        <a th:if="${app.gstDocumentUrl}" th:href="${app.gstDocumentUrl}" target="_blank" class="btn btn-sm btn-outline-gold">GST Document</a>
+					    </div>
 					</div>
 					
 					<div class="col-md-6">
 					    <label class="text-white-50 small uppercase d-block">UPI ID</label>
-					    <span th:text="${app.upiId}"></span>
+					    <span th:text="${app.upiId} ?: '-'"></span>
 					</div>
 					
 					<div class="col-md-6">
 					    <label class="text-white-50 small uppercase d-block">Pincode</label>
-					    <span th:text="${app.pincode}"></span>
+					    <span th:text="${app.pincode} ?: '-'"></span>
 					</div>
 					
 					<div class="col-md-6">
 					    <label class="text-white-50 small uppercase d-block">Referral Code</label>
-					    <span th:text="${app.referralCode}"></span>
+					    <span th:text="${app.referralCode} ?: '-'"></span>
 					</div>
 					
 					<div class="col-md-12">
 					    <label class="text-white-50 small uppercase d-block">Address</label>
-					    <span th:text="${app.address}"></span>
+					    <span th:text="${app.address} ?: '-'"></span>
 					</div>
 					
 					<div class="col-md-6">
 					    <label class="text-white-50 small uppercase d-block">City</label>
-					    <span th:text="${app.city}"></span>
+					    <span th:text="${app.city} ?: '-'"></span>
 					</div>
 					
 					<div class="col-md-6">
 					    <label class="text-white-50 small uppercase d-block">State</label>
-					    <span th:text="${app.state}"></span>
+					    <span th:text="${app.state} ?: '-'"></span>
 					</div>
 
                     <div class="col-md-12">

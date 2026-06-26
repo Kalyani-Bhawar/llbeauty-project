@@ -138,52 +138,47 @@
             </table>
         </div>
     </div>
-
-    <!-- ── MERCHANTS TAB ── -->
-    <div th:if="${currentSubTab == 'merchants'}" class="data-card animate-fade-up">
-        <div class="data-card-header">
-            <h6>Approved Merchants Directory</h6>
-        </div>
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Merchant ID</th>
-                        <th>Shop Name</th>
-                        <th>Owner Name</th>
-                        <th>GSTIN</th>
-                        <th>PAN</th>
-                        <th>Channels</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="mer : ${merchants}">
-                        <td class="fw-bold text-gold" th:text="${mer.merchantId}">LLB-MER-1</td>
-                        <td th:text="${mer.ownerName}">Owner Name</td>
-                        <td th:text="${mer.gstNumber}">GSTXXXX</td>
-                        <td th:text="${mer.panNumber}">PANXXXX</td>
-                        <td>
-                            <span class="badge bg-info text-dark" th:if="${mer.onlineSelling}">Online</span>
-                            <span class="badge bg-secondary" th:if="${mer.offlineSelling}">Offline</span>
-                        </td>
-                        <td><span class="badge-status badge-completed" th:text="${mer.status}">ACTIVE</span></td>
-                        <td>
-                            <form th:action="@{/admin/store/merchant/{id}/delete(id=${mer.id})}" method="post" onsubmit="return confirm('Delete this merchant?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr th:if="${merchants.isEmpty()}">
-                        <td colspan="7" class="text-center py-5 text-white-50">No merchants enrolled.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+	<!-- ── MERCHANTS TAB ── -->
+	<div th:if="${currentSubTab == 'merchants'}" class="data-card animate-fade-up">
+	    <div class="data-card-header">
+	        <h6>Approved Merchants Directory</h6>
+	    </div>
+	    <div class="table-responsive">
+	        <table class="table">
+	            <thead>
+	                <tr>
+	                    <th>Merchant ID</th>
+	                    <th>Owner Name</th>
+	                    <th>Email</th>
+	                    <th>Shop Name</th>
+	                    <th>Status</th>
+	                    <th>Created Date</th>
+	                    <th>Actions</th>
+	                </tr>
+	            </thead>
+	            <tbody>
+	                <tr th:each="mer : ${merchants}">
+	                    <td class="fw-bold text-gold" th:text="${mer.merchantId}">LLB-MER-1</td>
+	                    <td th:text="${mer.ownerName}">Owner Name</td>
+	                    <td th:text="${mer.email}">owner@example.com</td>
+	                    <td th:text="${mer.shopName != null ? mer.shopName : '-'}">Shop Name</td>
+	                    <td><span class="badge-status badge-completed" th:text="${mer.status}">ACTIVE</span></td>
+	                    <td th:text="${#temporals.format(mer.createdAt, 'dd MMM yyyy')}">Date</td>
+	                    <td>
+	                        <form th:action="@{/admin/store/merchant/{id}/delete(id=${mer.id})}" method="post" onsubmit="return confirm('Delete this merchant?');">
+	                            <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2">
+	                                <i class="bi bi-trash"></i>
+	                            </button>
+	                        </form>
+	                    </td>
+	                </tr>
+	                <tr th:if="${merchants.isEmpty()}">
+	                    <td colspan="7" class="text-center py-5 text-white-50">No merchants enrolled.</td>
+	                </tr>
+	            </tbody>
+	        </table>
+	    </div>
+	</div>
 
     <!-- ── COMMISSIONS TAB ── -->
     <div th:if="${currentSubTab == 'commissions'}" class="data-card animate-fade-up">
@@ -397,6 +392,52 @@
             </div>
         </div>
     </div>
+	<!-- PAY COMMISSION MODAL -->
+	    <div class="modal fade" id="payoutModal" tabindex="-1" aria-labelledby="payoutModalLabel" aria-hidden="true" style="color: #111;">
+	        <div class="modal-dialog">
+	            <div class="modal-content border-0">
+	                <div class="modal-header bg-dark text-white border-secondary">
+	                    <h5 class="modal-title font-serif" id="payoutModalLabel" style="color: #c9a84c;">Pay Agent Commission</h5>
+	                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+	                </div>
+	                <form id="payoutForm" th:action="@{/admin/store/commissions/pay}" method="post">
+	                    <div class="modal-body bg-dark text-white">
+	                        <input type="hidden" name="agentId" id="payoutAgentId">
+	                        <div class="mb-3">
+	                            <label class="form-label text-white-50">Agent</label>
+	                            <input type="text" id="payoutAgentName" class="form-control bg-dark text-white border-secondary" readonly>
+	                        </div>
+	                        <div class="mb-3">
+	                            <label class="form-label text-white-50">Amount to Pay</label>
+	                            <input type="text" id="payoutAmount" class="form-control bg-dark text-white border-secondary" readonly>
+	                        </div>
+	                        <div class="mb-3">
+	                            <label for="utrNumber" class="form-label text-white-50">UTR Number</label>
+	                            <input type="text" name="utrNumber" id="utrNumber" class="form-control bg-dark text-white border-secondary" placeholder="Enter bank transfer UTR number" required>
+	                        </div>
+	                        <div class="mb-3">
+	                            <label for="payoutRemarks" class="form-label text-white-50">Remarks (optional)</label>
+	                            <textarea name="remarks" id="payoutRemarks" rows="2" class="form-control bg-dark text-white border-secondary" placeholder="Any notes about this payout"></textarea>
+	                        </div>
+	                    </div>
+	                    <div class="modal-footer bg-dark border-secondary">
+	                        <button type="button" class="btn btn-sm btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+	                        <button type="submit" class="btn btn-sm btn-gold">Confirm Payout</button>
+	                    </div>
+	                </form>
+	            </div>
+	        </div>
+	    </div>
+	
+	    <script>
+	        function openPayoutModal(btn) {
+	            document.getElementById('payoutAgentId').value = btn.getAttribute('data-agent-id');
+	            document.getElementById('payoutAgentName').value = btn.getAttribute('data-agent-name') + ' (' + btn.getAttribute('data-agent-code') + ')';
+	            document.getElementById('payoutAmount').value = '₹' + parseFloat(btn.getAttribute('data-pending-amount')).toFixed(2);
+	            var modal = new bootstrap.Modal(document.getElementById('payoutModal'));
+	            modal.show();
+	        }
+	    </script>
 
 </main>
 </body>

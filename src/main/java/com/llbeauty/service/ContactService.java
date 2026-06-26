@@ -51,7 +51,7 @@ public class ContactService {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setTo("kalyanibhawar3@gmail.com");
             mailMessage.setReplyTo(message.getEmail());
-            mailMessage.setSubject("L.L. Beauty - New Contact Us Inquiry");
+            mailMessage.setSubject("EVA Beauty - New Contact Us Inquiry");
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String formattedDate = message.getCreatedAt().format(formatter);
@@ -64,7 +64,7 @@ public class ContactService {
                     "Submission Date & Time: " + formattedDate + "\n\n" +
                     "User Message:\n" + message.getMessage() + "\n\n" +
                     "Regards,\n" +
-                    "L.L. Beauty Portal";
+                    "EVA Beauty Portal";
 
             mailMessage.setText(text);
             mailSender.send(mailMessage);

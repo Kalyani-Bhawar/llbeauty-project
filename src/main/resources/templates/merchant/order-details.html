@@ -208,11 +208,6 @@
                                   th:text="${order.productDiscounts != null ? '-₹' + #numbers.formatDecimal(order.productDiscounts, 1, 0) : '-₹0'}">-₹0</span>
                         </div>
                         <div class="summary-row">
-                            <span class="summary-label">Bulk Discounts</span>
-                            <span class="text-success"
-                                  th:text="${order.bulkDiscounts != null ? '-₹' + #numbers.formatDecimal(order.bulkDiscounts, 1, 0) : '-₹0'}">-₹0</span>
-                        </div>
-                        <div class="summary-row">
                             <span class="summary-label">Total Savings</span>
                             <span class="text-success fw-bold"
                                   th:text="${order.totalSavings != null ? '+ ₹' + #numbers.formatDecimal(order.totalSavings, 1, 0) : '+ ₹0'}">+₹0</span>

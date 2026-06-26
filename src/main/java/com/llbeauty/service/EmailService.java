@@ -23,7 +23,7 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
 
             message.setTo(email);
-            message.setSubject("L.L. Beauty - Login Verification OTP");
+            message.setSubject("EVA Beauty - Login Verification OTP");
 
             message.setText(
                     "Dear Customer,\n\n" +
@@ -33,7 +33,7 @@ public class EmailService {
                     "This OTP is valid for 5 minutes.\n\n" +
                     "If you did not request this OTP, please ignore this email.\n\n" +
                     "Regards,\n" +
-                    "L.L. Beauty Team"
+                    "EVA Beauty Team"
             );
 
             mailSender.send(message);
@@ -60,12 +60,12 @@ public class EmailService {
 
             message.setText(
                     "Dear " + name + ",\n\n" +
-                    "Welcome to L.L. Beauty.\n\n" +
+                    "Welcome to EVA Beauty.\n\n" +
                     "Your account has been created successfully.\n\n" +
                     "You can now login, purchase memberships, earn rewards and enjoy exclusive discounts.\n\n" +
-                    "Thank you for choosing L.L. Beauty.\n\n" +
+                    "Thank you for choosing EVA Beauty.\n\n" +
                     "Regards,\n" +
-                    "L.L. Beauty Team"
+                    "EVA Beauty Team"
             );
 
             mailSender.send(message);
@@ -82,7 +82,7 @@ public class EmailService {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(email);
-            message.setSubject("L.L. Beauty VIP Membership Activated!");
+            message.setSubject("EVA Beauty VIP Membership Activated!");
             message.setText(
                 "Dear " + name + ",\n\n" +
                 "Congratulations! Your " + planName + " membership has been successfully activated.\n\n" +
@@ -91,9 +91,9 @@ public class EmailService {
                 "- Permanent Member ID: " + memberId + "\n" +
                 "- Expiry Date: " + expiryDate + "\n\n" +
                 "Log in to your account dashboard to view your new VIP Digital Membership Card, check your wallet balance, and explore your premium rewards and benefits.\n\n" +
-                "Thank you for being part of the L.L. Beauty family!\n\n" +
+                "Thank you for being part of the EVA Beauty family!\n\n" +
                 "Regards,\n" +
-                "L.L. Beauty Team"
+                "EVA Beauty Team"
             );
             mailSender.send(message);
         } catch (Exception e) {
@@ -105,7 +105,7 @@ public class EmailService {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(email);
-            message.setSubject("L.L. Beauty VIP Membership Upgraded!");
+            message.setSubject("EVA Beauty VIP Membership Upgraded!");
             message.setText(
                 "Dear " + name + ",\n\n" +
                 "Wonderful news! Your VIP membership has been successfully upgraded from " + oldPlan + " to " + newPlan + ".\n\n" +
@@ -114,7 +114,7 @@ public class EmailService {
                 "- Member ID: " + memberId + "\n\n" +
                 "Your higher tier multiplier is now active, so you will earn more reward points and receive premium benefits instantly!\n\n" +
                 "Regards,\n" +
-                "L.L. Beauty Team"
+                "EVA Beauty Team"
             );
             mailSender.send(message);
         } catch (Exception e) {
@@ -126,16 +126,16 @@ public class EmailService {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(email);
-            message.setSubject("L.L. Beauty VIP Membership Renewed!");
+            message.setSubject("EVA Beauty VIP Membership Renewed!");
             message.setText(
                 "Dear " + name + ",\n\n" +
-                "Thank you for renewing your " + planName + " membership with L.L. Beauty!\n\n" +
+                "Thank you for renewing your " + planName + " membership with EVA Beauty!\n\n" +
                 "Your membership validity has been extended.\n" +
                 "- Plan Type: " + planName + "\n" +
                 "- New Expiry Date: " + newExpiryDate + "\n\n" +
                 "We are thrilled to continue serving you with our premium beauty offerings.\n\n" +
                 "Regards,\n" +
-                "L.L. Beauty Team"
+                "EVA Beauty Team"
             );
             mailSender.send(message);
         } catch (Exception e) {
@@ -147,13 +147,13 @@ public class EmailService {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(email);
-            message.setSubject("L.L. Beauty VIP Membership Expiry Reminder");
+            message.setSubject("EVA Beauty VIP Membership Expiry Reminder");
             message.setText(
                 "Dear " + name + ",\n\n" +
                 "This is a friendly reminder that your " + planName + " membership is expiring soon on " + expiryDate + ".\n\n" +
                 "Renew your membership today to keep enjoying your cashbacks, premium rewards, and VIP benefits without interruption.\n\n" +
                 "Regards,\n" +
-                "L.L. Beauty Team"
+                "EVA Beauty Team"
             );
             mailSender.send(message);
         } catch (Exception e) {

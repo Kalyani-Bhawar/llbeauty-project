@@ -2,6 +2,7 @@ package com.llbeauty.controller;
 
 import com.llbeauty.dto.AgentApplicationRequest;
 
+
 import com.llbeauty.dto.MerchantApplicationRequest;
 import com.llbeauty.dto.StoreApplicationResponse;
 import com.llbeauty.entity.*;
@@ -22,6 +23,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.math.BigDecimal;
 
 @Controller
 @RequestMapping("/store")

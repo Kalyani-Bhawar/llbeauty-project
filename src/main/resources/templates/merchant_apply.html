@@ -383,6 +383,10 @@
                             <label class="text-white-50 small uppercase d-block">Business Type</label>
                             <span id="revBusinessType" class="fw-bold"></span>
                         </div>
+						<div class="col-md-6 border-bottom border-secondary pb-2">
+						    <label class="text-white-50 small uppercase d-block">Referral Code</label>
+						    <span id="revReferralCode" class="fw-bold"></span>
+						</div>
                         <div class="col-md-12 border-bottom border-secondary pb-2">
                             <label class="text-white-50 small uppercase d-block">Address</label>
                             <span id="revAddress" class="fw-bold"></span>
@@ -548,7 +552,7 @@
             document.getElementById('revBusinessType').textContent = document.getElementById('businessType').value;
             document.getElementById('revOnline').textContent = document.getElementById('onlineSelling').checked ? 'Yes' : 'No';
             document.getElementById('revOffline').textContent = document.getElementById('offlineSelling').checked ? 'Yes' : 'No';
-
+			document.getElementById('revReferralCode').textContent =document.getElementById('referralCode').value || "N/A";
             // Show Review Card, Hide Form Card
             formCard.classList.add('d-none');
             reviewCard.classList.remove('d-none');
@@ -583,7 +587,8 @@
                 aadharDocumentUrl: document.getElementById('aadharDocumentUrl').value,
                 gstDocumentUrl: document.getElementById('gstDocumentUrl').value,
                 onlineSelling: document.getElementById('onlineSelling').checked,
-                offlineSelling: document.getElementById('offlineSelling').checked
+                offlineSelling: document.getElementById('offlineSelling').checked,
+                referralCode: document.getElementById('referralCode').value || null
             };
         }
 

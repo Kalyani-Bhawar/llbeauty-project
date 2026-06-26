@@ -39,11 +39,48 @@
             color: white;
             border-color: var(--gold);
         }
+		.eva-text-logo {
+		    display: flex;
+		    flex-direction: column;
+		    align-items: center;
+		    line-height: 1;
+		    padding: 2px 6px;
+		}
+		.eva-text-logo .eva-logo-crown {
+		    font-size: 1rem;
+		    margin-bottom: 1px;
+		    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15));
+		}
+		.eva-text-logo .eva-logo-name {
+		    font-family: 'Playfair Display', serif;
+		    font-weight: 700;
+		    font-size: 1.7rem;
+		    letter-spacing: 2px;
+		    color:#d4af37;
+		    background: linear-gradient(135deg, #c9a84c 0%, #8a6d1f 50%, #c9a84c 100%);
+		    -webkit-background-clip: text;
+		    -webkit-text-fill-color: transparent;
+		    background-clip: text;
+		}
+		.eva-text-logo .eva-logo-tagline {
+		    font-family: 'Inter', sans-serif;
+		    font-size: 0.5rem;
+		    letter-spacing: 1.2px;
+		    color: #8a7355;
+		    text-transform: uppercase;
+		    margin-top: 1px;
+		    white-space: nowrap;
+		}
     </style>
+	<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@500&display=swap" rel="stylesheet">
     <div class="container">
-        <a class="navbar-brand brand-font" href="/" style="display: flex; align-items: center;">
-            <img src="/images/eva-logo.png" alt="EVA Logo" style="height: 40px; width: auto;">
-        </a>
+		<a class="navbar-brand brand-font" href="/" style="display: flex; align-items: center;">
+		    <span class="eva-text-logo">
+		        <span class="eva-logo-crown">👑</span>
+		        <span class="eva-logo-name">EVA</span>
+		        <span class="eva-logo-tagline">Luxury Beauty Emporium</span>
+		    </span>
+		</a>
         
         <div class="d-flex align-items-center gap-2">
             <!-- Mobile/Tablet Cart Actions (Always Visible) -->

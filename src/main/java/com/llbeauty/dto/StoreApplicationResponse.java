@@ -15,12 +15,16 @@ public class StoreApplicationResponse {
     private ApplicationStatus status;
     private LocalDateTime createdAt;
     private String details;
+    private String referralCode;
+    private String paymentId;
+    private Double paymentAmount;
+    private String gstNumber;
 
     public StoreApplicationResponse() {}
 
     public StoreApplicationResponse(Long id, Long userId, String userName, ApplicationType type,
                                     String businessName, String contactEmail, String contactPhone,
-                                    ApplicationStatus status, LocalDateTime createdAt, String details) {
+                                    ApplicationStatus status, LocalDateTime createdAt, String details, String referralCode) {
         this.id = id;
         this.userId = userId;
         this.userName = userName;
@@ -31,6 +35,7 @@ public class StoreApplicationResponse {
         this.status = status;
         this.createdAt = createdAt;
         this.details = details;
+        this.referralCode = referralCode;
     }
 
     public Long getId() { return id; }
@@ -62,4 +67,16 @@ public class StoreApplicationResponse {
 
     public String getDetails() { return details; }
     public void setDetails(String details) { this.details = details; }
+
+    public String getReferralCode() { return referralCode; }
+    public void setReferralCode(String referralCode) { this.referralCode = referralCode; }
+
+    public String getPaymentId() { return paymentId; }
+    public void setPaymentId(String paymentId) { this.paymentId = paymentId; }
+
+    public Double getPaymentAmount() { return paymentAmount; }
+    public void setPaymentAmount(Double paymentAmount) { this.paymentAmount = paymentAmount; }
+
+    public String getGstNumber() { return gstNumber; }
+    public void setGstNumber(String gstNumber) { this.gstNumber = gstNumber; }
 }
