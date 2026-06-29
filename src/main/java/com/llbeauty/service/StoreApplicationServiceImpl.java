@@ -315,8 +315,31 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
 
             // Create or update Wallet with 55,000 NXL balance
             java.math.BigDecimal creditAmount = java.math.BigDecimal.valueOf(55000);
-            walletService.credit(user, creditAmount, "NXL Security Deposit Bonus", "DEPOSIT");
+            boolean alreadyCredited = walletService.getTransactionHistory(user)
+            	    .stream()
+            	    .anyMatch(tx ->
+            	        WalletService.SOURCE_MERCHANT.equals(tx.getSource())
+            	        && tx.getOrderId() != null
+            	        && tx.getOrderId().equals("MERCHANT_" + app.getId())
+            	    );
+            if (!alreadyCredited) {
 
+                walletService.creditNxl(
+                    user,
+                    creditAmount,
+                    WalletService.SOURCE_MERCHANT,
+                    "MERCHANT_" + app.getId(),
+                    "Merchant Security Deposit - " + app.getBusinessName()
+                );
+
+            }
+            walletService.creditNxl(
+            	    user,
+            	    creditAmount,
+            	    WalletService.SOURCE_MERCHANT,
+            	    "MERCHANT_" + app.getId(),
+            	    "Merchant Security Deposit - " + app.getBusinessName()
+            	);
             // Create Merchant entity (for local scanning QR flow)
             if (merchantRepository.findByName(app.getBusinessName()) == null) {
                 Merchant merchant = new Merchant();

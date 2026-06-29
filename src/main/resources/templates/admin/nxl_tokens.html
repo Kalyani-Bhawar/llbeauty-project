@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}">
+<body>
+    <div class="content">
+
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-start mb-5">
+            <div>
+                <h1 class="page-title mb-1">NXL Token Management</h1>
+                <div class="page-subtitle">Admin System Wallet · Token Ledger · User Transactions</div>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}" class="alert alert-success mb-4"
+             style="background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.3);color:#2ecc71;border-radius:10px;padding:14px 18px;">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger mb-4"
+             style="background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);color:#e74c3c;border-radius:10px;padding:14px 18px;">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <!-- Top Cards Row -->
+        <div class="row g-4 mb-5">
+
+            <!-- Admin Current Balance -->
+            <div class="col-xl-4 col-md-6">
+                <div class="stat-card" style="border:1px solid rgba(201,168,76,0.3);">
+                    <div class="stat-icon gold"><i class="bi bi-coin"></i></div>
+                    <div class="stat-label">System Wallet Balance</div>
+                    <div class="stat-value" style="color:#c9a84c;"
+                         th:text="${#numbers.formatDecimal(adminNxlBalance, 1, 2)}">0.00</div>
+                    <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:8px;">
+                        <i class="bi bi-info-circle"></i> Tokens available to distribute to users
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total User Transactions -->
+            <div class="col-xl-4 col-md-6">
+                <div class="stat-card" style="border:1px solid rgba(231,76,60,0.2);">
+                    <div class="stat-icon ruby"><i class="bi bi-arrow-up-right-circle"></i></div>
+                    <div class="stat-label">Recent User Transactions</div>
+                    <div class="stat-value" style="color:#e74c3c;"
+                         th:text="${recentUserTx != null ? recentUserTx.size() : 0}">0</div>
+                    <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:8px;">
+                        <i class="bi bi-people"></i> User-level NXL token events (last 20)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="col-xl-4 col-md-12">
+                <div class="stat-card" style="border:1px solid rgba(46,204,113,0.2);">
+                    <div class="stat-icon emerald"><i class="bi bi-plus-circle"></i></div>
+                    <div class="stat-label">How It Works</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.5);margin-top:10px;line-height:1.7;">
+                        Admin adds tokens → User purchases → Admin balance <span style="color:#e74c3c;">decreases</span><br>
+                        User spends in EVA → Admin balance <span style="color:#2ecc71;">increases</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Add Tokens Form + Admin History -->
+        <div class="row g-4 mb-4">
+
+            <!-- Add Tokens Form -->
+            <div class="col-lg-5">
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <h6><i class="bi bi-plus-lg me-2" style="color:#c9a84c;"></i>Add Tokens to System Wallet</h6>
+                    </div>
+                    <div class="p-4">
+                        <form th:action="@{/admin/nxl-tokens/add}" method="post">
+
+                            <div class="mb-4">
+                                <label style="font-size:0.82rem;color:rgba(255,255,255,0.5);margin-bottom:8px;display:block;">
+                                    <i class="bi bi-coin me-1"></i> Number of NXL Tokens to Add
+                                </label>
+                                <input type="number"
+                                       name="amount"
+                                       min="1"
+                                       step="0.01"
+                                       required
+                                       placeholder="e.g. 500"
+                                       style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
+                                              border-radius:8px;padding:12px 14px;color:#fff;font-size:0.9rem;outline:none;"
+                                       onfocus="this.style.borderColor='rgba(201,168,76,0.5)'"
+                                       onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
+                                <div style="font-size:0.75rem;color:rgba(255,255,255,0.35);margin-top:6px;">
+                                    Current balance: <span style="color:#c9a84c;font-weight:600;"
+                                                           th:text="${#numbers.formatDecimal(adminNxlBalance, 1, 2)}">0.00</span> NXL
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label style="font-size:0.82rem;color:rgba(255,255,255,0.5);margin-bottom:8px;display:block;">
+                                    <i class="bi bi-chat-left-text me-1"></i> Note (Optional)
+                                </label>
+                                <input type="text"
+                                       name="note"
+                                       maxlength="200"
+                                       placeholder="e.g. Monthly top-up, Q1 allocation..."
+                                       style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
+                                              border-radius:8px;padding:12px 14px;color:#fff;font-size:0.9rem;outline:none;"
+                                       onfocus="this.style.borderColor='rgba(201,168,76,0.5)'"
+                                       onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
+                            </div>
+
+                            <!-- Live Preview Box -->
+                            <div id="previewBox"
+                                 style="display:none;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);
+                                        border-radius:8px;padding:12px 16px;margin-bottom:20px;">
+                                <div style="font-size:0.78rem;color:rgba(255,255,255,0.45);">Balance after adding:</div>
+                                <div style="font-size:1.1rem;font-weight:700;color:#c9a84c;" id="previewBalance">—</div>
+                            </div>
+
+                            <button type="submit"
+                                    style="width:100%;background:linear-gradient(135deg,#c9a84c,#a07828);border:none;
+                                           border-radius:8px;padding:13px;color:#1a1a1a;font-weight:700;font-size:0.9rem;
+                                           cursor:pointer;transition:opacity 0.2s;"
+                                    onmouseover="this.style.opacity='0.85'"
+                                    onmouseout="this.style.opacity='1'">
+                                <i class="bi bi-plus-circle-fill me-2"></i> Add NXL Tokens
+                            </button>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Token Addition History -->
+            <div class="col-lg-7">
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <h6><i class="bi bi-clock-history me-2" style="color:#c9a84c;"></i>Admin Token Addition History</h6>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Amount Added</th>
+                                    <th>Balance Before</th>
+                                    <th>Balance After</th>
+                                    <th>Note</th>
+                                    <th>Date/Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="tx, stat : ${adminNxlTransactions}">
+                                    <td style="font-size:0.78rem;color:rgba(255,255,255,0.35);"
+                                        th:text="${stat.count}">1</td>
+                                    <td>
+                                        <span style="color:#2ecc71;font-weight:700;font-size:0.88rem;">
+                                            +<span th:text="${#numbers.formatDecimal(tx.amount, 1, 2)}">0</span>
+                                        </span>
+                                    </td>
+                                    <td style="font-size:0.83rem;color:rgba(255,255,255,0.5);"
+                                        th:text="${#numbers.formatDecimal(tx.balanceBefore, 1, 2)}">0</td>
+                                    <td style="font-size:0.83rem;color:#c9a84c;font-weight:600;"
+                                        th:text="${#numbers.formatDecimal(tx.balanceAfter, 1, 2)}">0</td>
+                                    <td style="font-size:0.78rem;color:rgba(255,255,255,0.45);max-width:160px;
+                                               overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                                        th:text="${tx.note != null ? tx.note : '—'}">Note</td>
+                                    <td style="font-size:0.75rem;color:rgba(255,255,255,0.35);"
+                                        th:text="${#temporals.format(tx.createdAt, 'dd-MM-yy HH:mm')}">Date</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(adminNxlTransactions)}">
+                                    <td colspan="6" class="empty-state">
+                                        <i class="bi bi-inbox"></i>
+                                        No token additions yet. Add tokens above.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User NXL Transactions (last 20) -->
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <h6><i class="bi bi-people me-2" style="color:#c9a84c;"></i>Recent User NXL Transactions (Last 20)</h6>
+                        <span style="font-size:0.75rem;color:rgba(255,255,255,0.35);">
+                            CREDIT = tokens given to user (admin balance ↓) &nbsp;|&nbsp;
+                            DEBIT = user spent tokens (admin balance ↑)
+                        </span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Admin Before</th>
+                                    <th>Admin After</th>
+                                    <th>User Balance After</th>
+                                    <th>Source</th>
+                                    <th>Description</th>
+                                    <th>Date/Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="tx : ${recentUserTx}">
+                                    <td>
+                                        <div style="font-weight:600;font-size:0.83rem;"
+                                             th:text="${tx.user != null ? tx.user.name : '—'}">User</div>
+                                        <div style="font-size:0.72rem;color:rgba(255,255,255,0.35);"
+                                             th:text="${tx.user != null ? tx.user.mobile : ''}">Mobile</div>
+                                    </td>
+                                    <td>
+                                        <span th:if="${tx.type == 'CREDIT'}"
+                                              style="background:rgba(46,204,113,0.12);color:#2ecc71;
+                                                     border:1px solid rgba(46,204,113,0.25);
+                                                     padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;">
+                                            CREDIT
+                                        </span>
+                                        <span th:if="${tx.type == 'DEBIT'}"
+                                              style="background:rgba(231,76,60,0.12);color:#e74c3c;
+                                                     border:1px solid rgba(231,76,60,0.25);
+                                                     padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;">
+                                            DEBIT
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${tx.type == 'CREDIT'}" style="color:#2ecc71;font-weight:700;">
+                                            +<span th:text="${#numbers.formatDecimal(tx.amount, 1, 2)}">0</span>
+                                        </span>
+                                        <span th:if="${tx.type == 'DEBIT'}" style="color:#e74c3c;font-weight:700;">
+                                            -<span th:text="${#numbers.formatDecimal(tx.amount, 1, 2)}">0</span>
+                                        </span>
+                                    </td>
+                                    <td style="font-size:0.82rem;color:rgba(255,255,255,0.45);"
+                                        th:text="${tx.adminBalanceBefore != null ? #numbers.formatDecimal(tx.adminBalanceBefore, 1, 2) : '—'}">—</td>
+                                    <td style="font-size:0.82rem;color:#c9a84c;font-weight:600;"
+                                        th:text="${tx.adminBalanceAfter != null ? #numbers.formatDecimal(tx.adminBalanceAfter, 1, 2) : '—'}">—</td>
+                                    <td style="font-size:0.82rem;color:rgba(255,255,255,0.6);"
+                                        th:text="${#numbers.formatDecimal(tx.balanceAfter, 1, 2)}">0</td>
+                                    <td>
+                                        <span style="background:rgba(52,152,219,0.1);color:#3498db;
+                                                     border:1px solid rgba(52,152,219,0.2);
+                                                     padding:2px 8px;border-radius:12px;font-size:0.72rem;"
+                                              th:text="${tx.source}">SOURCE</span>
+                                    </td>
+                                    <td style="font-size:0.78rem;color:rgba(255,255,255,0.4);max-width:180px;
+                                               overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                                        th:text="${tx.description}">Description</td>
+                                    <td style="font-size:0.75rem;color:rgba(255,255,255,0.35);"
+                                        th:text="${#temporals.format(tx.dateTime, 'dd-MM-yy HH:mm')}">Date</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(recentUserTx)}">
+                                    <td colspan="9" class="empty-state">
+                                        <i class="bi bi-currency-exchange"></i>
+                                        No user NXL transactions yet.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script th:inline="javascript">
+        (function(){
+            var input = document.querySelector('input[name="amount"]');
+            var preview = document.getElementById('previewBox');
+            var previewBal = document.getElementById('previewBalance');
+            var currentBal = /*[[${adminNxlBalance}]]*/ 0;
+
+            if(input) {
+                input.addEventListener('input', function(){
+                    var val = parseFloat(this.value);
+                    if(!isNaN(val) && val > 0) {
+                        preview.style.display = 'block';
+                        previewBal.textContent = (currentBal + val).toFixed(2) + ' NXL';
+                    } else {
+                        preview.style.display = 'none';
+                    }
+                });
+            }
+        })();
+    </script>
+
+</body>
+</html>

@@ -39,6 +39,50 @@ public class Appointment {
     @Column(name = "razorpay_payment_id")
     private String razorpayPaymentId;
 
+    @Column(name = "nxl_used")
+    private Double nxlUsed = 0.0;
+
+    @Column(name = "earned_nxl")
+    private Double earnedNxl = 0.0;
+
+    @Column(name = "nxl_rewarded")
+    private Boolean nxlRewarded = false;
+
+    @Column(name = "final_paid_amount")
+    private Double finalPaidAmount = 0.0;
+
+    public Double getNxlUsed() {
+        return nxlUsed;
+    }
+
+    public void setNxlUsed(Double nxlUsed) {
+        this.nxlUsed = nxlUsed;
+    }
+
+    public Double getEarnedNxl() {
+        return earnedNxl;
+    }
+
+    public void setEarnedNxl(Double earnedNxl) {
+        this.earnedNxl = earnedNxl;
+    }
+
+    public Boolean getNxlRewarded() {
+        return nxlRewarded;
+    }
+
+    public void setNxlRewarded(Boolean nxlRewarded) {
+        this.nxlRewarded = nxlRewarded;
+    }
+
+    public Double getFinalPaidAmount() {
+        return finalPaidAmount;
+    }
+
+    public void setFinalPaidAmount(Double finalPaidAmount) {
+        this.finalPaidAmount = finalPaidAmount;
+    }
+
     public String getReferralCode() {
         return referralCode;
     }
@@ -82,6 +126,18 @@ public class Appointment {
         }
         if (this.advancePaid == null) {
             this.advancePaid = 100.0;
+        }
+        if (this.nxlUsed == null) {
+            this.nxlUsed = 0.0;
+        }
+        if (this.earnedNxl == null) {
+            this.earnedNxl = 0.0;
+        }
+        if (this.nxlRewarded == null) {
+            this.nxlRewarded = false;
+        }
+        if (this.finalPaidAmount == null) {
+            this.finalPaidAmount = 0.0;
         }
     }
 
@@ -236,6 +292,10 @@ public class Appointment {
         private String razorpayOrderId;
         private String razorpayPaymentId;
         private String referralCode;
+        private Double nxlUsed;
+        private Double earnedNxl;
+        private Boolean nxlRewarded;
+        private Double finalPaidAmount;
 
         AppointmentBuilder() {
         }
@@ -325,12 +385,36 @@ public class Appointment {
             return this;
         }
 
+        public AppointmentBuilder nxlUsed(Double nxlUsed) {
+            this.nxlUsed = nxlUsed;
+            return this;
+        }
+
+        public AppointmentBuilder earnedNxl(Double earnedNxl) {
+            this.earnedNxl = earnedNxl;
+            return this;
+        }
+
+        public AppointmentBuilder nxlRewarded(Boolean nxlRewarded) {
+            this.nxlRewarded = nxlRewarded;
+            return this;
+        }
+
+        public AppointmentBuilder finalPaidAmount(Double finalPaidAmount) {
+            this.finalPaidAmount = finalPaidAmount;
+            return this;
+        }
+
         public Appointment build() {
             Appointment app = new Appointment(id, userId, userName, userMobile, serviceName, appointmentDate, timeSlot, status, createdAt, services, advancePaid, paymentStatus, token);
             app.setTotalAmount(this.totalAmount);
             app.setRazorpayOrderId(this.razorpayOrderId);
             app.setRazorpayPaymentId(this.razorpayPaymentId);
             app.setReferralCode(this.referralCode);
+            if (this.nxlUsed != null) app.setNxlUsed(this.nxlUsed);
+            if (this.earnedNxl != null) app.setEarnedNxl(this.earnedNxl);
+            if (this.nxlRewarded != null) app.setNxlRewarded(this.nxlRewarded);
+            if (this.finalPaidAmount != null) app.setFinalPaidAmount(this.finalPaidAmount);
             return app;
         }
     }

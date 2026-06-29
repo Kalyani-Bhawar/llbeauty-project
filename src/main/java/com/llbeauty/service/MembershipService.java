@@ -33,6 +33,8 @@ public class MembershipService {
     private final AgentProfileRepository agentProfileRepository;
 
     private final CommissionRepository commissionRepository;
+    public static final String SOURCE_MEMBERSHIP = "MEMBERSHIP";
+    public static final String SOURCE_WELCOME = "WELCOME";
 
     @Value("${razorpay.key.id}")
     private String razorpayKeyId;
@@ -243,8 +245,13 @@ public class MembershipService {
                 double totalPurchaseAmount = purchase.getAmountPaid();
                 if (totalPurchaseAmount > amountPaidViaRazorpay) {
                      double walletAmount = totalPurchaseAmount - amountPaidViaRazorpay;
-                     walletService.debitWithDetails(user, BigDecimal.valueOf(walletAmount), "Redeemed for Membership " + purchase.getMembership().getName(), "MEMBERSHIP_PURCHASE", payment.getId(), null);
-                }
+                     walletService.debitNxl(
+                    		    user,
+                    		    BigDecimal.valueOf(walletAmount),
+                    		    WalletService.SOURCE_MEMBERSHIP,
+                    		    "MEMBERSHIP_" + purchase.getId(),
+                    		    "Membership Wallet Redeem"
+                    		);            }
             }
         } else if (orderId != null && orderId.startsWith("mock_order_")) {
              // Fully wallet paid mock order
@@ -333,6 +340,13 @@ public class MembershipService {
                         );
 
                         commissionRepository.save(commission);
+                        walletService.creditNxl(
+                        	    agent.getUser(),
+                        	    commissionAmount,
+                        	    WalletService.SOURCE_MEMBERSHIP,
+                        	    "MEMBERSHIP_" + saved.getId(),
+                        	    "Membership Referral Commission - " + plan.getName()
+                        	);
 
                         // Commented out to support manual admin payout flow instead of automatic wallet credit
                         // walletService.credit(
@@ -381,8 +395,6 @@ public class MembershipService {
         history.setPaymentId(paymentId);
         membershipHistoryRepository.save(history);
 
-        // Grant Welcome Credits
-        walletService.credit(user, BigDecimal.valueOf(plan.getWelcomeCredits()), "Welcome credit for " + plan.getName() + " activation", "MEMBERSHIP_WELCOME");
 
         // Initialize user reward points if missing
         if (rewardPointRepository.findByUser(user).isEmpty()) {

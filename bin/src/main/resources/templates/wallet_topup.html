@@ -431,12 +431,21 @@
             }
         }
 
-        function showSuccessToast(message) {
-            const toast = document.getElementById('successToast');
-            document.getElementById('toastMessage').textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 5000);
-        }
+		function showSuccessToast(message) {
+		            const toast = document.getElementById('successToast');
+		            document.getElementById('toastMessage').textContent = message;
+		            toast.classList.add('show');
+		            setTimeout(() => { toast.classList.remove('show'); }, 5000);
+		        }
+		
+		        // ✅ बटण नेहमी payAmountBadge सहित restore करण्यासाठी helper
+		        function resetPayButton(btn) {
+		            btn.disabled = false;
+		            btn.innerHTML = '<i class="bi bi-shield-lock-fill" style="font-size:1.1rem;"></i><span>Pay Securely with Razorpay</span>' +
+		                '<span id="payAmountBadge" style="background: rgba(0,0,0,0.2); padding:3px 10px; border-radius:50px; font-size:0.8rem; display:none;"></span>';
+		            const val = parseFloat(document.getElementById('topupAmount').value);
+		            if (!isNaN(val) && val > 0) updatePayBadge(val);
+		        }
 
         function initiatePayment() {
             const amountInput = document.getElementById('topupAmount').value;
@@ -459,12 +468,50 @@
                 },
                 body: JSON.stringify({ amount: amount })
             })
-            .then(res => res.json())
-            .then(data => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-shield-lock-fill" style="font-size:1.1rem;"></i><span>Pay Securely with Razorpay</span>';
+			.then(res => res.json())
+					    .then(data => {
+					        resetPayButton(btn);
 
                 if (data.error) {
+					// ✅ MOCK FLOW
+					if (data.useMock) {
+					    fetch('/wallet/topup/verify', {
+					        method: 'POST',
+					        headers: { 'Content-Type': 'application/json' },
+					        body: JSON.stringify({
+					            razorpayOrderId:   data.razorpayOrderId,
+					            razorpayPaymentId: 'mock_pay_' + Date.now(),
+					            razorpaySignature: 'mock_sig',
+					            amount: String(amount)
+					        })
+					    })
+					    .then(r => r.json())
+					    .then(vData => {
+							if (vData.success) {
+									                    try {
+									                        document.getElementById('currentBalanceText').textContent =
+									                            parseFloat(vData.newBalance).toFixed(2);
+									                        document.getElementById('topupAmount').value = '';
+									                        document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('selected'));
+									                        const badge1 = document.getElementById('payAmountBadge');
+									                        if (badge1) badge1.style.display = 'none';
+									                        showSuccessToast('₹' + amount.toFixed(2) + ' paid → ' + parseFloat(vData.credited).toFixed(2) + ' NXL added (5% bonus included)!');
+									                    } catch (uiErr) {
+									                        console.error('UI update error (payment was successful):', uiErr);
+									                        showSuccessToast('Payment successful! NXL credited.');
+									                    }
+									                } else {
+									                    alert('Error: ' + (vData.error || 'Unknown'));
+									                }
+					    })
+					    .catch(err => {
+					        console.error('Mock verify error:', err);
+					        alert('Payment verification error. Please contact support.');
+					    });
+					    return; // ← Real Razorpay open करू नको
+					}
+					
+					// Real Razorpay flow (existing `const options = {...}` code खाली तसाच राहतो)
                     alert('Error: ' + data.error);
                     return;
                 }
@@ -520,12 +567,11 @@
                         contact: userMobile
                     },
                     theme: { color: '#c9a84c' },
-                    modal: {
-                        ondismiss: function() {
-                            btn.disabled = false;
-                            btn.innerHTML = '<i class="bi bi-shield-lock-fill" style="font-size:1.1rem;"></i><span>Pay Securely with Razorpay</span>';
-                        }
-                    }
+					modal: {
+							                ondismiss: function() {
+							                    resetPayButton(btn);
+							                }
+							            }
                 };
 
                 const rzp = new Razorpay(options);
@@ -534,14 +580,12 @@
                 });
                 rzp.open();
             })
-            .catch(err => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-shield-lock-fill" style="font-size:1.1rem;"></i><span>Pay Securely with Razorpay</span>';
-                console.error('Initiate error:', err);
-                alert('Could not initiate payment. Please try again.');
-            });
-        }
-
+			.catch(err => {
+					        resetPayButton(btn);
+					        console.error('Initiate error:', err);
+					        alert('Could not initiate payment. Please try again.');
+					    });
+					}
         function initiateGPayManual() {
             const amountInput = document.getElementById('topupAmount').value;
             const amount = parseFloat(amountInput);

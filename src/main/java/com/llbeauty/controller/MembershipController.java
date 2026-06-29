@@ -129,7 +129,7 @@ public class MembershipController {
             success.put("message", "Membership " + um.getMembership().getName() + " activated successfully!");
             success.put("redirectUrl", "/dashboard");
             return ResponseEntity.ok(success);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             Map<String, Object> err = new HashMap<>();
             err.put("error", "activation_failed");
             err.put("message", e.getMessage());

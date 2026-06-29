@@ -1,9 +1,11 @@
 package com.llbeauty.controller;
 
 import com.llbeauty.entity.Merchant;
+import com.llbeauty.constants.NxlConstants;
 import com.llbeauty.entity.User;
 import com.llbeauty.entity.UserMembership;
 import com.llbeauty.entity.WalletTransaction;
+import com.llbeauty.exception.NxlException;
 import com.llbeauty.repository.MerchantRepository;
 import com.llbeauty.repository.UserRepository;
 import com.llbeauty.service.MembershipService;
@@ -80,12 +82,9 @@ public class WalletController {
             return "redirect:/auth/login?redirect=/dashboard";
         }
 
-        // Allow all roles to access the User/Membership Dashboard
-
-
-        // Fetch wallet details
-        BigDecimal balance = walletService.getBalance(user);
-        List<WalletTransaction> transactions = walletService.getTransactionHistory(user);
+        // ⬇️ NXL wallet balance + history (ata Nxl tables var shift kela)
+        BigDecimal balance = walletService.getNxlBalance(user);
+        List<com.llbeauty.entity.NxlWalletTransaction> transactions = walletService.getNxlHistory(user);
 
         // Fetch active membership
         Optional<UserMembership> activeOpt = membershipService.getActiveMembership(user);
@@ -96,6 +95,7 @@ public class WalletController {
 
         model.addAttribute("user", user);
         model.addAttribute("walletBalance", balance);
+        model.addAttribute("nxlBalance", balance);
         model.addAttribute("transactions", transactions);
         model.addAttribute("rewardPoint", rp);
         model.addAttribute("membershipHistory", historyList);
@@ -103,14 +103,12 @@ public class WalletController {
         if (activeOpt.isPresent()) {
             UserMembership active = activeOpt.get();
             model.addAttribute("activeMembership", active);
-            // Membership details
             String mId = active.getMemberId() != null ? active.getMemberId() : ("LLB-MEMBER-" + String.format("%04d", active.getId()));
             model.addAttribute("membershipId", mId);
             model.addAttribute("plan", active.getMembership());
             model.addAttribute("expiryDate", active.getExpiryDate());
         }
 
-        // Award Progress Tracker variables (Gold Pass is mid-level, Black Pass is top-level)
         int tierProgress = 0;
         if (activeOpt.isPresent()) {
             String name = activeOpt.get().getMembership().getName();
@@ -140,7 +138,7 @@ public class WalletController {
         }
 
         model.addAttribute("merchant", merchant);
-        model.addAttribute("walletBalance", walletService.getBalance(user));
+        model.addAttribute("walletBalance", walletService.getNxlBalance(user));
         return "wallet_redeem";
     }
 
@@ -164,11 +162,19 @@ public class WalletController {
             return "redirect:/wallet/redeem?merchantId=" + merchantId;
         }
 
-        boolean success = walletService.debit(user, amount, "Redeemed at " + merchant.getName() + " via QR", "QR_REDEEM");
-        if (success) {
+        // ⬇️ FIXED: boolean nahi, ata try-catch (NxlException) vaprla.
+        // ⬇️ FIXED: SOURCE_BOOKING ("BOOKING") NxlConstants.ALLOWED_SOURCES madhe nahiye, mhanun "LL_BEAUTY" vaprla.
+        try {
+            walletService.debitNxl(
+                    user,
+                    amount,
+                    NxlConstants.SOURCE_LLBEAUTY,
+                    merchantId.toString(),
+                    "QR_REDEEM at " + merchant.getName()
+            );
             redirectAttributes.addFlashAttribute("successMessage", "Successfully redeemed ₹" + amount + " at " + merchant.getName() + "!");
-        } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "Insufficient wallet balance to redeem this amount.");
+        } catch (NxlException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/wallet/redeem?merchantId=" + merchantId;
         }
 
@@ -185,6 +191,7 @@ public class WalletController {
             return "redirect:/auth/login?redirect=/wallet/topup";
         }
         model.addAttribute("user", user);
+        model.addAttribute("walletBalance", walletService.getNxlBalance(user)); // ⬅️ NAVIN LINE
         return "wallet_topup";
     }
 
@@ -196,17 +203,29 @@ public class WalletController {
             if (amount.compareTo(BigDecimal.valueOf(10)) < 0 || amount.compareTo(BigDecimal.valueOf(10000)) > 0) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Amount must be between ₹10 and ₹10,000"));
             }
-
             User user = getAuthenticatedUser();
             if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
 
-            String dummyRefId = "topup_" + System.currentTimeMillis();
-            Payment payment = paymentService.initiatePayment(user, amount.doubleValue(), "WALLET_TOPUP", dummyRefId, "RAZORPAY");
+            boolean isDummy = razorpayKeyId == null
+                || razorpayKeyId.trim().isEmpty()
+                || "rzp_test_dummy".equals(razorpayKeyId);
 
             Map<String, Object> response = new HashMap<>();
-            response.put("razorpayOrderId", payment.getRazorpayOrderId());
-            response.put("razorpayKeyId", razorpayKeyId);
             response.put("amount", amount);
+
+            if (isDummy) {
+                // ✅ Mock flow — Razorpay call नाही
+                response.put("razorpayOrderId", "mock_topup_" + System.currentTimeMillis());
+                response.put("razorpayKeyId", "mock_key");
+                response.put("useMock", true);
+            } else {
+                // Real Razorpay
+                String refId = "topup_" + System.currentTimeMillis();
+                Payment payment = paymentService.initiatePayment(user, amount.doubleValue(), "WALLET_TOPUP", refId, "RAZORPAY");
+                response.put("razorpayOrderId", payment.getRazorpayOrderId());
+                response.put("razorpayKeyId", razorpayKeyId);
+                response.put("useMock", false);
+            }
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -220,30 +239,62 @@ public class WalletController {
             User user = getAuthenticatedUser();
             if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
 
-            String orderId = data.get("razorpayOrderId");
-            String paymentId = data.get("razorpayPaymentId");
-            String signature = data.get("razorpaySignature");
+            String orderId   = data.get("razorpayOrderId");
+            String amountStr = data.get("amount");
 
-            Payment payment = null;
-            try {
-                payment = paymentService.verifyAndProcessPayment(orderId, paymentId, signature);
-            } catch (Exception e) {
-                return ResponseEntity.status(400).body(Map.of("error", "Payment verification failed."));
-            }
+            boolean isDummy = razorpayKeyId == null
+                || razorpayKeyId.trim().isEmpty()
+                || "rzp_test_dummy".equals(razorpayKeyId)
+                || (orderId != null && orderId.startsWith("mock_"));
 
             BigDecimal creditAmount = BigDecimal.ZERO;
-            if (payment != null) {
-                creditAmount = BigDecimal.valueOf(payment.getAmount());
+
+            if (isDummy) {
+                // ✅ Mock — amount directly from request
+                if (amountStr != null && !amountStr.isEmpty()) {
+                    creditAmount = new BigDecimal(amountStr);
+                }
+            } else {
+                // Real Razorpay verify
+                try {
+                    Payment payment = paymentService.verifyAndProcessPayment(
+                        orderId,
+                        data.get("razorpayPaymentId"),
+                        data.get("razorpaySignature")
+                    );
+                    if (payment != null) creditAmount = BigDecimal.valueOf(payment.getAmount());
+                } catch (Exception e) {
+                    return ResponseEntity.status(400).body(Map.of("error", "Payment verification failed."));
+                }
             }
 
-            walletService.credit(user, creditAmount, "Wallet Top-up via Razorpay", "RAZORPAY_TOPUP");
+            // ✅ 5% BONUS: ₹100 pay → 105 NXL
+            BigDecimal bonus       = creditAmount.multiply(new BigDecimal("0.05"))
+                                                 .setScale(2, java.math.RoundingMode.HALF_UP);
+            BigDecimal totalCredit = creditAmount.add(bonus);
 
-            return ResponseEntity.ok(Map.of("success", true, "newBalance", walletService.getBalance(user)));
+            try {
+                walletService.creditNxl(
+                    user,
+                    totalCredit,
+                    NxlConstants.SOURCE_LLBEAUTY,
+                    orderId != null ? orderId : "topup_" + System.currentTimeMillis(),
+                    "Wallet Top-up ₹" + creditAmount + " + 5% bonus"
+                );
+            } catch (NxlException e) {
+                return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            }
+
+            return ResponseEntity.ok(Map.of(
+                "success",    true,
+                "newBalance", walletService.getNxlBalance(user),
+                "credited",   totalCredit,
+                "bonus",      bonus
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-
     @GetMapping("/dashboard/membership")
     public String membershipCardPage(Model model) {
         User user = getAuthenticatedUser();
@@ -263,7 +314,6 @@ public class WalletController {
             model.addAttribute("membershipId", "LLB-MEMBER-" + String.format("%04d", active.getId()));
             model.addAttribute("plan", active.getMembership());
             model.addAttribute("expiryDate", active.getExpiryDate());
-            // Award Progress Tracker variables
             int tierProgress = 0;
             String name = active.getMembership().getName();
             if (name.contains("Pink")) tierProgress = 33;

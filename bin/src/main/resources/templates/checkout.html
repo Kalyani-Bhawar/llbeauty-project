@@ -123,7 +123,7 @@
                                     Apply L.L. Rewards Credits
                                 </label>
                                 <div class="text-muted" style="font-size:0.75rem; margin-top:2px;">
-                                    Available balance: <strong>₹<span th:text="${#numbers.formatDecimal(walletBalance, 1, 0)}">0</span></strong>
+									Available NXL: <strong><span th:text="${#numbers.formatDecimal(walletBalance, 1, 2)}">0.00</span> NXL</strong>
                                 </div>
                             </div>
                             <span class="badge bg-dark p-2 text-gold font-weight-bold" style="font-size:0.9rem;" id="walletBadgeText">
@@ -352,6 +352,7 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script th:inline="javascript">
         const walletBalance = [[${walletBalance}]];
+		const nxlBalance = [[${nxlBalance != null ? nxlBalance : 0}]];
         const initialFinalAmount = [[${finalAmount}]];
         const directProductId = [[${directProductId}]];
 
@@ -379,6 +380,33 @@
                 grandTotal.innerText = "₹" + initialFinalAmount.toFixed(2);
             }
         }
+		
+		function toggleNxlRedemption() {
+		  const useNxl = document.getElementById('useNxlCheckbox').checked;
+		  const nxlBadge = document.getElementById('nxlBadgeText');
+		  const nxlRow = document.getElementById('nxlDeductionRow');
+		  const nxlVal = document.getElementById('nxlDeductionValue');
+		  const grandTotalDisplay = document.getElementById('grandTotalDisplay');
+		
+		  // Wallet already applied असेल तर त्याचं remaining amount घ्या
+		  const walletUsed = document.getElementById('walletCheckbox').checked
+		    ? Math.min(walletBalance, initialFinalAmount) : 0;
+		  const afterWallet = initialFinalAmount - walletUsed;
+		
+		  if (useNxl) {
+		    const nxlApplied = Math.min(nxlBalance, afterWallet);
+		    const remaining = afterWallet - nxlApplied;
+		
+		    nxlBadge.innerText = "-₹" + nxlApplied.toFixed(2);
+		    nxlVal.innerText = "-₹" + nxlApplied.toFixed(2);
+		    nxlRow.setAttribute("style", "display: flex !important;");
+		    grandTotalDisplay.innerText = "₹" + remaining.toFixed(2);
+		  } else {
+		    nxlBadge.innerText = "-₹0.00";
+		    nxlRow.setAttribute("style", "display: none !important;");
+		    grandTotalDisplay.innerText = "₹" + afterWallet.toFixed(2);
+		  }
+		}
 
         function placeOrder() {
             // Check form validation
@@ -390,6 +418,7 @@
 
             const isUpiTab = document.getElementById('upi-tab').classList.contains('active');
             const useWallet = document.getElementById('walletCheckbox').checked;
+			const useNxl = document.getElementById('useNxlCheckbox')?.checked || false;
             
             // Check UPI input VPA if UPI tab is selected
             if (isUpiTab) {
@@ -401,7 +430,7 @@
                 }
             }
 
-            let url = `/checkout/place-order?useWallet=${useWallet}`;
+			let url = `/checkout/place-order?useWallet=${useWallet}&useNxl=${useNxl}&referralCode=${encodeURIComponent(referralCode)}`;
             if (directProductId) {
                 url += `&directProductId=${directProductId}`;
             }

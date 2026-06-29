@@ -74,22 +74,29 @@
                 <!-- LEFT COLUMN: PAYMENT OPTIONS -->
                 <div class="col-lg-6">
                     
-                    <!-- Wallet Toggle -->
-                    <div class="checkout-box">
-                        <h5><i class="bi bi-wallet2 me-2" style="color:var(--gold);"></i>Pay Using Wallet Credits</h5>
-                        <div class="d-flex align-items-center justify-content-between p-3 rounded" style="background:#fcfaf6; border:1px solid #f0ebe0;">
+                    <!-- NXL TOKEN REDEMPTION BOX -->
+                    <div class="checkout-box" th:if="${nxlBalance != null and #numbers.formatDecimal(nxlBalance,1,2) != '0.00'}">
+                        <h5><i class="bi bi-coin me-2" style="color:var(--gold);"></i>Use NXL Tokens</h5>
+                        <div class="d-flex align-items-center justify-content-between p-3 rounded"
+                            style="background:#fcfaf6; border:1px solid #f0ebe0;">
                             <div class="form-check m-0">
-                                <input class="form-check-input" type="checkbox" id="walletCheckbox" onchange="toggleWalletRedemption()">
-                                <label class="form-check-label order-summary-val" for="walletCheckbox" style="cursor:pointer; font-size:0.9rem;">
-                                    Apply L.L. Rewards Credits
+                                <input class="form-check-input" type="checkbox" id="useNxlCheckbox"
+                                    onchange="toggleNxlRedemption()">
+                                <label class="form-check-label order-summary-val" for="useNxlCheckbox"
+                                    style="cursor:pointer; font-size:0.9rem;">
+                                    Apply NXL Tokens
                                 </label>
                                 <div class="text-muted" style="font-size:0.75rem; margin-top:2px;">
-                                    Available balance: <strong>₹<span th:text="${#numbers.formatDecimal(walletBalance, 1, 0)}">0</span></strong>
+                                    Available: <strong><span th:text="${#numbers.formatDecimal(nxlBalance,1,2)}">0</span> NXL</strong>
                                 </div>
                             </div>
-                            <span class="badge bg-dark p-2 text-gold font-weight-bold" style="font-size:0.9rem;" id="walletBadgeText">
+                            <span class="badge p-2 text-dark fw-bold" 
+                                style="background:var(--gold); font-size:0.9rem;" id="nxlBadgeText">
                                 -₹0.00
                             </span>
+                        </div>
+                        <div class="mt-2" style="font-size:0.75rem; color:var(--text-muted);">
+                            💡After using NXL tokens, a 5% cashback will be credited on the remaining amount after service completion.
                         </div>
                     </div>
 
@@ -159,9 +166,9 @@
                                 <span class="order-summary-lbl">Secure Slot Deposit Fee</span>
                                 <span class="order-summary-val" style="color:var(--gold-dark);">₹100.00</span>
                             </div>
-                            <div class="d-flex justify-content-between" id="walletDeductionRow" style="display:none !important;">
-                                <span class="order-summary-lbl">Wallet Applied</span>
-                                <span class="order-summary-val text-success" id="walletDeductionValue">-₹0.00</span>
+                            <div class="d-flex justify-content-between" id="nxlDeductionRow" style="display:none !important;">
+                                <span class="order-summary-lbl">NXL Tokens Applied</span>
+                                <span class="order-summary-val text-success" id="nxlDeductionValue">-₹0.00</span>
                             </div>
                             <div class="d-flex justify-content-between mt-2">
                                 <span class="order-summary-val" style="font-size:1.05rem;">Advance to Pay</span>
@@ -231,31 +238,47 @@
     
     <script th:inline="javascript">
 		const appointmentId = /*[[${appointment.id}]]*/ 0;
-		const walletBalance = /*[[${walletBalance}]]*/ 0;
+		const nxlBalance = /*[[${nxlBalance != null ? nxlBalance : 0.0}]]*/ 0.0;
 		const razorpayKeyId = /*[[${razorpayKeyId}]]*/ '';
 		const userName = '[[${currentUser.name}]]';
 		const userEmail = '[[${currentUser.email}]]';
 		const userMobile = '[[${currentUser.mobile}]]';
         const initialFinalAmount = 100.00;
+        const serviceAmount = /*[[${appointment.totalAmount != null ? appointment.totalAmount : 0.0}]]*/ 0.0;
 
-        function toggleWalletRedemption() {
-            const useWallet = document.getElementById('walletCheckbox').checked;
-            const walletBadge = document.getElementById('walletBadgeText');
-            const walletRow = document.getElementById('walletDeductionRow');
-            const walletVal = document.getElementById('walletDeductionValue');
+        function toggleNxlRedemption() {
+            const useNxl = document.getElementById('useNxlCheckbox').checked;
+            const nxlBadge = document.getElementById('nxlBadgeText');
+            const nxlRow = document.getElementById('nxlDeductionRow');
+            const nxlVal = document.getElementById('nxlDeductionValue');
             const grandTotal = document.getElementById('grandTotalDisplay');
 
-            if (useWallet) {
-                const applied = Math.min(walletBalance, initialFinalAmount);
+            if (useNxl) {
+                const applied = Math.min(nxlBalance, initialFinalAmount);
                 const remaining = initialFinalAmount - applied;
-                walletBadge.innerText = "-₹" + applied.toFixed(2);
-                walletVal.innerText = "-₹" + applied.toFixed(2);
-                walletRow.setAttribute("style", "display: flex !important;");
+                
+                nxlBadge.innerText = "-₹" + applied.toFixed(2);
+                nxlVal.innerText = "-₹" + applied.toFixed(2);
+                nxlRow.setAttribute("style", "display: flex !important;");
                 grandTotal.innerText = "₹" + remaining.toFixed(2);
+                
+                const payBtn = document.querySelector('button[onclick="proceedToPayment()"]');
+                if (payBtn) {
+                    if (remaining <= 0) {
+                        payBtn.innerHTML = '<i class="bi bi-shield-lock-fill me-2"></i> Book Slot using NXL Tokens';
+                    } else {
+                        payBtn.innerHTML = '<i class="bi bi-shield-lock-fill me-2"></i> Pay ₹' + remaining.toFixed(2) + ' &amp; Confirm Slot';
+                    }
+                }
             } else {
-                walletBadge.innerText = "-₹0.00";
-                walletRow.setAttribute("style", "display: none !important;");
+                nxlBadge.innerText = "-₹0.00";
+                nxlRow.setAttribute("style", "display: none !important;");
                 grandTotal.innerText = "₹" + initialFinalAmount.toFixed(2);
+                
+                const payBtn = document.querySelector('button[onclick="proceedToPayment()"]');
+                if (payBtn) {
+                    payBtn.innerHTML = '<i class="bi bi-shield-lock-fill me-2"></i> Pay ₹100 &amp; Confirm Slot';
+                }
             }
         }
         let selectedPaymentMethod = 'razorpay'; // default to razorpay
@@ -277,12 +300,12 @@
 
 		
 		function openGPayModal() {
-		    const useWallet = document.getElementById('walletCheckbox').checked;
-		    const applied = Math.min(walletBalance, initialFinalAmount);
-		    const remainingToPay = initialFinalAmount - (useWallet ? applied : 0);
+		    const useNxl = document.getElementById('useNxlCheckbox') ? document.getElementById('useNxlCheckbox').checked : false;
+		    const applied = Math.min(nxlBalance, initialFinalAmount);
+		    const remainingToPay = useNxl ? (initialFinalAmount - applied) : initialFinalAmount;
 		    
 		    if (remainingToPay <= 0) {
-		        submitPaymentData(true, 'WALLET_PAY');
+		        submitPaymentData(true, 'NXL_PAY');
 		        return;
 		    }
 
@@ -295,18 +318,18 @@
 		}
 
 		function openRazorpay(method) {
-		    const useWallet = document.getElementById('walletCheckbox').checked;
-		    const applied = Math.min(walletBalance, initialFinalAmount);
-		    const remainingToPay = initialFinalAmount - (useWallet ? applied : 0);
+		    const useNxl = document.getElementById('useNxlCheckbox') ? document.getElementById('useNxlCheckbox').checked : false;
+		    const applied = Math.min(nxlBalance, initialFinalAmount);
+		    const remainingToPay = useNxl ? (initialFinalAmount - applied) : initialFinalAmount;
 		
 		    if (remainingToPay <= 0) {
-		        submitPaymentData(true, 'WALLET_PAY');
+		        submitPaymentData(true, 'NXL_PAY');
 		        return;
 		    }
 
             let formData = new FormData();
             formData.append("appointmentId", appointmentId);
-            formData.append("useWallet", useWallet);
+            formData.append("useNxl", useNxl);
 
             fetch('/salon/create-order', {
                 method: 'POST',
@@ -327,7 +350,7 @@
                     image: "/images/logo.png",
                     order_id: data.razorpayOrderId,
                     handler: function(response) {
-                        submitPaymentData(useWallet, response.razorpay_payment_id, response.razorpay_order_id, response.razorpay_signature);
+                        submitPaymentData(useNxl, response.razorpay_payment_id, response.razorpay_order_id, response.razorpay_signature);
                     },
                     theme: {
                         color: "#C9A84C"
@@ -356,11 +379,11 @@
 
         // Removed redundant processSalonPayment since openRazorpay covers it.
 
-        function submitPaymentData(useWallet, paymentId, razorpayOrderId, razorpaySignature) {
+        function submitPaymentData(useNxl, paymentId, razorpayOrderId, razorpaySignature) {
             let formData = new FormData();
             formData.append("appointmentId", appointmentId);
-            formData.append("useWallet", useWallet);
-            if (paymentId && paymentId !== 'WALLET_PAY') {
+            formData.append("useNxl", useNxl);
+            if (paymentId && paymentId !== 'NXL_PAY') {
                 formData.append("paymentId", paymentId);
                 formData.append("razorpayOrderId", razorpayOrderId);
                 formData.append("razorpaySignature", razorpaySignature);

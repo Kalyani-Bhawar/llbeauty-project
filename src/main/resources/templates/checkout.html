@@ -129,21 +129,32 @@
 					<!-- Wallet Toggle -->
 					<div class="checkout-box">
 						<h5><i class="bi bi-wallet2 me-2" style="color:var(--gold);"></i>Redeem Wallet Credits</h5>
-						<div class="d-flex align-items-center justify-content-between p-3 rounded"
-							style="background:#fcfaf6; border:1px solid #f0ebe0;">
-							<div class="form-check m-0">
-								<input class="form-check-input" type="checkbox" id="walletCheckbox"
-									onchange="toggleWalletRedemption()">
-								<label class="form-check-label order-summary-val" for="walletCheckbox"
-									style="cursor:pointer; font-size:0.9rem;"> Apply L.L. Rewards Credits </label>
-								<div class="text-muted" style="font-size:0.75rem; margin-top:2px;"> Available balance:
-									<strong>₹<span
-											th:text="${#numbers.formatDecimal(walletBalance, 1, 0)}">0</span></strong>
-								</div>
-							</div>
-							<span class="badge bg-dark p-2 text-gold font-weight-bold" style="font-size:0.9rem;"
-								id="walletBadgeText"> -₹0.00 </span>
+						<!-- NXL TOKEN REDEMPTION BOX -->
+						<div class="checkout-box" th:if="${nxlBalance != null and #numbers.formatDecimal(nxlBalance,1,2) != '0.00'}">
+						  <h5><i class="bi bi-coin me-2" style="color:var(--gold);"></i>Use NXL Tokens</h5>
+						  <div class="d-flex align-items-center justify-content-between p-3 rounded"
+						    style="background:#fcfaf6; border:1px solid #f0ebe0;">
+						    <div class="form-check m-0">
+						      <input class="form-check-input" type="checkbox" id="useNxlCheckbox"
+						        onchange="toggleNxlRedemption()">
+						      <label class="form-check-label order-summary-val" for="useNxlCheckbox"
+						        style="cursor:pointer; font-size:0.9rem;">
+						        Apply NXL Tokens
+						      </label>
+						      <div class="text-muted" style="font-size:0.75rem; margin-top:2px;">
+						        Available: <strong><span th:text="${#numbers.formatDecimal(nxlBalance,1,2)}">0</span> NXL</strong>
+						      </div>
+						    </div>
+						    <span class="badge p-2 text-dark fw-bold" 
+						      style="background:var(--gold); font-size:0.9rem;" id="nxlBadgeText">
+						      -₹0.00
+						    </span>
+						  </div>
+						  <div class="mt-2" style="font-size:0.75rem; color:var(--text-muted);">
+						    💡After using NXL tokens, a 5% cashback will be credited on the remaining amount.
+						  </div>
 						</div>
+
 					</div>
 				</div>
 				<!-- RIGHT COLUMN: ORDER SUMMARY -->
@@ -201,6 +212,12 @@
 								style="display:none !important;">
 								<span class="order-summary-lbl">Wallet Applied</span>
 								<span class="order-summary-val text-success" id="walletDeductionValue">-₹0.00</span>
+							</div>
+							<!-- NXL Deduction Row (wallet deduction row च्या खाली) -->
+							<div class="d-flex justify-content-between" id="nxlDeductionRow"
+							  style="display:none !important;">
+							  <span class="order-summary-lbl">NXL Tokens Applied</span>
+							  <span class="order-summary-val text-success" id="nxlDeductionValue">-₹0.00</span>
 							</div>
 							<div class="d-flex justify-content-between mt-2">
 								<span class="order-summary-val" style="font-size:1.05rem;">Grand Total</span>
@@ -396,28 +413,29 @@
 			const walletBalance = [[${walletBalance}]];
 			const initialFinalAmount = [[${finalAmount}]];
 			const directProductId = [[${directProductId}]];
+			const nxlBalance = [[${nxlBalance != null ? nxlBalance : 0.0}]];
 
 			let mockPaymentData = null;
 			let mockModalInstance = null;
 
-			function toggleWalletRedemption() {
-				const useWallet = document.getElementById('walletCheckbox').checked;
-				const walletBadge = document.getElementById('walletBadgeText');
-				const walletRow = document.getElementById('walletDeductionRow');
-				const walletVal = document.getElementById('walletDeductionValue');
+			function toggleNxlRedemption() {
+				const useNxl = document.getElementById('useNxlCheckbox').checked;
+				const nxlBadge = document.getElementById('nxlBadgeText');
+				const nxlRow = document.getElementById('nxlDeductionRow');
+				const nxlVal = document.getElementById('nxlDeductionValue');
 				const grandTotal = document.getElementById('grandTotalDisplay');
 
-				if (useWallet) {
-					const applied = Math.min(walletBalance, initialFinalAmount);
+				if (useNxl) {
+					const applied = Math.min(nxlBalance, initialFinalAmount);
 					const remaining = initialFinalAmount - applied;
 
-					walletBadge.innerText = "-₹" + applied.toFixed(2);
-					walletVal.innerText = "-₹" + applied.toFixed(2);
-					walletRow.setAttribute("style", "display: flex !important;");
+					nxlBadge.innerText = "-₹" + applied.toFixed(2);
+					nxlVal.innerText = "-₹" + applied.toFixed(2);
+					nxlRow.setAttribute("style", "display: flex !important;");
 					grandTotal.innerText = "₹" + remaining.toFixed(2);
 				} else {
-					walletBadge.innerText = "-₹0.00";
-					walletRow.setAttribute("style", "display: none !important;");
+					nxlBadge.innerText = "-₹0.00";
+					nxlRow.setAttribute("style", "display: none !important;");
 					grandTotal.innerText = "₹" + initialFinalAmount.toFixed(2);
 				}
 			}
@@ -431,7 +449,8 @@
 				}
 
 				const isUpiTab = document.getElementById('upi-tab').classList.contains('active');
-				const useWallet = document.getElementById('walletCheckbox').checked;
+				const useWallet = false;
+				const useNxl = document.getElementById('useNxlCheckbox') ? document.getElementById('useNxlCheckbox').checked : false;
 				const referralCode =
 					document.getElementById('referralCode').value;
 
@@ -446,7 +465,7 @@
 				}
 
 				let url =
-					`/checkout/place-order?useWallet=${useWallet}&referralCode=${encodeURIComponent(referralCode)}`;
+					`/checkout/place-order?useWallet=${useWallet}&useNxl=${useNxl}&referralCode=${encodeURIComponent(referralCode)}`;
 				if (directProductId) {
 					url += `&directProductId=${directProductId}`;
 				}

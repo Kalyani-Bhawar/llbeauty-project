@@ -129,7 +129,6 @@ public class DataInitializer implements CommandLineRunner {
             	    "5% Discount\nEarly Access to Sales & Events\nExclusive Birthday Offers\nReward Points Earning\nStandard Member Support",
             	    365,
             	    12,
-            	    300.0,
             	    true
             	);
 
@@ -141,7 +140,6 @@ public class DataInitializer implements CommandLineRunner {
             	    "15% Discount\nFree Delivery on All Orders\nVIP Launch Access\nDouble Reward Points\nEvent Invitations",
             	    365,
             	    12,
-            	    1000.0,
             	    true
             	);
 
@@ -153,7 +151,6 @@ public class DataInitializer implements CommandLineRunner {
             	    "25% Discount\nConcierge Support\nLuxury Gifts on Signup\nTriple Reward Points\nVIP Lounge Access",
             	    365,
             	    12,
-            	    3000.0,
             	    true
             	);
             membershipRepository.saveAll(List.of(pink, gold, black));

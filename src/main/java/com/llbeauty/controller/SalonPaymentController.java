@@ -1,6 +1,7 @@
 package com.llbeauty.controller;
 
 import com.llbeauty.entity.Appointment;
+import com.llbeauty.constants.NxlConstants;
 import com.llbeauty.entity.Commission;
 import com.llbeauty.entity.User;
 import com.llbeauty.entity.Payment;
@@ -94,7 +95,7 @@ public class SalonPaymentController {
         // No longer pre-creating the Razorpay Order here.
 
         model.addAttribute("appointment", app);
-        model.addAttribute("walletBalance", walletService.getBalance(user));
+        model.addAttribute("nxlBalance", walletService.getNxlBalance(user));
         model.addAttribute("razorpayKeyId", razorpayConfig.getKeyId());
         model.addAttribute("currentUser", user);
         return "salon_payment";
@@ -104,7 +105,7 @@ public class SalonPaymentController {
     @PostMapping("/salon/create-order")
     @ResponseBody
     public ResponseEntity<?> createOrder(@RequestParam("appointmentId") Long appointmentId,
-                                         @RequestParam("useWallet") boolean useWallet) {
+                                         @RequestParam("useNxl") boolean useNxl) {
         User user = getAuthenticatedUser();
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Login required"));
@@ -117,15 +118,15 @@ public class SalonPaymentController {
 
         double total = 100.0;
         double walletApplied = 0.0;
-        if (useWallet) {
-            BigDecimal walletBal = walletService.getBalance(user);
+        if (useNxl) {
+            BigDecimal walletBal = walletService.getNxlBalance(user);
             walletApplied = Math.min(walletBal.doubleValue(), total);
         }
         double amountToPay = total - walletApplied;
         String razorpayOrderId = null;
         if (amountToPay > 0 && !isDummyCredentials()) {
             try {
-                Payment payment = paymentService.initiatePayment(user, amountToPay, "SALON_DEPOSIT", String.valueOf(appointmentId), "RAZORPAY" + (useWallet ? "+WALLET" : ""));
+                Payment payment = paymentService.initiatePayment(user, amountToPay, "SALON_DEPOSIT", String.valueOf(appointmentId), "RAZORPAY" + (useNxl ? "+NXL" : ""));
                 razorpayOrderId = payment.getRazorpayOrderId();
             } catch (Exception e) {
                 log.error("Failed to create Razorpay order for salon booking", e);
@@ -149,7 +150,7 @@ public class SalonPaymentController {
     @PostMapping("/salon/confirm-payment")
     @ResponseBody
     public ResponseEntity<?> confirmSalonPayment(@RequestParam("appointmentId") Long appointmentId,
-                                                 @RequestParam("useWallet") boolean useWallet,
+                                                 @RequestParam("useNxl") boolean useNxl,
                                                  @RequestParam(value = "paymentId", required = false) String paymentId,
                                                  @RequestParam(value = "razorpayOrderId", required = false) String razorpayOrderId,
                                                  @RequestParam(value = "razorpaySignature", required = false) String razorpaySignature) {
@@ -165,13 +166,20 @@ public class SalonPaymentController {
 
         double total = 100.0;
         double walletApplied = 0.0;
-        if (useWallet) {
-            BigDecimal walletBal = walletService.getBalance(user);
+        if (useNxl) {
+            BigDecimal walletBal = walletService.getNxlBalance(user);
             walletApplied = Math.min(walletBal.doubleValue(), total);
             if (walletApplied > 0) {
-                boolean success = walletService.debit(user, BigDecimal.valueOf(walletApplied), "Secured advanced booking payment for Appointment #" + appointmentId, "SALON_DEPOSIT");
-                if (!success) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Insufficient Wallet Credits."));
+                try {
+                    walletService.debitNxl(
+                            user,
+                            BigDecimal.valueOf(walletApplied),
+                            NxlConstants.SOURCE_LLBEAUTY,
+                            "SALON_" + appointmentId,
+                            "Salon Booking Payment"
+                    );
+                } catch (com.llbeauty.exception.NxlException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
                 }
             }
         }
@@ -189,9 +197,13 @@ public class SalonPaymentController {
         int tokenNum = 1000 + new Random().nextInt(9000);
         String bookingToken = "LL-SLOT-" + tokenNum;
 
+        double amountToPay = total - walletApplied;
         app.setStatus("CONFIRMED");
         app.setPaymentStatus("PAID");
         app.setToken(bookingToken);
+        app.setNxlUsed(walletApplied);
+        app.setAdvancePaid(total);
+        app.setFinalPaidAmount(total);
         if (razorpayOrderId != null && !razorpayOrderId.isEmpty()) {
             app.setRazorpayOrderId(razorpayOrderId);
         }

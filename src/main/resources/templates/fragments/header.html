@@ -143,10 +143,12 @@
                             <!-- Wallet quick view -->
                             <li class="mb-3">
                                 <div class="d-flex align-items-center gap-2 p-2 rounded-3" style="background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.15);">
-                                    <div class="d-flex align-items-center justify-content-center rounded-2" style="width:36px; height:36px; background: rgba(201,168,76,0.12); font-size:1.1rem; flex-shrink:0;">👛</div>
-                                    <div>
-                                        <div style="font-size:0.65rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); font-weight:600;">Rewards Wallet</div>
-                                        <div class="fw-bold text-gold" style="font-size:1rem; font-family:'Playfair Display',serif;">₹<span th:text="${#numbers.formatDecimal(currentUser.walletBalance, 1, 2)}">0.00</span></div>
+									<img src="/images/nxl-coin.png" 
+									     alt="NXL Token" 
+									     style="width:38px; height:38px; object-fit:contain; flex-shrink:0; mix-blend-mode: multiply;">
+									<div>
+									    <div style="...">NXL Tokens</div>
+                                        <div class="fw-bold text-gold" style="font-size:1rem; font-family:'Playfair Display',serif;"><span th:text="${#numbers.formatDecimal(nxlBalance, 1, 2)}">0.00</span></div>
                                     </div>
                                     <a href="/wallet/topup" class="ms-auto" style="font-size:0.7rem; color:var(--gold); font-weight:600; text-decoration:none; white-space:nowrap;">+ Add</a>
                                 </div>

@@ -5,7 +5,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "nxl_wallet_transactions")
+@Table(name = "nxl_wallet_transactions",
+uniqueConstraints = @UniqueConstraint(columnNames = {"source", "transaction_id"}))
 public class NxlWalletTransaction {
 
     @Id
@@ -16,7 +17,7 @@ public class NxlWalletTransaction {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "transaction_id", nullable = false, unique = true)
+    @Column(name = "transaction_id", nullable = false)
     private String transactionId;
 
     @Column(name = "type", nullable = false, length = 10)
@@ -27,6 +28,52 @@ public class NxlWalletTransaction {
 
     @Column(name = "description", length = 255)
     private String description;
+    
+    @Column(name = "source", nullable = false, length = 30)
+    private String source;
+    
+    private String rewardType;
+
+    public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
+	}
+
+	public BigDecimal getAdminBalanceBefore() {
+		return adminBalanceBefore;
+	}
+
+	public void setAdminBalanceBefore(BigDecimal adminBalanceBefore) {
+		this.adminBalanceBefore = adminBalanceBefore;
+	}
+
+	public BigDecimal getAdminBalanceAfter() {
+		return adminBalanceAfter;
+	}
+
+	public void setAdminBalanceAfter(BigDecimal adminBalanceAfter) {
+		this.adminBalanceAfter = adminBalanceAfter;
+	}
+
+	public BigDecimal getUserBalanceBefore() {
+		return userBalanceBefore;
+	}
+
+	public void setUserBalanceBefore(BigDecimal userBalanceBefore) {
+		this.userBalanceBefore = userBalanceBefore;
+	}
+
+	@Column(name = "admin_balance_before", nullable = false, precision = 14, scale = 2)
+    private BigDecimal adminBalanceBefore;
+
+    @Column(name = "admin_balance_after", nullable = false, precision = 14, scale = 2)
+    private BigDecimal adminBalanceAfter;
+
+    @Column(name = "user_balance_before", nullable = false, precision = 14, scale = 2)
+    private BigDecimal userBalanceBefore;
 
     @Column(name = "date_time", nullable = false)
     private LocalDateTime dateTime;

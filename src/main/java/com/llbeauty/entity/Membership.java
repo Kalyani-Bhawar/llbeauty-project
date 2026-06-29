@@ -28,8 +28,7 @@ public class Membership {
     @Column(name = "duration_months", nullable = false, columnDefinition = "INT DEFAULT 1")
     private Integer durationMonths = 1;
 
-    @Column(name = "welcome_credits", nullable = false)
-    private Double welcomeCredits;
+
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean active = true;
@@ -37,7 +36,7 @@ public class Membership {
     public Membership() {
     }
 
-    public Membership(Long id, String name, Double price, Double cashbackPercent, String benefits, Integer durationDays, Integer durationMonths, Double welcomeCredits, Boolean active) {
+    public Membership(Long id, String name, Double price, Double cashbackPercent, String benefits, Integer durationDays, Integer durationMonths, Boolean active) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -45,7 +44,6 @@ public class Membership {
         this.benefits = benefits;
         this.durationDays = durationDays;
         this.durationMonths = durationMonths;
-        this.welcomeCredits = welcomeCredits;
         this.active = active;
     }
 
@@ -98,13 +96,7 @@ public class Membership {
         this.durationDays = durationDays;
     }
 
-    public Double getWelcomeCredits() {
-        return welcomeCredits;
-    }
 
-    public void setWelcomeCredits(Double welcomeCredits) {
-        this.welcomeCredits = welcomeCredits;
-    }
 
     public Integer getDurationMonths() {
         return durationMonths;

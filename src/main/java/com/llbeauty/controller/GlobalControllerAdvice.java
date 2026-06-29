@@ -12,6 +12,12 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import java.util.Map;
+import java.util.HashMap;
 
 @ControllerAdvice
 public class GlobalControllerAdvice {
@@ -64,5 +70,13 @@ public class GlobalControllerAdvice {
         this.userRepository = userRepository;
         this.salonInfoRepository = salonInfoRepository;
         this.userMembershipRepository = userMembershipRepository;
+    }
+    @ExceptionHandler(Exception.class)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> handleAllExceptions(Exception e) {
+        Map<String, Object> err = new HashMap<>();
+        err.put("error", "server_error");
+        err.put("message", e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
     }
 }

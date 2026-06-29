@@ -176,6 +176,10 @@
     </style>
 </head>
 <body class="membership-page">
+	<div id="paymentLoadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:99999; align-items:center; justify-content:center; flex-direction:column; color:#fff;">
+	    <div class="spinner-border text-warning" role="status" style="width:3rem; height:3rem;"></div>
+	    <p style="margit-top:15px; margin-top:15px; font-size:18px;">Verifying your payment, please wait...</p>
+	</div>
 
     <!-- NAVBAR -->
     <div th:replace="~{fragments/header :: header}"></div>
@@ -307,11 +311,10 @@
                     return;
                 }
 
-                if (data.price === 0) {
-                    // Free upgrade or something
-                    verifyPaymentOnServer(planId, 'free_upgrade', 'free_order');
-                    return;
-                }
+				if (data.amountToPay === 0) {
+				    verifyPaymentOnServer(planId, 'free_upgrade', 'free_order');
+				    return;
+				}
 
                 var options = {
                     "key": data.key,
@@ -334,10 +337,9 @@
                     }
                 };
                 
-                if (data.useMock) {
-                    alert("Payment Gateway Key not configured. Simulating success in mock mode.");
-                    verifyPaymentOnServer(planId, 'mock_payment_' + Date.now(), data.razorpayOrderId, null);
-                } else {
+				if (data.useMock) {
+				    verifyPaymentOnServer(planId, String(data.purchaseId), data.razorpayOrderId, null);
+				} else {
                     var rzp1 = new Razorpay(options);
                     rzp1.open();
                 }
@@ -348,32 +350,53 @@
             });
         }
 
-        function verifyPaymentOnServer(planId, paymentId, orderId, signature) {
-            const verifyFormData = new FormData();
-            verifyFormData.append('planId', planId);
-            verifyFormData.append('paymentId', paymentId);
-            verifyFormData.append('orderId', orderId);
-            if (signature) {
-                verifyFormData.append('razorpaySignature', signature);
-            }
-
-            fetch('/membership/confirm', {
-                method: 'POST',
-                body: verifyFormData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    window.location.href = data.redirectUrl + '?successMessage=' + encodeURIComponent(data.message);
-                } else {
-                    alert("Error activating membership: " + (data.message || 'Unknown error'));
-                }
-            })
-            .catch(err => {
-                console.error("Verification failed:", err);
-                alert("Error verifying payment on server.");
-            });
-        }
+		function verifyPaymentOnServer(planId, paymentId, orderId, signature) {
+			document.getElementById('paymentLoadingOverlay').style.display = 'flex';
+		    // free_order असेल तर server ला call करू नको
+		    if (orderId === 'free_order') {
+		        window.location.href = '/dashboard?successMessage=' + encodeURIComponent('Membership activated successfully!');
+		        return;
+		    }
+		
+		    const verifyFormData = new FormData();
+		    verifyFormData.append('planId', planId);
+		    if(finalReferralCode){
+		        verifyFormData.append('referralCode', finalReferralCode);
+		    }
+		    verifyFormData.append('paymentId', paymentId);
+		    verifyFormData.append('orderId', orderId);
+		    if (signature) {
+		        verifyFormData.append('razorpaySignature', signature);
+		    }
+		
+			fetch('/membership/confirm', {
+			    method: 'POST',
+			    body: verifyFormData
+			})
+			.then(res => res.text().then(text => ({ ok: res.ok, status: res.status, text })))
+			.then(({ ok, status, text }) => {
+			    let data;
+			    try {
+			        data = JSON.parse(text);
+				} catch (parseErr) {
+				            console.error("Non-JSON response from /membership/confirm. Status:", status, "Body:", text);
+				            document.getElementById('paymentLoadingOverlay').style.display = 'none';
+				            alert("Server error (status " + status + "). Check console/network tab for details.");
+				            return;
+				        }
+			    if (ok && data.status === 'success') {
+			        window.location.href = data.redirectUrl + '?successMessage=' + encodeURIComponent(data.message);
+				} else {
+				            console.error("Activation failed. Status:", status, "Response:", data);
+				            document.getElementById('paymentLoadingOverlay').style.display = 'none';
+				            alert("Error activating membership: " + (data.message || data.error || 'Unknown error (status ' + status + ')'));
+				        }
+			})
+			.catch(err => {
+			    console.error("Verification fetch failed (network error):", err);
+			    alert("Could not reach server to verify payment. Please check your connection and try again.");
+			});
+		}
     </script>
 </body>
 </html>

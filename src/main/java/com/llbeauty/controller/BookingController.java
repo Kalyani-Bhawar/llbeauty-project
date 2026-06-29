@@ -19,6 +19,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -136,6 +138,24 @@ public class BookingController {
         appointment.setReferralCode(referralCode);
         System.out.println("SALON REF RECEIVED = " + referralCode);
         Appointment saved = appointmentRepository.save(appointment);
+        if (referralCode != null && !referralCode.trim().isEmpty()) {
+
+            Optional<AgentProfile> agentOpt =
+                agentProfileRepository.findByReferralCode(referralCode.trim());
+
+            if (agentOpt.isPresent()) {
+
+                User agentUser = agentOpt.get().getUser();
+
+                walletService.creditNxl(
+                    agentUser,
+                    BigDecimal.valueOf(50),
+                    WalletService.SOURCE_REFERRAL,
+                    "BOOKING_" + saved.getId(),
+                    "Salon Booking Referral Reward"
+                );
+            }
+        }
         log.info("Appointment created, pending ₹100 payment. ID: {}", saved.getId());
         
         // Redirect to SalonPaymentController's payment page

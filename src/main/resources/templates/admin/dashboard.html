@@ -109,9 +109,20 @@
                     <div style="font-size:0.75rem;color:#9b59b6;margin-top:8px;"><i class="bi bi-people"></i> Via Agent Codes</div>
                 </div>
             </div>
-            <!-- Blank column for grid alignment -->
-            <div class="col-xl-3 col-md-6">
-            </div>
+			<!-- Admin NXL System Wallet Balance -->
+			            <div class="col-xl-3 col-md-6">
+			                <div class="stat-card" style="border:1px solid rgba(201,168,76,0.25);">
+			                    <div class="stat-icon gold"><i class="bi bi-coin"></i></div>
+			                    <div class="stat-label">Admin NXL Balance</div>
+			                    <div class="stat-value" style="color:#c9a84c;"
+			                         th:text="${#numbers.formatDecimal(adminNxlBalance, 1, 2)}">0.00</div>
+			                    <div style="font-size:0.75rem;color:#c9a84c;margin-top:8px;">
+			                        <a href="/admin/nxl-tokens" style="color:#c9a84c;text-decoration:none;">
+			                            <i class="bi bi-plus-circle"></i> Manage NXL Tokens
+			                        </a>
+			                    </div>
+			                </div>
+			            </div>
         </div>
 
         <!-- Second Row: Recent Appointments + Quick Actions -->

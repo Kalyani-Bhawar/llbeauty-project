@@ -32,11 +32,7 @@
                             <span class="fs-3 text-gold-light" style="font-weight:700;">₹[[${#numbers.formatDecimal(plan.price, 1, 0)}]]</span>
                             <span style="font-size:0.8rem; color:rgba(255,255,255,0.4);"> / [[${plan.durationDays}]] Days</span>
                         </div>
-                        
-                        <div class="mb-3">
-                            <span style="font-size:0.75rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px;">Welcome Perk</span>
-                            <div style="font-weight:600; font-size:0.95rem; color:#2ecc71;">🪙 [[${#numbers.formatDecimal(plan.welcomeCredits, 1, 0)}]] Reward Credits</div>
-                        </div>
+
 
                         <div class="mb-4">
                             <span style="font-size:0.75rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px;">Cashback Rate</span>
@@ -72,11 +68,10 @@
     <script th:inline="javascript">
         let editModal = null;
         
-        function openEditModal(id, name, price, welcomeCredits, cashbackPercent, benefits) {
+        function openEditModal(id, name, price, cashbackPercent, benefits) {
             document.getElementById('editPlanId').value = id;
             document.getElementById('editPlanName').value = name;
             document.getElementById('editPlanPrice').value = price;
-            document.getElementById('editPlanWelcomeCredits').value = welcomeCredits;
             document.getElementById('editPlanCashback').value = cashbackPercent;
             document.getElementById('editPlanBenefits').value = benefits;
 

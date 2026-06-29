@@ -19,4 +19,9 @@ public interface NxlWalletTransactionRepository extends JpaRepository<NxlWalletT
 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM NxlWalletTransaction t WHERE t.user = :user AND t.type = 'DEBIT'")
     BigDecimal sumTotalCreditsUsed(@Param("user") User user);
+
+    // ✅ FIXED: entity cha field "transactionId" aahe, "referenceId" nahi
+    boolean existsBySourceAndTransactionId(String source, String transactionId);
+
+    List<NxlWalletTransaction> findAllByOrderByDateTimeDesc(org.springframework.data.domain.Pageable pageable);
 }

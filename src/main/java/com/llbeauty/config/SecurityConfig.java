@@ -1,7 +1,6 @@
 package com.llbeauty.config;
 
 import com.llbeauty.security.JwtAuthFilter;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,6 +20,7 @@ public class SecurityConfig {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
+    // 🔐 Password encoder
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -30,66 +30,52 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-        .csrf(csrf -> csrf
-        	    .ignoringRequestMatchers(
-        	        "/razorpay/webhook",
-        	        "/manual-payment/submit",
-        	        "/checkout/confirm-order",
-        	        "/checkout/place-order",
-        	        "/checkout/cart/**",
 
-        	        "/membership/buy",
-        	        "/membership/confirm",
+        // 🚨 DISABLE CSRF (IMPORTANT for Postman + APIs)
+        .csrf(csrf -> csrf.disable())
 
-        	        "/store/merchant/pay-initiate",
-        	        "/store/agent/pay-initiate",
-        	        "/store/merchant/apply-confirm",
-        	        "/store/agent/apply-confirm",
-        	        "/merchant/cart/**",
-        	        "/merchant/checkout/**",
-        	        "/api/upload",
-        	        "/salon/create-order",
-        	        "/salon/confirm-payment"
-        	    )
-        	)
+        // 🚀 JWT = STATELESS SYSTEM
+        .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        )
 
-            // JWT uses stateless authentication
-//            .sessionManagement(session ->
-//                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//            )
+        // 🔐 AUTH RULES
+        .authorizeHttpRequests(auth -> auth
+        		
+                // 🟢 PUBLIC AUTH APIs (MOST IMPORTANT)
+                .requestMatchers("/auth/**").permitAll()
 
-            .authorizeHttpRequests(auth -> auth
+                // 🟢 PUBLIC PAGES / RESOURCES
                 .requestMatchers(
-                    "/",
-                    "/auth/login/**",
-                    "/auth/register/**",
-                    "/shop",
-                    "/products",
-                    "/product/**",
-                    "/store",
-                    "/store/**",
-                    "/membership",
-                    "/membership/**",
-                    "/css/**",
-                    "/images/**",
-                    "/js/**",
-                    "/uploads/**",
-                    "/about",
-                    "/contact",
-                    "/contact/submit",
-                    "/franchise",
-                    "/salon",
-                    "/auth/**",
-                    "/franchise/apply",
-                    "/salon"
-            		).permitAll()
-            		// Admin access only
+                        "/",
+                        "/shop",
+                        "/products",
+                        "/product/**",
+                        "/store/**",
+                        "/membership/**",
+                        "/css/**",
+                        "/js/**",
+                        "/images/**",
+                        "/uploads/**",
+                        "/about",
+                        "/contact",
+                        "/franchise",
+                        "/salon",
+                        "/wallet/**",
+                        "/razorpay/**",
+                        "/api/nxl/**"
+                ).permitAll()
+
+                // 🔴 ADMIN ONLY
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                // All other requests require login (like /shop, /cart, /checkout)
+
+                // 🔒 EVERYTHING ELSE REQUIRES LOGIN
                 .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        )
+
+        // 🔥 JWT FILTER
+        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
-        
     }
 }

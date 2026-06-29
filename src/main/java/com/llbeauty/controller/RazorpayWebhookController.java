@@ -147,7 +147,13 @@ public class RazorpayWebhookController {
                     rewardService.awardPoints(user, BigDecimal.valueOf(payment.getAmount()));
                 }
             } else if ("WALLET_TOPUP".equals(purpose)) {
-                walletService.credit(user, BigDecimal.valueOf(payment.getAmount()), "Wallet Top-up via Razorpay", "RAZORPAY_TOPUP");
+            	walletService.creditNxl(
+            		    user,
+            		    BigDecimal.valueOf(payment.getAmount()),
+            		    WalletService.SOURCE_PAYMENT,
+            		    "TOPUP_" + payment.getRazorpayOrderId(),
+            		    "Wallet Top-up via Razorpay"
+            		);
             } else if ("MEMBERSHIP".equals(purpose)) {
                 MembershipPurchase purchase = membershipPurchaseRepository.findByRazorpayOrderId(payment.getRazorpayOrderId());
                 if (purchase != null && "PENDING".equals(purchase.getStatus())) {

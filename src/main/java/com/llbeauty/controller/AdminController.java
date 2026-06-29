@@ -28,9 +28,15 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.llbeauty.constants.NxlConstants;
+
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
+
+    private static final Logger log = LoggerFactory.getLogger(AdminController.class);
 
     private final AppointmentRepository appointmentRepository;
     private final FranchiseLeadRepository franchiseLeadRepository;
@@ -209,8 +215,47 @@ public class AdminController {
                 .filter(l -> l.getCreatedAt() != null)
                 .sorted((l1, l2) -> l2.getCreatedAt().compareTo(l1.getCreatedAt()))
                 .limit(5).toList());
+        
+     // Admin NXL System Wallet balance
+        model.addAttribute("adminNxlBalance", walletService.getAdminBalance());
+
 
         return "admin/dashboard";
+    }
+    
+ // ============================================================
+    //  ADMIN NXL TOKEN MANAGEMENT
+    // ============================================================
+
+    @GetMapping("/nxl-tokens")
+    public String nxlTokensPage(Model model) {
+        model.addAttribute("activeTab", "nxl-tokens");
+        model.addAttribute("adminNxlBalance", walletService.getAdminBalance());
+        model.addAttribute("adminNxlTransactions", walletService.getAdminNxlTransactions());
+        model.addAttribute("recentUserTx", walletService.getAllNxlTransactions(1, 20));
+        return "admin/nxl_tokens";
+    }
+
+    @PostMapping("/nxl-tokens/add")
+    public String addAdminTokens(
+            @RequestParam("amount") BigDecimal amount,
+            @RequestParam(value = "note", required = false) String note,
+            RedirectAttributes redirectAttributes) {
+        try {
+            if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Amount must be greater than 0.");
+                return "redirect:/admin/nxl-tokens";
+            }
+            walletService.addAdminTokens(amount, note);
+            redirectAttributes.addFlashAttribute("successMessage",
+                "✅ " + amount + " NXL tokens successfully added to system wallet!");
+        } catch (com.llbeauty.exception.NxlException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Error adding admin tokens", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Something went wrong. Please try again.");
+        }
+        return "redirect:/admin/nxl-tokens";
     }
 
     // ==========================================
@@ -430,6 +475,61 @@ public class AdminController {
                         commission.setCommissionType("SALON_BOOKING");
                         commissionRepository.save(commission);
                     });
+                }
+            }
+
+            // NXL Reward Logic when COMPLETED
+            if ("COMPLETED".equalsIgnoreCase(status)) {
+                if (!Boolean.TRUE.equals(app.getNxlRewarded())) {
+                    User user = userRepository.findById(app.getUserId()).orElse(null);
+                    if (user != null) {
+                        double serviceAmount = app.getTotalAmount() != null ? app.getTotalAmount() : 0.0;
+                        double effectiveNxlUsed = app.getNxlUsed() != null ? app.getNxlUsed() : 0.0;
+                        if (effectiveNxlUsed > 100.0) {
+                            effectiveNxlUsed = 100.0;
+                        }
+                        double baseValueForReward = serviceAmount - effectiveNxlUsed;
+                        double earned = Math.round(baseValueForReward * 0.05 * 100.0) / 100.0;
+                        if (earned > 0) {
+                            try {
+                                walletService.creditNxl(
+                                    user,
+                                    BigDecimal.valueOf(earned),
+                                    NxlConstants.SOURCE_LLBEAUTY,
+                                    "CASHBACK_SALON_" + app.getId(),
+                                    "5% NXL Cashback on Completed Salon Appointment #" + app.getId()
+                                );
+                                app.setEarnedNxl(earned);
+                                app.setNxlRewarded(true);
+                            } catch (com.llbeauty.exception.NxlException e) {
+                                log.error("Failed to credit NXL cashback for appointment #" + app.getId(), e);
+                            }
+                        } else {
+                            app.setNxlRewarded(true);
+                        }
+                    }
+                }
+            }
+
+            // NXL Refund Logic when CANCELLED
+            if ("CANCELLED".equalsIgnoreCase(status)) {
+                double nxlUsed = app.getNxlUsed() != null ? app.getNxlUsed() : 0.0;
+                if (nxlUsed > 0 && !Boolean.TRUE.equals(app.getNxlRewarded())) {
+                    User user = userRepository.findById(app.getUserId()).orElse(null);
+                    if (user != null) {
+                        try {
+                            walletService.creditNxl(
+                                user,
+                                BigDecimal.valueOf(nxlUsed),
+                                NxlConstants.SOURCE_LLBEAUTY,
+                                "REFUND_SALON_" + app.getId(),
+                                "Refund NXL used for Cancelled Appointment #" + app.getId()
+                            );
+                        } catch (com.llbeauty.exception.NxlException e) {
+                            log.error("Failed to refund NXL for cancelled appointment #" + app.getId(), e);
+                        }
+                    }
+                    app.setNxlUsed(0.0);
                 }
             }
             

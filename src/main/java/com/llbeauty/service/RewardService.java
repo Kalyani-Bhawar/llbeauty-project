@@ -15,13 +15,15 @@ public class RewardService {
     private final RewardPointRepository rewardPointRepository;
     private final RewardTransactionRepository rewardTransactionRepository;
     private final UserMembershipRepository userMembershipRepository;
+    private final WalletService walletService;
 
     public RewardService(RewardPointRepository rewardPointRepository,
                          RewardTransactionRepository rewardTransactionRepository,
-                         UserMembershipRepository userMembershipRepository) {
+                         UserMembershipRepository userMembershipRepository, WalletService walletService) {
         this.rewardPointRepository = rewardPointRepository;
         this.rewardTransactionRepository = rewardTransactionRepository;
         this.userMembershipRepository = userMembershipRepository;
+        this.walletService = walletService;
     }
 
     public RewardPoint getPoints(User user) {
@@ -60,6 +62,14 @@ public class RewardService {
         rp.setTotalPoints(rp.getTotalPoints() + pointsEarned);
         rewardPointRepository.save(rp);
         
+        walletService.creditNxl(
+        	    user,
+        	    BigDecimal.valueOf(pointsEarned),
+        	    WalletService.SOURCE_REFERRAL,
+        	    "REWARD_" + System.currentTimeMillis(),
+        	    "Reward Points Converted to NXL Wallet"
+        	);
+        
         RewardTransaction rt = new RewardTransaction(user, pointsEarned, "CREDIT", "Earned reward points on purchase of value ₹" + amountSpent.setScale(2, BigDecimal.ROUND_HALF_UP));
         rewardTransactionRepository.save(rt);
     }
@@ -74,6 +84,13 @@ public class RewardService {
         }
         
         rp.setAvailablePoints(rp.getAvailablePoints() - pointsToRedeem);
+        walletService.debitNxl(
+        	    user,
+        	    BigDecimal.valueOf(pointsToRedeem),
+        	    WalletService.SOURCE_MEMBERSHIP,
+        	    "REWARD_REDEEM_" + System.currentTimeMillis(),
+        	    "Reward Points Redeemed"
+        	);
         rp.setRedeemedPoints(rp.getRedeemedPoints() + pointsToRedeem);
         rewardPointRepository.save(rp);
         

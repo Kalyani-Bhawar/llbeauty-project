@@ -17,6 +17,12 @@ public class NxlWallet {
 
     @Column(name = "balance", nullable = false, precision = 12, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
+    
+    @Column(name = "total_earned", nullable = false, precision = 14, scale = 2)
+    private BigDecimal totalEarned = BigDecimal.ZERO;
+
+    @Column(name = "total_spent", nullable = false, precision = 14, scale = 2)
+    private BigDecimal totalSpent = BigDecimal.ZERO;
 
     public NxlWallet() {
     }
@@ -49,4 +55,8 @@ public class NxlWallet {
     public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
+    public BigDecimal getTotalEarned(){return totalEarned;}
+    public void setTotalEarned(BigDecimal v){this.totalEarned=v;}
+    public BigDecimal getTotalSpent(){return totalSpent;}
+    public void setTotalSpent(BigDecimal v){this.totalSpent=v;}
 }

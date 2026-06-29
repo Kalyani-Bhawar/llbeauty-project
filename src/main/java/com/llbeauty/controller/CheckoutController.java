@@ -229,17 +229,18 @@ public class CheckoutController {
             passName = active.getMembership().getName();
         }
 
-        double discountAmount = subtotal * discountPercent;
-        double discountedTotal = subtotal - discountAmount;
-        double gstAmount = discountedTotal * 0.18;
-        double finalAmount = discountedTotal + gstAmount;
+        BigDecimal subtotalBD = BigDecimal.valueOf(subtotal).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal discountAmountBD = subtotalBD.multiply(BigDecimal.valueOf(discountPercent)).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal discountedTotalBD = subtotalBD.subtract(discountAmountBD).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal gstAmountBD = discountedTotalBD.multiply(new BigDecimal("0.18")).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal finalAmountBD = discountedTotalBD.add(gstAmountBD).setScale(2, java.math.RoundingMode.HALF_UP);
 
         model.addAttribute("items", checkoutItems);
-        model.addAttribute("subtotal", subtotal);
+        model.addAttribute("subtotal", subtotalBD.doubleValue());
         model.addAttribute("discountPercent", discountPercent * 100);
-        model.addAttribute("discountAmount", discountAmount);
-        model.addAttribute("gstAmount", gstAmount);
-        model.addAttribute("finalAmount", finalAmount);
+        model.addAttribute("discountAmount", discountAmountBD.doubleValue());
+        model.addAttribute("gstAmount", gstAmountBD.doubleValue());
+        model.addAttribute("finalAmount", finalAmountBD.doubleValue());
         model.addAttribute("passName", passName);
         model.addAttribute("walletBalance", walletService.getBalance(user));
 
@@ -254,6 +255,7 @@ public class CheckoutController {
     @ResponseBody
     public ResponseEntity<?> placeOrder(@RequestParam(value = "directProductId", required = false) Long directProductId,
                                         @RequestParam("useWallet") boolean useWallet,
+                                        @RequestParam(value = "useNxl", defaultValue = "false") boolean useNxl, // ← हे ADD करा
                                         @RequestParam(value = "referralCode", required = false)
                                         String referralCode,
                                         HttpSession session) {
@@ -293,34 +295,48 @@ public class CheckoutController {
             discountPercent = activeOpt.get().getMembership().getCashbackPercent();
         }
         double discountAmount = subtotal * discountPercent;
-        double discountedTotal = subtotal - discountAmount;
-        
-        double gstAmount = discountedTotal * 0.18;
-        double grandTotal = discountedTotal + gstAmount;
+
+        // Pricing logic calculations with BigDecimal and scale 2
+        BigDecimal discountedPrice = BigDecimal.valueOf(subtotal - discountAmount).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal gstAmount = discountedPrice.multiply(new BigDecimal("0.18")).setScale(2, java.math.RoundingMode.HALF_UP);
+
+        BigDecimal nxlUsed = BigDecimal.ZERO;
+        if (useNxl) {
+            nxlUsed = walletService.getNxlBalance(user);
+        }
+        nxlUsed = nxlUsed.setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal effectiveNxlUsed = nxlUsed.min(discountedPrice).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal remainingPrice = discountedPrice.subtract(effectiveNxlUsed).setScale(2, java.math.RoundingMode.HALF_UP);
+        if (remainingPrice.compareTo(BigDecimal.ZERO) < 0) {
+            remainingPrice = BigDecimal.ZERO;
+        }
+
+        BigDecimal finalPayable = remainingPrice.add(gstAmount).setScale(2, java.math.RoundingMode.HALF_UP);
 
         // 2. Handle Wallet Redemption
         double walletRedeemed = 0.0;
         if (useWallet) {
             double currentWallet = walletService.getBalance(user).doubleValue();
-            walletRedeemed = Math.min(currentWallet, grandTotal);
+            walletRedeemed = Math.min(currentWallet, finalPayable.doubleValue());
+            walletRedeemed = BigDecimal.valueOf(walletRedeemed).setScale(2, java.math.RoundingMode.HALF_UP).doubleValue();
         }
 
-        double amountToPay = grandTotal - walletRedeemed;
+        double amountToPay = finalPayable.subtract(BigDecimal.valueOf(walletRedeemed)).setScale(2, java.math.RoundingMode.HALF_UP).doubleValue();
+        if (amountToPay < 0) {
+            amountToPay = 0.0;
+        }
 
         // 3. Create Pending Order
         Order order = new Order();
         order.setUser(user);
-        order.setTotalAmount(grandTotal); // Total value of order
+        order.setTotalAmount(finalPayable.doubleValue());
         order.setStatus("PENDING");
         order.setPaymentId(null);
         if (referralCode != null) {
             referralCode = referralCode.trim();
         }
-
         order.setReferralCode(
-            (referralCode != null && !referralCode.isBlank())
-                ? referralCode
-                : null
+            (referralCode != null && !referralCode.isBlank()) ? referralCode : null
         );
         Order savedOrder = orderRepository.save(order);
 
@@ -329,7 +345,6 @@ public class CheckoutController {
             OrderItem oi = new OrderItem();
             oi.setOrder(savedOrder);
             oi.setProduct(p);
-            // Quick workaround to find quantity from cart
             int qty = 1;
             if (directProductId == null) {
                 qty = getCartFromSession(session).getOrDefault(p.getId(), 1);
@@ -339,12 +354,26 @@ public class CheckoutController {
             orderItemRepository.save(oi);
         }
 
+        // ✅ NXL Token Deduction — savedOrder.getId() now available
+        if (effectiveNxlUsed.compareTo(BigDecimal.ZERO) > 0) {
+            try {
+                walletService.debitNxl(
+                    user,
+                    effectiveNxlUsed,
+                    "ONLINE_SHOPPING",
+                    "NXL_USE_ORDER_" + savedOrder.getId(),
+                    "NXL used for Order #" + savedOrder.getId()
+                );
+            } catch (com.llbeauty.exception.NxlException e) {
+                // insufficient tokens — ignore
+            }
+        }
 
         Map<String, Object> response = new HashMap<>();
         response.put("orderId", savedOrder.getId());
         response.put("amountToPay", amountToPay);
         response.put("walletRedeemed", walletRedeemed);
-
+        response.put("nxlRedeemed", effectiveNxlUsed);
         if (amountToPay <= 0) {
             // Fully paid via wallet, complete order instantly!
             completeOrder(savedOrder, user, "WALLET_PAY", directProductId == null, session);
@@ -513,6 +542,13 @@ public class CheckoutController {
                     commission.setCommissionType("PRODUCT");
 
                     commissionRepository.save(commission);
+                    walletService.creditNxl(
+                    	    agent.getUser(),
+                    	    BigDecimal.valueOf(commissionAmount),
+                    	    WalletService.SOURCE_REFERRAL,
+                    	    "PRODUCT_" + order.getId(),
+                    	    "Product Order Referral Commission"
+                    	);
                 });
         }
 
@@ -522,7 +558,13 @@ public class CheckoutController {
             double cashbackPercent = activeOpt.get().getMembership().getCashbackPercent();
             double cashbackAmount = order.getTotalAmount() * cashbackPercent;
             if (cashbackAmount > 0) {
-                walletService.credit(user, cashbackAmount, "Cashback for Order #" + order.getId() + " (" + activeOpt.get().getMembership().getName() + ")");
+            	walletService.creditNxl(
+            		    user,
+            		    BigDecimal.valueOf(cashbackAmount),
+            		    WalletService.SOURCE_MEMBERSHIP,
+            		    "CASHBACK_" + order.getId(),
+            		    "Product Cashback"
+            		);
             }
             
             // Award Reward Points!
@@ -532,6 +574,41 @@ public class CheckoutController {
         // Award default purchase credits (e.g. 5% cashback or 1 credit per 20 rupees spent even for non-VIP if desired, but VIP gets the plan specific percentage)
         // Here we adhere to VIP-only automatic plan discounts and cashback logic.
 
+     // ✅ 5% NXL CASHBACK — remainingPrice * 5%
+        try {
+            BigDecimal gstRate = new BigDecimal("0.18");
+            BigDecimal onePlusGstRate = new BigDecimal("1.18");
+            BigDecimal finalPayable = BigDecimal.valueOf(order.getTotalAmount());
+            BigDecimal effectiveNxlUsed = BigDecimal.ZERO;
+            List<com.llbeauty.entity.NxlWalletTransaction> history = walletService.getNxlHistory(user);
+            for (com.llbeauty.entity.NxlWalletTransaction tx : history) {
+                if (("NXL_USE_ORDER_" + order.getId()).equals(tx.getTransactionId())) {
+                    effectiveNxlUsed = tx.getAmount();
+                    break;
+                }
+            }
+            BigDecimal numerator = finalPayable.subtract(effectiveNxlUsed.multiply(gstRate));
+            BigDecimal remainingPrice = numerator.divide(onePlusGstRate, 2, java.math.RoundingMode.HALF_UP);
+
+            BigDecimal cashbackTokens = remainingPrice
+                    .multiply(new BigDecimal("0.05"))
+                    .setScale(2, java.math.RoundingMode.HALF_UP);
+            if (cashbackTokens.compareTo(BigDecimal.ZERO) > 0) {
+                walletService.creditNxl(
+                    user,
+                    cashbackTokens,
+                    "ONLINE_SHOPPING",
+                    "CASHBACK_ORDER_" + order.getId(),
+                    "5% cashback on Order #" + order.getId()
+                );
+            }
+        } catch (com.llbeauty.exception.NxlException e) {
+            // duplicate or validation error
+        }
+
+        if (clearCart) {
+            session.removeAttribute("LLB_CART");
+        }
         if (clearCart) {
             session.removeAttribute("LLB_CART");
         }

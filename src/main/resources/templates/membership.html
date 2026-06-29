@@ -375,7 +375,7 @@
 
                 var options = {
                     "key": data.key,
-                    "amount": data.price * 100, 
+                    "amount": Math.round(data.amountToPay * 100), 
                     "currency": "INR",
                     "name": "EVA",
                     "description": data.planName + " Subscription",
