@@ -61,15 +61,12 @@ public class RewardService {
         rp.setAvailablePoints(rp.getAvailablePoints() + pointsEarned);
         rp.setTotalPoints(rp.getTotalPoints() + pointsEarned);
         rewardPointRepository.save(rp);
-        
-        walletService.creditNxl(
-        	    user,
-        	    BigDecimal.valueOf(pointsEarned),
-        	    WalletService.SOURCE_REFERRAL,
-        	    "REWARD_" + System.currentTimeMillis(),
-        	    "Reward Points Converted to NXL Wallet"
-        	);
-        
+
+        // NOTE: Reward points are stored ONLY in the RewardPoint table.
+        // They must NEVER be converted/credited into the NXL wallet.
+        // (Removed walletService.creditNxl(...) call that used to create
+        // a "Reward Points Converted to NXL Wallet" ledger entry.)
+
         RewardTransaction rt = new RewardTransaction(user, pointsEarned, "CREDIT", "Earned reward points on purchase of value ₹" + amountSpent.setScale(2, BigDecimal.ROUND_HALF_UP));
         rewardTransactionRepository.save(rt);
     }

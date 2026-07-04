@@ -59,7 +59,7 @@ CREATE TABLE `admin_nxl_transactions` (
   `note` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -68,7 +68,7 @@ CREATE TABLE `admin_nxl_transactions` (
 
 LOCK TABLES `admin_nxl_transactions` WRITE;
 /*!40000 ALTER TABLE `admin_nxl_transactions` DISABLE KEYS */;
-INSERT INTO `admin_nxl_transactions` VALUES (1,'CREDIT',500.00,10000.00,10500.00,'Admin manually added tokens','2026-06-29 20:27:11');
+INSERT INTO `admin_nxl_transactions` VALUES (1,'CREDIT',500.00,10000.00,10500.00,'Admin manually added tokens','2026-06-29 20:27:11'),(2,'CREDIT',100.00,9499.44,9599.44,'Admin manually added tokens','2026-06-30 08:36:45'),(3,'CREDIT',50000.00,10112.24,60112.24,'Admin manually added tokens','2026-07-02 07:59:32');
 /*!40000 ALTER TABLE `admin_nxl_transactions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -86,7 +86,7 @@ CREATE TABLE `admins` (
   `name` varchar(255) DEFAULT NULL,
   `password` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=349 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=367 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -95,7 +95,7 @@ CREATE TABLE `admins` (
 
 LOCK TABLES `admins` WRITE;
 /*!40000 ALTER TABLE `admins` DISABLE KEYS */;
-INSERT INTO `admins` VALUES (348,'2026-06-29 20:25:03.932530','admin@llbeauty.com','L.L. Beauty Admin','$2a$10$.MVHE67rIyJPNj9bzlLZj.Hvnan.YLuyk4Rawgv/K5NufQ0z8srqy');
+INSERT INTO `admins` VALUES (366,'2026-07-04 16:35:38.419403','admin@llbeauty.com','L.L. Beauty Admin','$2a$10$v7bwP3IA98tYojbQv8JfD.QmBykwr3Ejc/z5bVDzTbNLRUpH8EmTW');
 /*!40000 ALTER TABLE `admins` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -170,7 +170,7 @@ CREATE TABLE `appointments` (
   `nxl_rewarded` bit(1) DEFAULT NULL,
   `nxl_used` double DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -179,6 +179,7 @@ CREATE TABLE `appointments` (
 
 LOCK TABLES `appointments` WRITE;
 /*!40000 ALTER TABLE `appointments` DISABLE KEYS */;
+INSERT INTO `appointments` VALUES (1,'2026-07-03','2026-07-01 19:47:21.070227','Hair Styling & Cut','COMPLETED','11:00 AM',1,'9172051078','Kalyani Vilas Bhawar',100,'PAID','Hair Styling & Cut','LL-SLOT-4948',NULL,NULL,'',899,'order_T8MKQaVlCq5uJD','pay_T8MKhahix6INBY',44.95,100,_binary '',0);
 /*!40000 ALTER TABLE `appointments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -196,7 +197,7 @@ CREATE TABLE `audit_logs` (
   `performed_by` varchar(255) DEFAULT NULL,
   `timestamp` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -205,6 +206,7 @@ CREATE TABLE `audit_logs` (
 
 LOCK TABLES `audit_logs` WRITE;
 /*!40000 ALTER TABLE `audit_logs` DISABLE KEYS */;
+INSERT INTO `audit_logs` VALUES (1,'ORDER_UPDATED','Order #1 status updated to CANCELLED','admin@llbeauty.com','2026-07-01 19:50:53.793992'),(2,'ORDER_UPDATED','Order #9 status updated to DELIVERED','admin@llbeauty.com','2026-07-01 20:59:02.688415');
 /*!40000 ALTER TABLE `audit_logs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -322,7 +324,7 @@ CREATE TABLE `franchise_leads` (
   `final_franchise_amount` decimal(15,2) DEFAULT NULL,
   `referral_code` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -331,6 +333,7 @@ CREATE TABLE `franchise_leads` (
 
 LOCK TABLES `franchise_leads` WRITE;
 /*!40000 ALTER TABLE `franchise_leads` DISABLE KEYS */;
+INSERT INTO `franchise_leads` VALUES (1,'₹10L - ₹20L','PUNE','2026-07-01 17:59:50.335241','kalyanibhawar465@gmail.com','Studio','9172051078','Kalyani Vilas Bhawar','Bhagwan Nagar, Wkad, Pimpri-Chinchwad, Pune',NULL,NULL,NULL,'',NULL,'APPROVED',_binary '\0',1000000.00,NULL),(2,'₹5L - ₹10L','PUNE','2026-07-01 21:28:58.755701','kalyanibhawar465@gmail.com','Kiosk','9172051078','Kalyani Vilas Bhawar','Bhagwan Nagar, Wkad, Pimpri-Chinchwad, Pune',NULL,NULL,NULL,'',NULL,'APPROVED',_binary '\0',2500000.00,NULL),(3,'₹20L - ₹35L','PUNE','2026-07-01 21:33:46.836888','kalyanibhawar465@gmail.com','Lounge','9172051078','Kalyani Vilas Bhawar','Bhagwan Nagar, Wkad, Pimpri-Chinchwad, Pune',NULL,NULL,NULL,NULL,NULL,'NEW',_binary '\0',NULL,NULL);
 /*!40000 ALTER TABLE `franchise_leads` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -489,7 +492,7 @@ CREATE TABLE `member_profiles` (
 
 LOCK TABLES `member_profiles` WRITE;
 /*!40000 ALTER TABLE `member_profiles` DISABLE KEYS */;
-INSERT INTO `member_profiles` VALUES (1,'2026-06-29 16:23:13.707589','LLB-B-00001','Eva Black Card','e7f6d669-3f08-4429-b868-edd9ab266271',1);
+INSERT INTO `member_profiles` VALUES (1,'2026-07-01 13:23:26.775333','LLB-G-00001','Eva Gold Card','f1998099-7d9c-4b5f-84e8-8c0e6006a8f4',1);
 /*!40000 ALTER TABLE `member_profiles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -512,7 +515,7 @@ CREATE TABLE `membership_history` (
   PRIMARY KEY (`id`),
   KEY `FKsm0g6hnrstu5briti90pxdtsq` (`user_id`),
   CONSTRAINT `FKsm0g6hnrstu5briti90pxdtsq` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -521,7 +524,7 @@ CREATE TABLE `membership_history` (
 
 LOCK TABLES `membership_history` WRITE;
 /*!40000 ALTER TABLE `membership_history` DISABLE KEYS */;
-INSERT INTO `membership_history` VALUES (1,'2027-06-29 16:23:13.648395','pay_T7Vll0xRkEq08b','Eva Pink Card',2999.00,'2026-06-29 16:23:13.648395','EXPIRED',1),(2,'2027-06-29 18:16:36.197657','pay_T7XhcUPjn2B6eO','Eva Pink Card',2999.00,'2026-06-29 18:16:36.197657','EXPIRED',1),(3,'2027-06-29 18:19:18.740454','pay_T7XkTPveRZAnDf','Eva Gold Card',9999.00,'2026-06-29 18:19:18.740454','EXPIRED',1),(4,'2027-06-29 18:20:04.126944','pay_T7XlHHh5SiMAck','Eva Gold Card',9999.00,'2026-06-29 18:20:04.126944','EXPIRED',1),(5,'2027-06-29 18:24:58.311782','pay_T7XqO8CQdcweWk','Eva Gold Card',9999.00,'2026-06-29 18:24:58.311782','EXPIRED',1),(6,'2027-06-29 18:26:41.381310','pay_T7XsG6jQhIR6ya','Eva Black Card',24999.00,'2026-06-29 18:26:41.381310','EXPIRED',1),(7,'2027-06-29 18:43:26.242396','pay_T7Y9x9cFCLy445','Eva Black Card',24999.00,'2026-06-29 18:43:26.242396','EXPIRED',1),(8,'2027-06-29 18:44:35.844415','pay_T7YBAqbK6K4Ahq','Eva Black Card',24999.00,'2026-06-29 18:44:35.844415','ACTIVE',1);
+INSERT INTO `membership_history` VALUES (1,'2027-07-01 13:23:26.747546','pay_T8Fm9fwK432Ye7','Eva Pink Card',2999.00,'2026-07-01 13:23:26.747546','EXPIRED',1),(2,'2027-07-01 17:40:06.859478','pay_T8K9HwJdFDuyk3','Eva Gold Card',9999.00,'2026-07-01 17:40:06.859478','EXPIRED',1),(3,'2027-07-01 20:45:52.973021','pay_T8NJY5yJStsQbt','Eva Gold Card',9999.00,'2026-07-01 20:45:52.973021','ACTIVE',1);
 /*!40000 ALTER TABLE `membership_history` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -546,7 +549,7 @@ CREATE TABLE `membership_purchases` (
   KEY `FKnj6n4f9owayr6woedspjtq9bn` (`user_id`),
   CONSTRAINT `FKjybu0kog9cr36br9ny793sss5` FOREIGN KEY (`membership_id`) REFERENCES `memberships` (`id`),
   CONSTRAINT `FKnj6n4f9owayr6woedspjtq9bn` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -555,7 +558,7 @@ CREATE TABLE `membership_purchases` (
 
 LOCK TABLES `membership_purchases` WRITE;
 /*!40000 ALTER TABLE `membership_purchases` DISABLE KEYS */;
-INSERT INTO `membership_purchases` VALUES (1,3538.8199999999997,'2026-06-29 16:22:39.661094','order_T7VlX2iXtdrvKO','pay_T7Vll0xRkEq08b','SUCCESS',4,1),(2,3538.8199999999997,'2026-06-29 18:16:10.836903','order_T7XhRqAccErsUb','pay_T7XhcUPjn2B6eO','SUCCESS',4,1),(3,8260,'2026-06-29 18:18:58.289606','order_T7XkO4QB5xA9W6','pay_T7XkTPveRZAnDf','SUCCESS',5,1),(4,11798.82,'2026-06-29 18:19:44.656961','order_T7XlCiWTh1ETdb','pay_T7XlHHh5SiMAck','SUCCESS',5,1),(5,11798.82,'2026-06-29 18:24:30.099147','order_T7XqEHEvISUqFq','pay_T7XqO8CQdcweWk','SUCCESS',5,1),(6,17700,'2026-06-29 18:26:21.133221','order_T7XsBSWdiZhgml','pay_T7XsG6jQhIR6ya','SUCCESS',6,1),(7,29498.82,'2026-06-29 18:43:05.107751','order_T7Y9rRh5kKDzq6','pay_T7Y9x9cFCLy445','SUCCESS',6,1),(8,29498.82,'2026-06-29 18:44:14.616578','order_T7YB5Hbor9DAeT','pay_T7YBAqbK6K4Ahq','SUCCESS',6,1);
+INSERT INTO `membership_purchases` VALUES (1,3538.8199999999997,'2026-07-01 13:23:06.227149','order_T8Fm5j7pUOrEwb','pay_T8Fm9fwK432Ye7','SUCCESS',4,1),(2,8260,'2026-07-01 17:39:41.768111','order_T8K991fgSzyFsq','pay_T8K9HwJdFDuyk3','SUCCESS',5,1),(3,11798.82,'2026-07-01 20:45:31.766293','order_T8NJRuEOqGX75K','pay_T8NJY5yJStsQbt','SUCCESS',5,1);
 /*!40000 ALTER TABLE `membership_purchases` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -574,7 +577,7 @@ CREATE TABLE `membership_qrcodes` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK23m81x57b5pamonhttw1f03x` (`user_membership_id`),
   CONSTRAINT `FKh0scaqc71qip2rxaj4o91d7hw` FOREIGN KEY (`user_membership_id`) REFERENCES `user_memberships` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -583,7 +586,7 @@ CREATE TABLE `membership_qrcodes` (
 
 LOCK TABLES `membership_qrcodes` WRITE;
 /*!40000 ALTER TABLE `membership_qrcodes` DISABLE KEYS */;
-INSERT INTO `membership_qrcodes` VALUES (1,'2026-06-29 16:23:13.719115','/member/verify/e7f6d669-3f08-4429-b868-edd9ab266271',1),(2,'2026-06-29 18:16:36.207653','/member/verify/ee0eb7e3-1248-4ad8-afc4-8afbd8242cba',2),(3,'2026-06-29 18:19:18.746461','/member/verify/d1128ff6-e4e2-49ff-8f1b-988f7091ce4c',3),(4,'2026-06-29 18:20:04.135952','/member/verify/20b43c8a-fa32-4886-8352-b202ca4ef2ea',4),(5,'2026-06-29 18:24:58.327784','/member/verify/4f1c80e4-c382-48e3-b2d0-a9d5ceff1f8b',5),(6,'2026-06-29 18:26:41.385288','/member/verify/f771374b-def5-40c6-be68-d43b4721e061',6),(7,'2026-06-29 18:43:26.259550','/member/verify/6b7f51f4-3df0-4db2-a967-30b8e07160c0',7),(8,'2026-06-29 18:44:35.857856','/member/verify/849fd51b-3c1e-4740-8711-3ec49e333ed2',8);
+INSERT INTO `membership_qrcodes` VALUES (1,'2026-07-01 13:23:26.784542','/member/verify/f1998099-7d9c-4b5f-84e8-8c0e6006a8f4',1),(2,'2026-07-01 17:40:06.866419','/member/verify/09578d31-d43f-47d9-b8af-c2ea74375eeb',2),(3,'2026-07-01 20:45:53.001237','/member/verify/b8111606-04be-4c5d-9d7b-6f0cba8fb050',3);
 /*!40000 ALTER TABLE `membership_qrcodes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -613,7 +616,7 @@ CREATE TABLE `memberships` (
 
 LOCK TABLES `memberships` WRITE;
 /*!40000 ALTER TABLE `memberships` DISABLE KEYS */;
-INSERT INTO `memberships` VALUES (4,'5% Discount\r\nEarly Access to Sales & Events\r\nExclusive Birthday Offers\r\nReward Points Earning\r\nStandard Member Support',0.05,365,'Eva Pink Card',2999,1,1),(5,'15% Discount\nFree Delivery on All Orders\nVIP Launch Access\nDouble Reward Points\nEvent Invitations',0.15,365,'Eva Gold Card',9999,1,1),(6,'25% Discount\nConcierge Support\nLuxury Gifts on Signup\nTriple Reward Points\nVIP Lounge Access',0.25,365,'Eva Black Card',24999,1,1);
+INSERT INTO `memberships` VALUES (4,'5% Discount\r\nEarly Access to Sales & Events\r\nExclusive Birthday Offers\r\nReward Points Earning\r\nStandard Member Support',0.05,365,'Eva Pink Card',2999,1,1),(5,'10% Discount\r\nFree Delivery on All Orders\r\nVIP Launch Access\r\nDouble Reward Points\r\nEvent Invitations',0.1,365,'Eva Gold Card',9999,1,1),(6,'15% Discount\r\nConcierge Support\r\nLuxury Gifts on Signup\r\nTriple Reward Points\r\nVIP Lounge Access',0.15,365,'Eva Black Card',24999,1,1);
 /*!40000 ALTER TABLE `memberships` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -926,7 +929,7 @@ CREATE TABLE `nxl_system_wallet` (
 
 LOCK TABLES `nxl_system_wallet` WRITE;
 /*!40000 ALTER TABLE `nxl_system_wallet` DISABLE KEYS */;
-INSERT INTO `nxl_system_wallet` VALUES (1,10395.00,500.00);
+INSERT INTO `nxl_system_wallet` VALUES (1,60112.24,50600.00);
 /*!40000 ALTER TABLE `nxl_system_wallet` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -955,7 +958,7 @@ CREATE TABLE `nxl_wallet_transactions` (
   UNIQUE KEY `UKg0cr4jmbmjl8u1mk2qatao8lw` (`source`,`transaction_id`),
   KEY `FKgnjxfdftmhslc82h8bd9g3gg4` (`user_id`),
   CONSTRAINT `FKgnjxfdftmhslc82h8bd9g3gg4` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -964,7 +967,7 @@ CREATE TABLE `nxl_wallet_transactions` (
 
 LOCK TABLES `nxl_wallet_transactions` WRITE;
 /*!40000 ALTER TABLE `nxl_wallet_transactions` DISABLE KEYS */;
-INSERT INTO `nxl_wallet_transactions` VALUES (1,105.00,105.00,'2026-06-29 20:29:08.037951','Wallet Top-up ₹100.0 + 5% bonus','order_T7ZxROSUxhNxAa','CREDIT',1,10395.00,10500.00,'EVA_BEAUTY',0.00,NULL);
+INSERT INTO `nxl_wallet_transactions` VALUES (1,105.00,105.00,'2026-07-01 13:11:43.789199','Wallet Top-up ₹100.0 + 5% bonus','order_T8FZg2kjObicV2','CREDIT',1,10362.43,10467.43,'EVA_BEAUTY',0.00,NULL),(2,50.00,155.00,'2026-07-01 13:13:07.407366','5% cashback on Order #1','CASHBACK_ORDER_1','CREDIT',1,10312.43,10362.43,'ONLINE_SHOPPING',105.00,NULL),(3,155.00,0.00,'2026-07-01 13:19:38.376208','NXL used for Order #2','NXL_USE_ORDER_2','DEBIT',1,10467.43,10312.43,'ONLINE_SHOPPING',155.00,NULL),(4,42.25,42.25,'2026-07-01 13:19:58.360483','5% cashback on Order #2','CASHBACK_ORDER_2','CREDIT',1,10425.18,10467.43,'ONLINE_SHOPPING',0.00,NULL),(5,56.05,98.30,'2026-07-01 13:24:58.910008','Product Cashback','CASHBACK_3','CREDIT',1,10369.13,10425.18,'MEMBERSHIP',42.25,NULL),(6,11.00,109.30,'2026-07-01 13:24:58.964000','Reward Points Converted to NXL Wallet','REWARD_1782912298935','CREDIT',1,10358.13,10369.13,'REFERRAL',98.30,NULL),(7,47.50,156.80,'2026-07-01 13:24:59.018898','5% cashback on Order #3','CASHBACK_ORDER_3','CREDIT',1,10310.63,10358.13,'ONLINE_SHOPPING',109.30,NULL),(8,156.80,0.00,'2026-07-01 13:41:44.245041','NXL used for Order #4','NXL_USE_ORDER_4','DEBIT',1,10467.43,10310.63,'ONLINE_SHOPPING',156.80,NULL),(9,48.21,48.21,'2026-07-01 13:42:05.932021','Product Cashback','CASHBACK_4','CREDIT',1,10419.22,10467.43,'MEMBERSHIP',0.00,NULL),(10,9.00,57.21,'2026-07-01 13:42:05.962627','Reward Points Converted to NXL Wallet','REWARD_1782913325945','CREDIT',1,10410.22,10419.22,'REFERRAL',48.21,NULL),(11,39.66,96.87,'2026-07-01 13:42:06.000864','5% cashback on Order #4','CASHBACK_ORDER_4','CREDIT',1,10370.56,10410.22,'ONLINE_SHOPPING',57.21,NULL),(12,47.50,144.37,'2026-07-01 15:46:27.631837','5% Cashback on Order #6','CASHBACK_ORDER_6','CREDIT',1,10323.06,10370.56,'ONLINE_SHOPPING',96.87,NULL),(13,144.37,0.00,'2026-07-01 15:47:44.618800','NXL used for Order #7','NXL_USE_ORDER_7','DEBIT',1,10467.43,10323.06,'ONLINE_SHOPPING',144.37,NULL),(14,40.28,40.28,'2026-07-01 15:48:10.023919','5% Cashback on Order #7','CASHBACK_ORDER_7','CREDIT',1,10427.15,10467.43,'ONLINE_SHOPPING',0.00,NULL),(15,45.00,85.28,'2026-07-01 17:42:33.786336','5% Cashback on Order #8','CASHBACK_ORDER_8','CREDIT',1,10382.15,10427.15,'ONLINE_SHOPPING',40.28,NULL),(16,44.95,130.23,'2026-07-01 19:50:03.734324','5% NXL Cashback on Completed Salon Appointment #1','CASHBACK_SALON_1','CREDIT',1,10337.20,10382.15,'EVA_BEAUTY',85.28,NULL),(17,224.96,355.19,'2026-07-01 20:45:03.735947','5% Cashback on Order #9','CASHBACK_ORDER_9','CREDIT',1,10112.24,10337.20,'ONLINE_SHOPPING',130.23,NULL);
 /*!40000 ALTER TABLE `nxl_wallet_transactions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -993,7 +996,7 @@ CREATE TABLE `nxl_wallets` (
 
 LOCK TABLES `nxl_wallets` WRITE;
 /*!40000 ALTER TABLE `nxl_wallets` DISABLE KEYS */;
-INSERT INTO `nxl_wallets` VALUES (1,105.00,1,105.00,0.00);
+INSERT INTO `nxl_wallets` VALUES (1,355.19,1,811.36,456.17);
 /*!40000 ALTER TABLE `nxl_wallets` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1015,7 +1018,7 @@ CREATE TABLE `order_items` (
   KEY `FKocimc7dtr037rh4ls4l95nlfi` (`product_id`),
   CONSTRAINT `FKbioxgbv59vetrxe0ejfubep1w` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`),
   CONSTRAINT `FKocimc7dtr037rh4ls4l95nlfi` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1024,7 +1027,38 @@ CREATE TABLE `order_items` (
 
 LOCK TABLES `order_items` WRITE;
 /*!40000 ALTER TABLE `order_items` DISABLE KEYS */;
+INSERT INTO `order_items` VALUES (1,1000,1,1,7),(2,1000,1,2,7),(3,1000,1,3,7),(4,1000,1,4,7),(5,1000,1,5,7),(6,1000,1,6,7),(7,1000,1,7,7),(8,1000,1,8,7),(9,4999,1,9,2);
 /*!40000 ALTER TABLE `order_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `order_status_history`
+--
+
+DROP TABLE IF EXISTS `order_status_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `order_status_history` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `remarks` text,
+  `status` varchar(50) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
+  `updated_by` varchar(255) NOT NULL,
+  `order_id` bigint NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKnmcbg3mmbt8wfva97ra40nmp3` (`order_id`),
+  CONSTRAINT `FKnmcbg3mmbt8wfva97ra40nmp3` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `order_status_history`
+--
+
+LOCK TABLES `order_status_history` WRITE;
+/*!40000 ALTER TABLE `order_status_history` DISABLE KEYS */;
+INSERT INTO `order_status_history` VALUES (1,'Order successfully paid and placed.','PLACED','2026-07-01 20:45:03.600013','kalyanibhawar465@gmail.com',9),(2,'Status changed from PLACED to DELIVERED','DELIVERED','2026-07-01 20:59:02.673126','admin@llbeauty.com',9);
+/*!40000 ALTER TABLE `order_status_history` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1046,10 +1080,17 @@ CREATE TABLE `orders` (
   `order_status` varchar(255) DEFAULT NULL,
   `order_type` varchar(255) DEFAULT NULL,
   `referral_code` varchar(255) DEFAULT NULL,
+  `billing_mobile` varchar(255) DEFAULT NULL,
+  `billing_name` varchar(255) DEFAULT NULL,
+  `courier_name` varchar(255) DEFAULT NULL,
+  `expected_delivery_date` datetime(6) DEFAULT NULL,
+  `last_status_updated_at` datetime(6) DEFAULT NULL,
+  `shipping_address` varchar(255) DEFAULT NULL,
+  `tracking_number` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `FK32ql8ubntj5uh44ph9659tiih` (`user_id`),
   CONSTRAINT `FK32ql8ubntj5uh44ph9659tiih` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1058,6 +1099,7 @@ CREATE TABLE `orders` (
 
 LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
+INSERT INTO `orders` VALUES (1,'2026-07-01 13:12:41.870517','pay_T8FbBi4wGAByEo','REFUNDED',1180,1,NULL,'2026-07-01 19:51:09.495035','CANCELLED',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(2,'2026-07-01 13:19:38.364087','pay_T8FiWFVyNjQPry','SUCCESS',1025,1,NULL,'2026-07-01 13:19:58.364483',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(3,'2026-07-01 13:24:38.870994','pay_T8FnnoW695dJl7','SUCCESS',1121,1,NULL,'2026-07-01 13:24:58.939491',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(4,'2026-07-01 13:41:44.219676','pay_T8G5t7nJav0w2F','SUCCESS',964.2,1,NULL,'2026-07-01 13:42:05.948113',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(5,'2026-07-01 14:30:02.664127',NULL,'PENDING',1121,1,NULL,'2026-07-01 14:30:02.664127',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(6,'2026-07-01 15:45:56.079357','pay_T8IDEDhfZcQqfv','SUCCESS',1121,1,NULL,'2026-07-01 15:46:27.673567',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(7,'2026-07-01 15:47:44.604281','pay_T8IF14PUrhqjqH','SUCCESS',976.63,1,NULL,'2026-07-01 15:48:10.040274',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(8,'2026-07-01 17:42:13.168892','pay_T8KBtWup5c94HU','SUCCESS',1062,1,NULL,'2026-07-01 17:42:33.820911',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(9,'2026-07-01 20:44:38.125900','pay_T8NIffhS6WXNTN','SUCCESS',5308.94,1,NULL,'2026-07-01 20:59:02.645166','DELIVERED',NULL,NULL,NULL,NULL,NULL,NULL,'2026-07-01 20:59:02.340831',NULL,NULL);
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1076,7 +1118,7 @@ CREATE TABLE `otps` (
   `used` bit(1) NOT NULL,
   `email` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1085,7 +1127,7 @@ CREATE TABLE `otps` (
 
 LOCK TABLES `otps` WRITE;
 /*!40000 ALTER TABLE `otps` DISABLE KEYS */;
-INSERT INTO `otps` VALUES (2,'972481','2026-06-29 20:32:26.910695',NULL,_binary '','kalyanibhawar465@gmail.com');
+INSERT INTO `otps` VALUES (9,'588222','2026-07-02 08:04:46.186335',NULL,_binary '','kalyanibhawar465@gmail.com');
 /*!40000 ALTER TABLE `otps` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1115,7 +1157,7 @@ CREATE TABLE `payments` (
   PRIMARY KEY (`id`),
   KEY `FKj94hgy9v5fw1munb90tar2eje` (`user_id`),
   CONSTRAINT `FKj94hgy9v5fw1munb90tar2eje` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1124,7 +1166,7 @@ CREATE TABLE `payments` (
 
 LOCK TABLES `payments` WRITE;
 /*!40000 ALTER TABLE `payments` DISABLE KEYS */;
-INSERT INTO `payments` VALUES (1,3538.8199999999997,'2026-06-29 16:22:40.484399','RAZORPAY',NULL,'order_T7VlX2iXtdrvKO','pay_T7Vll0xRkEq08b','dc8bc571efe9ec762f39ffae52bb2f961a950db6b7f9cb5dafbadafab3dc8eca','SUCCESS',1,'1','INR','MEMBERSHIP',NULL,0),(2,3538.8199999999997,'2026-06-29 18:16:11.421761','RAZORPAY',NULL,'order_T7XhRqAccErsUb','pay_T7XhcUPjn2B6eO','8dec03883df59ed1ad970ac2fb1ee7caf77de24448d43d2834343807534ab849','SUCCESS',1,'2','INR','MEMBERSHIP',NULL,0),(3,8260,'2026-06-29 18:18:58.352357','RAZORPAY',NULL,'order_T7XkO4QB5xA9W6','pay_T7XkTPveRZAnDf','fab716fc9ffffd4f921632ffc9582002bede298f179ed76996ee904f68b6eb5f','SUCCESS',1,'3','INR','MEMBERSHIP',NULL,0),(4,11798.82,'2026-06-29 18:19:44.751841','RAZORPAY',NULL,'order_T7XlCiWTh1ETdb','pay_T7XlHHh5SiMAck','1886ce312c6c1afb1209f64775500301d91c1cc9a1ebf972fb9caf754d8969be','SUCCESS',1,'4','INR','MEMBERSHIP',NULL,0),(5,11798.82,'2026-06-29 18:24:30.190687','RAZORPAY',NULL,'order_T7XqEHEvISUqFq','pay_T7XqO8CQdcweWk','d98acd2885c188e5e39aa2100c3b54d9c7a9078ffbb46a837b2c616b2c302f1b','SUCCESS',1,'5','INR','MEMBERSHIP',NULL,0),(6,17700,'2026-06-29 18:26:21.200507','RAZORPAY',NULL,'order_T7XsBSWdiZhgml','pay_T7XsG6jQhIR6ya','c9fd457cedd97573ab728233005c63d5f4af34aa7a346b9acbb1ffe169fe89cf','SUCCESS',1,'6','INR','MEMBERSHIP',NULL,0),(7,29498.82,'2026-06-29 18:43:05.271811','RAZORPAY',NULL,'order_T7Y9rRh5kKDzq6','pay_T7Y9x9cFCLy445','bb56ab25484a5ffedcfcc675a3bf2e006cf509928e3523c42ecac67782038661','SUCCESS',1,'7','INR','MEMBERSHIP',NULL,0),(8,29498.82,'2026-06-29 18:44:14.755746','RAZORPAY',NULL,'order_T7YB5Hbor9DAeT','pay_T7YBAqbK6K4Ahq','2655952c807ecd21bf1f3469525dabd969693a75c3410e8fc0ba7bd31860bb38','SUCCESS',1,'8','INR','MEMBERSHIP',NULL,0),(9,100,'2026-06-29 20:28:43.712164','RAZORPAY',NULL,'order_T7ZxROSUxhNxAa','pay_T7ZxaWQ7lITGom','5b8fbcaa6a3d498f5af5bc410f527c7cf1b1f540b66476f6eab859b056290cbb','SUCCESS',1,'topup_1782764923072','INR','WALLET_TOPUP',NULL,0);
+INSERT INTO `payments` VALUES (1,100,'2026-07-01 13:11:21.309340','RAZORPAY',NULL,'order_T8FZg2kjObicV2','pay_T8FZntE1iEqubk','3753c07c5b18705187b2cce2b61be9c5d0c20567ec907998d8e2205458eefc5e','SUCCESS',1,'topup_1782911481010','INR','WALLET_TOPUP',NULL,0),(2,1180,'2026-07-01 13:12:42.024301','RAZORPAY',NULL,'order_T8Fb69m01X85YT','pay_T8FbBi4wGAByEo','a53f6dd8c9b3b472cac92de087a45ab524f34c42b10695e196938c10af27311a','REFUNDED_ORIGINAL',1,'1','INR','PRODUCT',NULL,0),(3,1025,'2026-07-01 13:19:38.481358','RAZORPAY',NULL,'order_T8FiQl8rhuOHs7','pay_T8FiWFVyNjQPry','10739d6efdb46eb8ec65c17a78071bcaec3a53a31935ae278c0f14be04ebb3e6','SUCCESS',1,'2','INR','PRODUCT',NULL,0),(4,3538.8199999999997,'2026-07-01 13:23:06.415196','RAZORPAY',NULL,'order_T8Fm5j7pUOrEwb','pay_T8Fm9fwK432Ye7','2a0241ef65c062e7f0891e2369960e8093dd9dd791ee4608a7340abd10836002','SUCCESS',1,'1','INR','MEMBERSHIP',NULL,0),(5,1121,'2026-07-01 13:24:38.976381','RAZORPAY',NULL,'order_T8FnijhSXRySB3','pay_T8FnnoW695dJl7','8973e918c0b3c961529028d6d808dfaba1bfa53c376f36ea542a3ee279a33b59','SUCCESS',1,'3','INR','PRODUCT',NULL,0),(6,964.2,'2026-07-01 13:41:44.342747','RAZORPAY',NULL,'order_T8G5lzFC46BaA8','pay_T8G5t7nJav0w2F','f8e81e9b40f1c2b8bc6f08a162a6d8d79ac5e08a6b73e08c98cb1e8261ad9d87','SUCCESS',1,'4','INR','PRODUCT',NULL,0),(7,1121,'2026-07-01 14:30:04.265141','RAZORPAY',NULL,'order_T8GupFJoiXEmZq',NULL,NULL,'CREATED',1,'5','INR','PRODUCT',NULL,0),(8,1121,'2026-07-01 15:45:56.716742','RAZORPAY',NULL,'order_T8ICya7WJ2pUlY','pay_T8IDEDhfZcQqfv','8dac3500ea1a5b0b2560c8ad86bed7598e585ec26f5eb5a6e0cf18ca57abfad3','SUCCESS',1,'6','INR','PRODUCT',NULL,0),(9,976.63,'2026-07-01 15:47:44.679552','RAZORPAY',NULL,'order_T8IEsTFlV5AXCn','pay_T8IF14PUrhqjqH','f9e873f665af0d062132892160c8164200e07ca640c2e75dbd669c0997107e40','SUCCESS',1,'7','INR','PRODUCT',NULL,0),(10,8260,'2026-07-01 17:39:42.311784','RAZORPAY',NULL,'order_T8K991fgSzyFsq','pay_T8K9HwJdFDuyk3','20de94f6ed5d7b66249d79f6946d5acf3b9086e77baee3bdccaddf946abccd48','SUCCESS',1,'2','INR','MEMBERSHIP',NULL,0),(11,1062,'2026-07-01 17:42:13.334635','RAZORPAY',NULL,'order_T8KBnuXg1S9HP9','pay_T8KBtWup5c94HU','dbb138c5438751b3cfd23f5a7e5c1c3338aa6dbd5320ed2ddac6ad037a654d5c','SUCCESS',1,'8','INR','PRODUCT',NULL,0),(12,100,'2026-07-01 19:47:45.890277','RAZORPAY',NULL,'order_T8MKQaVlCq5uJD','pay_T8MKhahix6INBY','eb9270b3cba8f5f79944985ffdc216583c40ab5a96a439547c69eccac95dbc65','SUCCESS',1,'1','INR','SALON_DEPOSIT',NULL,0),(13,5308.94,'2026-07-01 20:44:38.860488','RAZORPAY',NULL,'order_T8NIVyc85c2p4H','pay_T8NIffhS6WXNTN','8116a999f627f4b01d635fdfddd65f951701703a676ac64b1bd350141078db1f','SUCCESS',1,'9','INR','PRODUCT',NULL,0),(14,11798.82,'2026-07-01 20:45:31.902983','RAZORPAY',NULL,'order_T8NJRuEOqGX75K','pay_T8NJY5yJStsQbt','1c05ab7e69146c00b2a4bf6d358ac0907db5a598124b56ae266d51e88e57bccc','SUCCESS',1,'3','INR','MEMBERSHIP',NULL,0);
 /*!40000 ALTER TABLE `payments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1277,7 +1319,7 @@ CREATE TABLE `reward_points` (
 
 LOCK TABLES `reward_points` WRITE;
 /*!40000 ALTER TABLE `reward_points` DISABLE KEYS */;
-INSERT INTO `reward_points` VALUES (1,0,0,0,1);
+INSERT INTO `reward_points` VALUES (1,168,0,168,1);
 /*!40000 ALTER TABLE `reward_points` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1298,7 +1340,7 @@ CREATE TABLE `reward_transactions` (
   PRIMARY KEY (`id`),
   KEY `FK2qgkqf0r6hmvgqq40t8daay6d` (`user_id`),
   CONSTRAINT `FK2qgkqf0r6hmvgqq40t8daay6d` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1307,6 +1349,7 @@ CREATE TABLE `reward_transactions` (
 
 LOCK TABLES `reward_transactions` WRITE;
 /*!40000 ALTER TABLE `reward_transactions` DISABLE KEYS */;
+INSERT INTO `reward_transactions` VALUES (1,'2026-07-01 13:24:58.967001','Earned reward points on purchase of value ₹1121.00',11,'CREDIT',1),(2,'2026-07-01 13:42:05.964624','Earned reward points on purchase of value ₹964.20',9,'CREDIT',1),(3,'2026-07-01 15:46:27.661499','Earned reward points on purchase of value ₹1121.00',11,'CREDIT',1),(4,'2026-07-01 15:48:10.037275','Earned reward points on purchase of value ₹976.63',9,'CREDIT',1),(5,'2026-07-01 17:42:33.804378','Earned reward points on purchase of value ₹1062.00',20,'CREDIT',1),(6,'2026-07-01 19:48:18.300196','Earned reward points on purchase of value ₹100.00',2,'CREDIT',1),(7,'2026-07-01 20:45:03.783322','Earned reward points on purchase of value ₹5308.94',106,'CREDIT',1);
 /*!40000 ALTER TABLE `reward_transactions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1509,7 +1552,7 @@ CREATE TABLE `user_memberships` (
   KEY `FK3aftj3ypdb19itnsapcxykedv` (`user_id`),
   CONSTRAINT `FK3aftj3ypdb19itnsapcxykedv` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `FKd578eqokdbymythx3ihdde1n` FOREIGN KEY (`membership_id`) REFERENCES `memberships` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1518,7 +1561,7 @@ CREATE TABLE `user_memberships` (
 
 LOCK TABLES `user_memberships` WRITE;
 /*!40000 ALTER TABLE `user_memberships` DISABLE KEYS */;
-INSERT INTO `user_memberships` VALUES (1,'2027-06-29 16:23:13.648395','pay_T7Vll0xRkEq08b','2026-06-29 16:23:13.648395','RENEWED',4,1,NULL,NULL,'LLB-P-00001','e7f6d669-3f08-4429-b868-edd9ab266271'),(2,'2027-06-29 18:16:36.197657','pay_T7XhcUPjn2B6eO','2026-06-29 18:16:36.197657','UPGRADED',4,1,NULL,NULL,'LLB-P-00001','ee0eb7e3-1248-4ad8-afc4-8afbd8242cba'),(3,'2027-06-29 18:19:18.740454','pay_T7XkTPveRZAnDf','2026-06-29 18:19:18.740454','RENEWED',5,1,NULL,NULL,'LLB-G-00001','d1128ff6-e4e2-49ff-8f1b-988f7091ce4c'),(4,'2027-06-29 18:20:04.126944','pay_T7XlHHh5SiMAck','2026-06-29 18:20:04.126944','RENEWED',5,1,NULL,NULL,'LLB-G-00001','20b43c8a-fa32-4886-8352-b202ca4ef2ea'),(5,'2027-06-29 18:24:58.311782','pay_T7XqO8CQdcweWk','2026-06-29 18:24:58.311782','UPGRADED',5,1,NULL,NULL,'LLB-G-00001','4f1c80e4-c382-48e3-b2d0-a9d5ceff1f8b'),(6,'2027-06-29 18:26:41.381310','pay_T7XsG6jQhIR6ya','2026-06-29 18:26:41.381310','RENEWED',6,1,NULL,NULL,'LLB-B-00001','f771374b-def5-40c6-be68-d43b4721e061'),(7,'2027-06-29 18:43:26.242396','pay_T7Y9x9cFCLy445','2026-06-29 18:43:26.242396','RENEWED',6,1,NULL,NULL,'LLB-B-00001','6b7f51f4-3df0-4db2-a967-30b8e07160c0'),(8,'2027-06-29 18:44:35.844415','pay_T7YBAqbK6K4Ahq','2026-06-29 18:44:35.844415','ACTIVE',6,1,NULL,NULL,'LLB-B-00001','849fd51b-3c1e-4740-8711-3ec49e333ed2');
+INSERT INTO `user_memberships` VALUES (1,'2027-07-01 13:23:26.747546','pay_T8Fm9fwK432Ye7','2026-07-01 13:23:26.747546','UPGRADED',4,1,NULL,NULL,'LLB-P-00001','f1998099-7d9c-4b5f-84e8-8c0e6006a8f4'),(2,'2027-07-01 17:40:06.859478','pay_T8K9HwJdFDuyk3','2026-07-01 17:40:06.859478','RENEWED',5,1,NULL,NULL,'LLB-G-00001','09578d31-d43f-47d9-b8af-c2ea74375eeb'),(3,'2027-07-01 20:45:52.973021','pay_T8NJY5yJStsQbt','2026-07-01 20:45:52.973021','ACTIVE',5,1,NULL,NULL,'LLB-G-00001','b8111606-04be-4c5d-9d7b-6f0cba8fb050');
 /*!40000 ALTER TABLE `user_memberships` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1555,7 +1598,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'2026-06-29 15:55:37.138996','kalyanibhawar465@gmail.com','9172051078','Kalyani  Bhawar',NULL,0.00,_binary '\0','USER',_binary '','NOT_APPLIED','NOT_APPLIED','NOT_APPLIED',NULL,'');
+INSERT INTO `users` VALUES (1,'2026-07-01 13:10:21.527314','kalyanibhawar465@gmail.com','9172051078','Kalyani Vilas Bhawar',NULL,0.00,_binary '\0','USER',_binary '','NOT_APPLIED','NOT_APPLIED','NOT_APPLIED',NULL,'');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1631,4 +1674,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-30  2:06:18
+-- Dump completed on 2026-07-04 22:10:55

@@ -1,60 +1,26 @@
 package com.llbeauty.controller;
 
 import com.llbeauty.entity.*;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
-import com.llbeauty.repository.*;
+import com.llbeauty.service.AdminStoreService;
 import com.llbeauty.service.StoreApplicationService;
-import com.llbeauty.service.WalletService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminStoreController {
 
-    private final StoreApplicationRepository storeApplicationRepository;
+    private final AdminStoreService adminStoreService;
     private final StoreApplicationService storeApplicationService;
-    private final UserRepository userRepository;
-    private final AgentProfileRepository agentProfileRepository;
-    private final MerchantProfileRepository merchantProfileRepository;
-    private final StoreCreditRepository storeCreditRepository;
-    private final CommissionRepository commissionRepository;
-    private final WalletRepository walletRepository;
-    private final WalletService walletService;
-    private final WalletTransactionRepository walletTransactionRepository;
-    private final PayoutRepository payoutRepository;
 
-    public AdminStoreController(StoreApplicationRepository storeApplicationRepository,
-                                StoreApplicationService storeApplicationService,
-                                UserRepository userRepository,
-                                AgentProfileRepository agentProfileRepository,
-                                MerchantProfileRepository merchantProfileRepository,
-                                StoreCreditRepository storeCreditRepository,
-                                CommissionRepository commissionRepository,
-                                WalletRepository walletRepository,
-                                WalletService walletService,
-                                WalletTransactionRepository walletTransactionRepository,
-                                PayoutRepository payoutRepository) {
-        this.storeApplicationRepository = storeApplicationRepository;
+    public AdminStoreController(AdminStoreService adminStoreService,
+                                StoreApplicationService storeApplicationService) {
+        this.adminStoreService = adminStoreService;
         this.storeApplicationService = storeApplicationService;
-        this.userRepository = userRepository;
-        this.agentProfileRepository = agentProfileRepository;
-        this.merchantProfileRepository = merchantProfileRepository;
-        this.storeCreditRepository = storeCreditRepository;
-        this.commissionRepository = commissionRepository;
-        this.walletRepository = walletRepository;
-        this.walletService = walletService;
-        this.walletTransactionRepository = walletTransactionRepository;
-        this.payoutRepository = payoutRepository;
     }
 
     @GetMapping("/store-management")
@@ -69,93 +35,26 @@ public class AdminStoreController {
         model.addAttribute("typeFilter", typeFilter);
         model.addAttribute("search", search);
 
-        List<StoreApplication> applications = storeApplicationRepository.findAll().stream()
-                .filter(app -> app.getDeleted() == null || !app.getDeleted())
-                .collect(Collectors.toList());
-        if (search != null && !search.isEmpty()) {
-            applications = applications.stream()
-                .filter(app -> app.getUser().getName().toLowerCase().contains(search.toLowerCase()) ||
-                               app.getBusinessName().toLowerCase().contains(search.toLowerCase()) ||
-                               app.getContactEmail().toLowerCase().contains(search.toLowerCase()) ||
-                               app.getContactPhone().contains(search))
-                .collect(Collectors.toList());
-        }
-        if (statusFilter != null && !statusFilter.isEmpty()) {
-            applications = applications.stream()
-                .filter(app -> app.getStatus().name().equalsIgnoreCase(statusFilter))
-                .collect(Collectors.toList());
-        }
-        if (typeFilter != null && !typeFilter.isEmpty()) {
-            applications = applications.stream()
-                .filter(app -> app.getType().name().equalsIgnoreCase(typeFilter))
-                .collect(Collectors.toList());
-        }
-        model.addAttribute("applications", applications);
-
-        model.addAttribute("agents", agentProfileRepository.findAll());
-        model.addAttribute("merchants", merchantProfileRepository.findAll());
-        model.addAttribute("wallets", walletRepository.findAll());
-        model.addAttribute("storeCredits", storeCreditRepository.findAll());
-        model.addAttribute("commissions", commissionRepository.findAll());
-
-        // Calculate agent-wise pending commissions
-        List<AgentProfile> agentsList = agentProfileRepository.findAll();
-        List<Map<String, Object>> agentPendingCommissions = new ArrayList<>();
-        BigDecimal totalPayableCommissions = BigDecimal.ZERO;
-
-        List<Commission> allCommissions = commissionRepository.findAll();
-        for (AgentProfile agent : agentsList) {
-            BigDecimal pending = allCommissions.stream()
-                .filter(c -> c.getAgent().getId().equals(agent.getId()) &&
-                             ("PENDING".equalsIgnoreCase(c.getStatus()) || "APPROVED".equalsIgnoreCase(c.getStatus())))
-                .map(Commission::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-            if (pending.compareTo(BigDecimal.ZERO) > 0) {
-                Map<String, Object> map = new java.util.HashMap<>();
-                map.put("agent", agent);
-                map.put("pendingAmount", pending);
-                agentPendingCommissions.add(map);
-                totalPayableCommissions = totalPayableCommissions.add(pending);
-            }
-        }
-        model.addAttribute("agentPendingCommissions", agentPendingCommissions);
-        model.addAttribute("totalPayableCommissions", totalPayableCommissions);
-
-        // Fetch payout history
-        List<Payout> payoutHistory = payoutRepository.findAll().stream()
-            .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
-            .collect(Collectors.toList());
-        model.addAttribute("payoutHistory", payoutHistory);
-
-        long totalApps = storeApplicationRepository.count();
-        long pendingApps = storeApplicationRepository.findAllByStatus(ApplicationStatus.PENDING).size();
-        long approvedApps = storeApplicationRepository.findAllByStatus(ApplicationStatus.APPROVED).size();
-        long rejectedApps = storeApplicationRepository.findAllByStatus(ApplicationStatus.REJECTED).size();
-        long totalAgents = agentProfileRepository.count();
-        long totalMerchants = merchantProfileRepository.count();
-
-        BigDecimal totalWalletBalance = walletRepository.findAll().stream()
-            .map(Wallet::getBalance)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal totalStoreCredits = storeCreditRepository.findAll().stream()
-            .map(StoreCredit::getBalance)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal totalCommissions = commissionRepository.findAll().stream()
-            .map(Commission::getAmount)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        model.addAttribute("totalApps", totalApps);
-        model.addAttribute("pendingApps", pendingApps);
-        model.addAttribute("approvedApps", approvedApps);
-        model.addAttribute("rejectedApps", rejectedApps);
-        model.addAttribute("totalAgents", totalAgents);
-        model.addAttribute("totalMerchants", totalMerchants);
-        model.addAttribute("totalWalletBalance", totalWalletBalance);
-        model.addAttribute("totalStoreCredits", totalStoreCredits);
-        model.addAttribute("totalCommissions", totalCommissions);
+        Map<String, Object> data = adminStoreService.getStoreManagementDashboardData(search, statusFilter, typeFilter);
+        
+        model.addAttribute("applications", data.get("applications"));
+        model.addAttribute("agents", data.get("agents"));
+        model.addAttribute("merchants", data.get("merchants"));
+        model.addAttribute("wallets", data.get("wallets"));
+        model.addAttribute("storeCredits", data.get("storeCredits"));
+        model.addAttribute("commissions", data.get("commissions"));
+        model.addAttribute("agentPendingCommissions", data.get("agentPendingCommissions"));
+        model.addAttribute("totalPayableCommissions", data.get("totalPayableCommissions"));
+        model.addAttribute("payoutHistory", data.get("payoutHistory"));
+        model.addAttribute("totalApps", data.get("totalApps"));
+        model.addAttribute("pendingApps", data.get("pendingApps"));
+        model.addAttribute("approvedApps", data.get("approvedApps"));
+        model.addAttribute("rejectedApps", data.get("rejectedApps"));
+        model.addAttribute("totalAgents", data.get("totalAgents"));
+        model.addAttribute("totalMerchants", data.get("totalMerchants"));
+        model.addAttribute("totalWalletBalance", data.get("totalWalletBalance"));
+        model.addAttribute("totalStoreCredits", data.get("totalStoreCredits"));
+        model.addAttribute("totalCommissions", data.get("totalCommissions"));
 
         return "admin/store_management";
     }
@@ -163,8 +62,7 @@ public class AdminStoreController {
     @GetMapping("/store/application/{id}")
     public String viewApplicationDetails(@PathVariable("id") Long id, Model model) {
         model.addAttribute("activeTab", "store-management");
-        StoreApplication app = storeApplicationRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Application not found: " + id));
+        StoreApplication app = adminStoreService.getApplicationDetails(id);
         model.addAttribute("app", app);
         return "admin/application_details";
     }
@@ -195,51 +93,33 @@ public class AdminStoreController {
 
     @PostMapping("/store/application/{id}/delete")
     public String deleteApplication(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        if (storeApplicationRepository.existsById(id)) {
-            StoreApplication app = storeApplicationRepository.findById(id).get();
-            User user = app.getUser();
-            if (app.getType() == ApplicationType.AGENT) {
-                user.setAgentStatus("NOT_APPLIED");
-            } else if (app.getType() == ApplicationType.MERCHANT) {
-                user.setMerchantStatus("NOT_APPLIED");
-            }
-            userRepository.save(user);
-            storeApplicationRepository.deleteById(id);
+        try {
+            adminStoreService.deleteApplication(id);
             redirectAttributes.addFlashAttribute("successMessage", "Application soft-deleted successfully.");
-        } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "Application not found.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/store-management?tab=applications";
     }
 
     @PostMapping("/store/agent/{id}/delete")
     public String deleteAgent(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        if (agentProfileRepository.existsById(id)) {
-            AgentProfile exe = agentProfileRepository.findById(id).get();
-            // Reset user agent status
-            User user = exe.getUser();
-            user.setAgentStatus("NOT_APPLIED");
-            userRepository.save(user);
-            agentProfileRepository.deleteById(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Agent " + exe.getAgentId() + " deleted successfully.");
-        } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "Agent not found.");
+        try {
+            adminStoreService.deleteAgent(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Agent deleted successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/store-management?tab=agents";
     }
 
     @PostMapping("/store/merchant/{id}/delete")
     public String deleteMerchant(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        if (merchantProfileRepository.existsById(id)) {
-            MerchantProfile mer = merchantProfileRepository.findById(id).get();
-            // Reset user merchant status
-            User user = mer.getUser();
-            user.setMerchantStatus("NOT_APPLIED");
-            userRepository.save(user);
-            merchantProfileRepository.deleteById(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Merchant " + mer.getMerchantId() + " deleted successfully.");
-        } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "Merchant not found.");
+        try {
+            adminStoreService.deleteMerchant(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Merchant deleted successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/store-management?tab=merchants";
     }
@@ -249,15 +129,7 @@ public class AdminStoreController {
                                  @RequestParam("amount") BigDecimal amount,
                                  RedirectAttributes redirectAttributes) {
         try {
-            User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
-            StoreCredit sc = storeCreditRepository.findByUser(user)
-                .orElseThrow(() -> new IllegalArgumentException("Store credit account not found for user: " + userId));
-
-            sc.setBalance(sc.getBalance().add(amount));
-            sc.setUpdatedAt(LocalDateTime.now());
-            storeCreditRepository.save(sc);
-
+            adminStoreService.addStoreCredit(userId, amount);
             redirectAttributes.addFlashAttribute("successMessage", "Successfully added ₹" + amount + " store credits!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error adding store credit: " + e.getMessage());
@@ -271,40 +143,8 @@ public class AdminStoreController {
                                  @RequestParam(value = "remarks", required = false) String remarks,
                                  RedirectAttributes redirectAttributes) {
         try {
-            AgentProfile agent = agentProfileRepository.findById(agentId)
-                .orElseThrow(() -> new IllegalArgumentException("Agent not found: " + agentId));
-            
-            List<Commission> pendingCommissions = commissionRepository.findByAgentOrderByCreatedAtDesc(agent).stream()
-                .filter(c -> "PENDING".equalsIgnoreCase(c.getStatus()) || "APPROVED".equalsIgnoreCase(c.getStatus()))
-                .collect(Collectors.toList());
-            
-            if (pendingCommissions.isEmpty()) {
-                redirectAttributes.addFlashAttribute("errorMessage", "No pending commissions to pay for this agent.");
-                return "redirect:/admin/store-management?tab=commissions";
-            }
-            
-            BigDecimal totalAmount = pendingCommissions.stream()
-                .map(Commission::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-            
-            // Mark all pending commissions as PAID
-            for (Commission commission : pendingCommissions) {
-                commission.setStatus("PAID");
-                commissionRepository.save(commission);
-            }
-            
-            // Create Payout record
-            Payout payout = new Payout();
-            payout.setAgent(agent);
-            payout.setAmount(totalAmount);
-            payout.setPaymentMethod("Bank Transfer");
-            payout.setUtrNumber(utrNumber);
-            payout.setStatus("PAID");
-            payout.setRemarks(remarks);
-            payout.setCreatedAt(LocalDateTime.now());
-            payoutRepository.save(payout);
-            
-            redirectAttributes.addFlashAttribute("successMessage", "Payout of ₹" + totalAmount + " for agent " + agent.getAgentId() + " marked completed successfully.");
+            BigDecimal totalAmount = adminStoreService.payCommissions(agentId, utrNumber, remarks);
+            redirectAttributes.addFlashAttribute("successMessage", "Payout of ₹" + totalAmount + " for agent marked completed successfully.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error processing commission payout: " + e.getMessage());
         }

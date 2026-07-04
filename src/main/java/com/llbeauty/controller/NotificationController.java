@@ -63,6 +63,8 @@ public class NotificationController {
                 .toList();
         model.addAttribute("allNotifications", allNotifications);
         model.addAttribute("unreadCount", notificationService.getUnreadCount());
+        model.addAttribute("notifications", notificationService.getRecentNotifications());
+        model.addAttribute("unreadNotificationCount", notificationService.getUnreadCount());
         return "admin/notifications";
     }
 

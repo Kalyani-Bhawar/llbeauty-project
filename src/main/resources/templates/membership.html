@@ -201,13 +201,9 @@
                         <div style="font-size: 0.75rem; color: #777; margin-top: 2px;">+ 18% GST</div>
                     </div>
                     
-                    <ul class="benefits-list">
-                        <li>5% Discount</li>
-                        <li>Early Access</li>
-                        <li>Birthday Offers</li>
-                        <li>Reward Points</li>
-                        <li>Member Support</li>
-                    </ul>
+					<ul class="benefits-list">
+					                        <li th:each="benefit : ${plan.benefitsList}" th:text="${benefit}"></li>
+					                    </ul>
                     
                     <div class="buy-btn-wrap">
                         <button class="btn-buy" th:onclick="'initiateMembershipPayment(' + ${plan.id} + ')'">Select Plan</button>
@@ -229,14 +225,9 @@
                         <div style="font-size: 0.75rem; color: #777; margin-top: 2px;">+ 18% GST</div>
                     </div>
                     
-                    <ul class="benefits-list">
-                        <li>15% Discount</li>
-                        <li>Free Delivery</li>
-                        <li>VIP Launch Access</li>
-                        <li>Double Rewards</li>
-                        <li>Event Invitations</li>
-                    </ul>
-                    
+					<ul class="benefits-list">
+					                        <li th:each="benefit : ${plan.benefitsList}" th:text="${benefit}"></li>
+					                    </ul>                    
                     <div class="buy-btn-wrap">
                         <button class="btn-buy" th:onclick="'initiateMembershipPayment(' + ${plan.id} + ')'" style="background-color: #b78a2e; color: white;">Select Plan</button>
                     </div>
@@ -257,13 +248,9 @@
                         <div style="font-size: 0.75rem; color: #777; margin-top: 2px;">+ 18% GST</div>
                     </div>
                     
-                    <ul class="benefits-list">
-                        <li>25% Discount</li>
-                        <li>Concierge Support</li>
-                        <li>Luxury Gifts</li>
-                        <li>Triple Rewards</li>
-                        <li>VIP Lounge Access</li>
-                    </ul>
+					<ul class="benefits-list">
+					                        <li th:each="benefit : ${plan.benefitsList}" th:text="${benefit}"></li>
+					                    </ul>
                     
                     <div class="buy-btn-wrap">
                         <button class="btn-buy" th:onclick="'initiateMembershipPayment(' + ${plan.id} + ')'">Select Plan</button>

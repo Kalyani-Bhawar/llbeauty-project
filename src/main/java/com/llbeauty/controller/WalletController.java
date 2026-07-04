@@ -27,6 +27,8 @@ import com.llbeauty.service.RazorpayService;
 import java.math.BigDecimal;
 import com.llbeauty.entity.MembershipHistory;
 import com.llbeauty.repository.MembershipHistoryRepository;
+import com.llbeauty.entity.Order;
+import com.llbeauty.repository.OrderRepository;
 
 @Controller
 public class WalletController {
@@ -40,6 +42,7 @@ public class WalletController {
     private final MembershipHistoryRepository membershipHistoryRepository;
     private final com.llbeauty.service.RewardService rewardService;
     private final com.llbeauty.service.PaymentService paymentService;
+    private final OrderRepository orderRepository;
 
     @org.springframework.beans.factory.annotation.Value("${razorpay.key.id}")
     private String razorpayKeyId;
@@ -52,7 +55,8 @@ public class WalletController {
                             PaymentRepository paymentRepository,
                             MembershipHistoryRepository membershipHistoryRepository,
                             com.llbeauty.service.RewardService rewardService,
-                            com.llbeauty.service.PaymentService paymentService) {
+                            com.llbeauty.service.PaymentService paymentService,
+                            OrderRepository orderRepository) {
         this.userRepository = userRepository;
         this.walletService = walletService;
         this.membershipService = membershipService;
@@ -62,6 +66,7 @@ public class WalletController {
         this.membershipHistoryRepository = membershipHistoryRepository;
         this.rewardService = rewardService;
         this.paymentService = paymentService;
+        this.orderRepository = orderRepository;
     }
 
     private User getAuthenticatedUser() {
@@ -117,6 +122,10 @@ public class WalletController {
             else if (name.contains("Black")) tierProgress = 100;
         }
         model.addAttribute("tierProgress", tierProgress);
+
+        // Fetch user's orders for My Orders section
+        List<Order> userOrders = orderRepository.findByUserOrderByCreatedAtDesc(user);
+        model.addAttribute("userOrders", userOrders);
 
         return "dashboard";
     }

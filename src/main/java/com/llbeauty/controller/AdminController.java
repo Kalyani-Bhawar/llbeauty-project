@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.File;
@@ -61,6 +62,7 @@ public class AdminController {
     private final BCryptPasswordEncoder passwordEncoder;
     private final AgentProfileRepository agentProfileRepository;
     private final CommissionRepository commissionRepository;
+    private final com.llbeauty.service.EmailService emailService; 
 
     @org.springframework.beans.factory.annotation.Value("${app.upload.root}")
     private String projectRoot;
@@ -87,7 +89,8 @@ public class AdminController {
                            NotificationService notificationService,
                            BCryptPasswordEncoder passwordEncoder,
                            AgentProfileRepository agentProfileRepository,
-                           CommissionRepository commissionRepository) {
+                           CommissionRepository commissionRepository,
+                           com.llbeauty.service.EmailService emailService) {
         this.appointmentRepository = appointmentRepository;
         this.franchiseLeadRepository = franchiseLeadRepository;
         this.userRepository = userRepository;
@@ -111,6 +114,7 @@ public class AdminController {
         this.passwordEncoder = passwordEncoder;
         this.agentProfileRepository = agentProfileRepository;
         this.commissionRepository = commissionRepository;
+        this.emailService = emailService;
     }
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -691,6 +695,11 @@ public class AdminController {
             lead.setRemarks(remarks);
         }
         
+        if (lead.getEmail() != null && !lead.getEmail().trim().isEmpty()) {
+            emailService.sendFranchiseStatusEmail(lead.getEmail(), lead.getName(), status, remarks);
+        }
+
+        
         if ("APPROVED".equalsIgnoreCase(status)) {
             if (finalFranchiseAmount != null) {
                 lead.setFinalFranchiseAmount(finalFranchiseAmount);
@@ -1260,22 +1269,50 @@ public class AdminController {
         return "redirect:/admin/orders";
     }
 
+    @Autowired
+    private OrderStatusHistoryRepository orderStatusHistoryRepository;
+
     @PostMapping("/orders/{id}/update-status")
-    public String updateOrderStatus(@PathVariable("id") Long id, 
-                                    @RequestParam("orderStatus") String orderStatus, 
+    public String updateOrderStatus(@PathVariable("id") Long id,
+                                    @RequestParam("orderStatus") String orderStatus,
+                                    @RequestParam(value = "trackingNumber", required = false) String trackingNumber,
+                                    @RequestParam(value = "carrierName", required = false) String carrierName,
+                                    @RequestParam(value = "statusNote", required = false) String statusNote,
                                     org.springframework.security.core.Authentication authentication,
                                     RedirectAttributes redirectAttributes) {
         Optional<Order> orderOpt = orderRepository.findById(id);
         if (orderOpt.isPresent()) {
             Order order = orderOpt.get();
+            String previousStatus = order.getOrderStatus();
             order.setOrderStatus(orderStatus);
-            orderRepository.save(order);
-            
-            String currentEmail = authentication != null ? authentication.getName() : "admin";
-            AuditLog log = new AuditLog("ORDER_UPDATED", "Order #" + id + " status updated to " + orderStatus, currentEmail);
-            auditLogRepository.save(log);
 
-            redirectAttributes.addFlashAttribute("successMessage", "Order #" + id + " status updated to " + orderStatus);
+            // Update tracking fields if provided
+            if (trackingNumber != null && !trackingNumber.isBlank()) {
+                order.setTrackingNumber(trackingNumber);
+            }
+            if (carrierName != null && !carrierName.isBlank()) {
+                order.setCourierName(carrierName);
+            }
+            // Set estimated delivery for shipped status
+            if ("SHIPPED".equalsIgnoreCase(orderStatus) && order.getExpectedDeliveryDate() == null) {
+                order.setExpectedDeliveryDate(LocalDateTime.now().plusDays(5));
+            }
+            order.setLastStatusUpdatedAt(LocalDateTime.now());
+            orderRepository.save(order);
+
+            // Record history entry
+            String updatedBy = authentication != null ? authentication.getName() : "admin";
+            String note = (statusNote != null && !statusNote.isBlank()) ? statusNote
+                    : "Status changed from " + previousStatus + " to " + orderStatus;
+            OrderStatusHistory history = new OrderStatusHistory(order, orderStatus, note, updatedBy);
+            orderStatusHistoryRepository.save(history);
+
+            AuditLog auditLog = new AuditLog("ORDER_UPDATED",
+                    "Order #" + id + " status updated to " + orderStatus, updatedBy);
+            auditLogRepository.save(auditLog);
+
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Order #" + id + " updated to " + orderStatus);
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Order not found.");
         }

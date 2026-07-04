@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout(~{::div.content})}" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div class="content">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-start mb-5">
+            <div>
+                <h1 class="page-title mb-1">Notifications</h1>
+                <div class="page-subtitle">All system alerts — new orders, applications, franchise leads and refunds.</div>
+            </div>
+            <form th:action="@{/admin/notifications/read-all}" method="POST" th:if="${unreadCount > 0}">
+                <button type="submit" class="btn btn-sm" style="background: rgba(201,168,76,0.12); color:#c9a84c; border:1px solid rgba(201,168,76,0.3); border-radius: 8px; padding: 8px 16px; font-size: 0.8rem;">
+                    <i class="bi bi-check2-all me-1"></i> Mark all as read
+                </button>
+            </form>
+        </div>
+
+        <!-- Success/Error Alerts -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show border-0 rounded-3 mb-4" style="background: rgba(46,204,113,0.15); color: #2ecc71;">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show border-0 rounded-3 mb-4" style="background: rgba(231,76,60,0.15); color: #e74c3c;">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Notifications Card -->
+        <div class="data-card">
+            <div class="data-card-header">
+                <h6><i class="bi bi-bell-fill me-2" style="color:#c9a84c;"></i>All Notifications</h6>
+                <span style="font-size:0.78rem;color:rgba(255,255,255,0.4);"
+                      th:text="${unreadCount} + ' unread of ' + ${allNotifications.size()}">0 unread</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Title</th>
+                            <th>Message</th>
+                            <th>Received At</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="notif : ${allNotifications}" th:style="${!notif.read} ? 'background:rgba(201,168,76,0.03);' : ''">
+                            <td>
+                                <span class="badge-status badge-pending" th:if="${notif.type == 'ORDER'}">ORDER</span>
+                                <span class="badge-status badge-completed" th:if="${notif.type == 'MEMBERSHIP'}">MEMBERSHIP</span>
+                                <span class="badge-status badge-cancelled" th:if="${notif.type == 'REFUND'}">REFUND</span>
+                                <span class="badge-status" style="background: rgba(52,152,219,0.15); color:#3498db;"
+                                      th:if="${notif.type == 'FRANCHISE' or notif.type == 'BOOKING'}" th:text="${notif.type}">TYPE</span>
+                                <span class="badge-status" style="background: rgba(255,255,255,0.08); color:rgba(255,255,255,0.5);"
+                                      th:unless="${notif.type == 'ORDER' or notif.type == 'MEMBERSHIP' or notif.type == 'REFUND' or notif.type == 'FRANCHISE' or notif.type == 'BOOKING'}"
+                                      th:text="${notif.type ?: 'GENERAL'}">GENERAL</span>
+                            </td>
+                            <td>
+                                <div style="font-weight:600;font-size:0.88rem;" th:text="${notif.title}">Notification Title</div>
+                            </td>
+                            <td>
+                                <div style="font-size:0.83rem; color:rgba(255,255,255,0.7); max-width: 340px; white-space: normal;" th:text="${notif.message}">Message content</div>
+                            </td>
+                            <td style="font-size:0.78rem;color:rgba(255,255,255,0.4); white-space: nowrap;"
+                                th:text="${#temporals.format(notif.createdAt, 'dd-MM-yyyy HH:mm')}">Date</td>
+                            <td>
+                                <span class="badge-status badge-completed" th:if="${notif.read}">READ</span>
+                                <span class="badge-status badge-pending" th:unless="${notif.read}">UNREAD</span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a th:if="${notif.linkUrl != null and !notif.linkUrl.isEmpty()}" th:href="${notif.linkUrl}"
+                                       class="btn btn-sm btn-outline-light" style="border-radius: 6px; font-size: 0.75rem;">
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                    <form th:if="${!notif.read}" th:action="@{/admin/notifications/{id}/read(id=${notif.id})}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-success" style="border-radius: 6px; font-size: 0.75rem;">
+                                            <i class="bi bi-check2"></i>
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/admin/notifications/{id}/delete(id=${notif.id})}" method="POST"
+                                          onsubmit="return confirm('Delete this notification?');" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius: 6px; font-size: 0.75rem;">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(allNotifications)}">
+                            <td colspan="6" class="empty-state">
+                                <i class="bi bi-bell-slash"></i>
+                                No notifications yet.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

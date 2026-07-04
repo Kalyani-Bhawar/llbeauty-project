@@ -24,3 +24,23 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     timestamp DATETIME NOT NULL,
     performed_by VARCHAR(255)
 );
+
+-- Alter orders table to add tracking and shipping information
+ALTER TABLE orders ADD COLUMN shipping_address VARCHAR(500) DEFAULT NULL;
+ALTER TABLE orders ADD COLUMN billing_name VARCHAR(255) DEFAULT NULL;
+ALTER TABLE orders ADD COLUMN billing_mobile VARCHAR(20) DEFAULT NULL;
+ALTER TABLE orders ADD COLUMN tracking_number VARCHAR(100) DEFAULT NULL;
+ALTER TABLE orders ADD COLUMN courier_name VARCHAR(100) DEFAULT NULL;
+ALTER TABLE orders ADD COLUMN expected_delivery_date DATETIME DEFAULT NULL;
+ALTER TABLE orders ADD COLUMN last_status_updated_at DATETIME DEFAULT NULL;
+
+-- Create order status history table
+CREATE TABLE IF NOT EXISTS order_status_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_id BIGINT NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    remarks TEXT,
+    updated_by VARCHAR(255) NOT NULL,
+    updated_at DATETIME NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+);

@@ -1,9 +1,8 @@
 package com.llbeauty.controller;
 
-import com.llbeauty.entity.ManualPaymentRequest;
 import com.llbeauty.entity.User;
-import com.llbeauty.repository.ManualPaymentRequestRepository;
 import com.llbeauty.repository.UserRepository;
+import com.llbeauty.service.ManualPaymentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -12,27 +11,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @Controller
 @RequestMapping("/manual-payment")
 public class ManualPaymentController {
 
-    private final ManualPaymentRequestRepository manualPaymentRequestRepository;
+    private final ManualPaymentService manualPaymentService;
     private final UserRepository userRepository;
-    
-    // Using static folder for simplicity
-    private final String UPLOAD_DIR = "src/main/resources/static/uploads/";
 
-    public ManualPaymentController(ManualPaymentRequestRepository manualPaymentRequestRepository, UserRepository userRepository) {
-        this.manualPaymentRequestRepository = manualPaymentRequestRepository;
+    public ManualPaymentController(ManualPaymentService manualPaymentService, UserRepository userRepository) {
+        this.manualPaymentService = manualPaymentService;
         this.userRepository = userRepository;
     }
 
@@ -59,38 +50,15 @@ public class ManualPaymentController {
         }
 
         try {
-            ManualPaymentRequest request = new ManualPaymentRequest();
-            request.setUser(user);
-            request.setPaymentPurpose(paymentPurpose);
-            request.setAmount(amount);
-            request.setUtrNumber(utrNumber);
-            request.setReferenceId(referenceId);
-            request.setStatus("PENDING");
-
-            // Handle optional screenshot upload
-            if (screenshot != null && !screenshot.isEmpty()) {
-                File uploadDir = new File(UPLOAD_DIR);
-                if (!uploadDir.exists()) {
-                    uploadDir.mkdirs();
-                }
-                
-                String filename = UUID.randomUUID().toString() + "_" + screenshot.getOriginalFilename();
-                Path filePath = Paths.get(UPLOAD_DIR, filename);
-                Files.write(filePath, screenshot.getBytes());
-                
-                request.setScreenshotPath("/uploads/" + filename);
-            }
-
-            manualPaymentRequestRepository.save(request);
+            manualPaymentService.submitManualPayment(user, paymentPurpose, amount, utrNumber, referenceId, screenshot);
 
             Map<String, Object> response = new HashMap<>();
             response.put("status", "success");
             response.put("message", "Payment request submitted. Admin will verify your UTR shortly.");
             
-            // Generate redirect URL based on purpose
             String redirectUrl = "/dashboard";
             if ("CHECKOUT".equals(paymentPurpose)) {
-                redirectUrl = "/checkout/success?orderId=" + referenceId; // order is pending, but we show success page
+                redirectUrl = "/checkout/success?orderId=" + referenceId;
             } else if ("SALON_PAYMENT".equals(paymentPurpose)) {
                 redirectUrl = "/salon/success?appointmentId=" + referenceId;
             } else if ("WALLET_TOPUP".equals(paymentPurpose)) {

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Your EVA VIP Digital Membership Card.">
+    <title>My Membership Card – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link th:href="@{/css/style.css(v=1.1)}" href="/css/style.css" rel="stylesheet">
+    <style>
+        body { display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; margin: 0; }
+
+        .card-page-content {
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            flex: 1 0 auto !important;
+            padding: 48px 0 80px;
+            color: #fff;
+        }
+
+        /* ─── VIP Pass (same design language as dashboard) ─── */
+        .vip-pass {
+            border-radius: 24px;
+            padding: 28px 26px;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #fff;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: all 0.35s ease;
+        }
+        .vip-pass:hover { transform: translateY(-4px); }
+        .vip-pass.no-member {
+            background: linear-gradient(135deg, #1a1a1a 0%, #111 100%);
+            border: 1.5px dashed rgba(201,168,76,0.3);
+        }
+        .vip-pass.pink-pass { background: linear-gradient(135deg, #ff758c 0%, #c2185b 100%); }
+        .vip-pass.gold-pass { background: linear-gradient(135deg, #c9a84c 0%, #7d5f0b 100%); }
+        .vip-pass.black-pass {
+            background: radial-gradient(ellipse at top right, #333 0%, #111 50%, #000 100%);
+            border: 1px solid rgba(201,168,76,0.5);
+            box-shadow: 0 20px 50px rgba(201,168,76,0.1);
+        }
+        .vip-pass .shine-line {
+            position: absolute; top: 0; left: -100%;
+            width: 60%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            transform: skewX(-20deg);
+            animation: passShine 4s infinite 1s;
+        }
+        @keyframes passShine { 0% { left: -100%; } 40%, 100% { left: 150%; } }
+        .vip-pass-tier { font-size: 0.7rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: 0.75; }
+        .vip-pass-brand { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; letter-spacing: 1.5px; }
+        .vip-pass-chip { width: 48px; height: 36px; background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1)); border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); }
+        .vip-pass-name { font-size: 1rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; opacity: 0.9; }
+        .vip-pass-validity { font-size: 0.75rem; opacity: 0.6; }
+
+        .panel-card { background: rgba(22,22,22,0.95); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 28px; }
+        .panel-card-title {
+            font-family: 'Playfair Display', serif; font-size: 1rem; color: rgba(201,168,76,0.9);
+            font-weight: 600; display: flex; align-items: center; gap: 10px;
+            padding-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;
+        }
+
+        .txn-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .txn-row:last-child { border-bottom: none; }
+        .txn-icon-badge { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+
+        .badge-status { padding: 5px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-pending { background: rgba(243,156,18,0.15); color: #f39c12; }
+        .badge-completed { background: rgba(46,204,113,0.15); color: #2ecc71; }
+        .badge-cancelled { background: rgba(231,76,60,0.15); color: #e74c3c; }
+
+        .tier-track { display: flex; align-items: center; gap: 0; margin-top: 20px; }
+        .tier-dot {
+            width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; font-weight: 700; text-transform: uppercase; flex-shrink: 0;
+            border: 2px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.03); transition: all 0.4s ease;
+        }
+        .tier-dot.active {
+            border-color: var(--gold); color: #fff;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            box-shadow: 0 0 12px rgba(201,168,76,0.5);
+        }
+        .tier-line { flex: 1; height: 3px; background: rgba(255,255,255,0.06); position: relative; }
+        .tier-line .fill { height: 100%; background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 100%); transition: width 1s ease; }
+
+        .qr-container { background: #fff; padding: 10px; border-radius: 14px; display: inline-block; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+
+        @media (max-width: 767px) { .card-page-content { padding: 28px 0 60px; } .vip-pass { min-height: 170px; } }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <header>
+        <div th:replace="~{fragments/header :: header}"></div>
+    </header>
+
+    <main class="card-page-content d-flex flex-column">
+        <div class="container py-4 animate-fade-up" style="max-width: 640px;">
+
+            <div class="mb-4">
+                <h3 class="brand-font text-white mb-1" style="font-family:'Playfair Display', serif;">My Membership Card</h3>
+                <p style="color: rgba(255,255,255,0.45); font-size: 0.9rem;">Your EVA VIP digital pass — show the QR code at any partner salon or store.</p>
+            </div>
+
+            <!-- WITH ACTIVE MEMBERSHIP -->
+            <div th:if="${activeMembership != null}">
+                <div class="vip-pass mb-4"
+                     th:classappend="${#strings.contains(activeMembership.membership.name, 'Pink')} ? 'pink-pass' : (${#strings.contains(activeMembership.membership.name, 'Gold')} ? 'gold-pass' : 'black-pass')">
+                    <div class="shine-line"></div>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="vip-pass-tier" th:text="${activeMembership.membership.name}">EVA GOLD</div>
+                            <div class="vip-pass-brand mt-1">EVA <span style="opacity:0.7;">BEAUTY</span></div>
+                        </div>
+                        <div class="vip-pass-chip"></div>
+                    </div>
+
+                    <div class="text-center my-3">
+                        <div class="qr-container">
+                            <div id="qrcode" style="width:110px; height:110px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-end">
+                        <div>
+                            <div class="vip-pass-validity mb-1">MEMBER ID</div>
+                            <div class="vip-pass-name" th:text="${membershipId}">LLB-MEMBER-0001</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="vip-pass-validity mb-1">VALID TILL</div>
+                            <div class="vip-pass-name" th:text="${#temporals.format(expiryDate, 'MM / yyyy')}">05/2027</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Member name + cashback -->
+                <div class="panel-card mb-4">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <div style="font-size:0.75rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px;">Member</div>
+                            <div style="font-size:1.1rem; font-weight:600; color:#fff;" th:text="${user.name}">Member Name</div>
+                        </div>
+                        <div class="text-end">
+                            <div style="font-size:0.75rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px;">Cashback</div>
+                            <div style="font-size:1.1rem; font-weight:700; color: var(--gold);"
+                                 th:text="${#numbers.formatDecimal(activeMembership.membership.cashbackPercent * 100, 1, 0)} + '%'">5%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tier Progress -->
+                <div class="panel-card mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span style="font-size:0.8rem; color: rgba(255,255,255,0.5); font-weight: 600;">Membership Tier</span>
+                        <a href="/membership" class="text-decoration-none" style="font-size:0.75rem; color: var(--gold);" th:if="${tierProgress < 100}">
+                            Upgrade <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                    <div class="tier-track">
+                        <div class="tier-dot" th:classappend="${tierProgress >= 33} ? 'active' : ''">P</div>
+                        <div class="tier-line"><div class="fill" th:style="'width:' + (${tierProgress >= 66} ? '100' : '0') + '%'"></div></div>
+                        <div class="tier-dot" th:classappend="${tierProgress >= 66} ? 'active' : ''">G</div>
+                        <div class="tier-line"><div class="fill" th:style="'width:' + (${tierProgress == 100} ? '100' : '0') + '%'"></div></div>
+                        <div class="tier-dot" th:classappend="${tierProgress == 100} ? 'active' : ''">B</div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <span style="font-size:0.65rem; color: rgba(255,255,255,0.3);">Eva Pink</span>
+                        <span style="font-size:0.65rem; color: rgba(255,255,255,0.3);">Eva Gold</span>
+                        <span style="font-size:0.65rem; color: rgba(255,255,255,0.3);">Eva Black</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WITHOUT ACTIVE MEMBERSHIP -->
+            <div th:if="${activeMembership == null}">
+                <div class="vip-pass no-member text-center mb-4">
+                    <div>
+                        <div style="font-size: 3rem; margin-bottom: 12px;">🌟</div>
+                        <h5 class="brand-font text-white mb-2" style="font-family:'Playfair Display', serif;">No Active Membership</h5>
+                        <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem; margin-bottom: 16px;">
+                            Activate a VIP plan to unlock your digital pass, cashback and exclusive benefits.
+                        </p>
+                        <a href="/membership" class="btn" style="background: var(--gold); color:#111; font-weight:600; border-radius: 8px; padding: 8px 22px;">
+                            View Membership Plans
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MEMBERSHIP HISTORY -->
+            <div class="panel-card mb-4" th:if="${membershipHistory != null and !membershipHistory.isEmpty()}">
+                <div class="panel-card-title">
+                    <i class="bi bi-clock-history" style="color: var(--gold);"></i>
+                    Membership History
+                </div>
+                <div class="d-flex flex-column gap-3">
+                    <div th:each="h : ${membershipHistory}" class="txn-row">
+                        <div class="txn-icon-badge" style="background: rgba(201,168,76,0.1); color: var(--gold);">
+                            <i class="bi bi-award"></i>
+                        </div>
+                        <div class="flex-fill" style="min-width: 0;">
+                            <div style="font-size:0.85rem; font-weight:600; color:#fff;" th:text="${h.planName}">Eva Gold Card</div>
+                            <div style="font-size:0.7rem; color: rgba(255,255,255,0.4);">
+                                Valid: <span th:text="${#temporals.format(h.startDate, 'dd MMM yyyy')}"></span> to
+                                <span th:text="${#temporals.format(h.expiryDate, 'dd MMM yyyy')}"></span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge-status badge-completed" th:if="${h.status == 'ACTIVE'}">ACTIVE</span>
+                            <span class="badge-status badge-cancelled" th:if="${h.status == 'EXPIRED'}">EXPIRED</span>
+                            <span class="badge-status badge-pending" th:if="${h.status == 'UPGRADED' or h.status == 'RENEWED'}">HISTORIC</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <a href="/dashboard" class="text-decoration-none" style="font-size:0.85rem; color: rgba(255,255,255,0.5);">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script th:inline="javascript">
+        const membershipActive = [[${activeMembership != null}]];
+        if (membershipActive) {
+            const uuid = [[${activeMembership != null ? activeMembership.uuid : ''}]];
+            if (uuid && uuid !== 'null' && uuid.trim() !== '') {
+                const qrText = window.location.origin + "/member/verify/" + uuid;
+                new QRious({
+                    element: document.getElementById('qrcode'),
+                    value: qrText,
+                    size: 110,
+                    background: '#fff',
+                    foreground: '#111'
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,17 +1,11 @@
 package com.llbeauty.controller;
 
-import com.llbeauty.entity.Appointment;
-import com.llbeauty.entity.MembershipPurchase;
-import com.llbeauty.entity.Order;
 import com.llbeauty.entity.Payment;
-import com.llbeauty.entity.User;
-import com.llbeauty.repository.AppointmentRepository;
-import com.llbeauty.repository.MembershipPurchaseRepository;
-import com.llbeauty.repository.OrderRepository;
+import com.llbeauty.entity.MembershipPurchase;
 import com.llbeauty.repository.PaymentRepository;
+import com.llbeauty.repository.MembershipPurchaseRepository;
 import com.llbeauty.service.MembershipService;
-import com.llbeauty.service.WalletService;
-import com.llbeauty.service.RewardService;
+import com.llbeauty.service.PaymentService;
 import com.razorpay.Utils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -21,10 +15,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.Random;
-
+/**
+ * Handles inbound Razorpay webhook events.
+ *
+ * Dependency direction (no cycles):
+ *   Controller → PaymentService → (repositories, WalletService, RewardService, RazorpayService)
+ *   Controller → MembershipService → PaymentService  ← PaymentService does NOT call back MembershipService
+ *
+ * MEMBERSHIP activation is deliberately performed here in the controller rather than inside
+ * PaymentService, so that PaymentService remains free of any MembershipService dependency and
+ * the circular dependency MembershipService ↔ PaymentService is fully eliminated.
+ */
 @RestController
 @RequestMapping("/razorpay")
 public class RazorpayWebhookController {
@@ -35,27 +36,18 @@ public class RazorpayWebhookController {
     private String webhookSecret;
 
     private final PaymentRepository paymentRepository;
-    private final OrderRepository orderRepository;
-    private final AppointmentRepository appointmentRepository;
-    private final MembershipPurchaseRepository membershipPurchaseRepository;
-    private final WalletService walletService;
+    private final PaymentService paymentService;
     private final MembershipService membershipService;
-    private final RewardService rewardService;
+    private final MembershipPurchaseRepository membershipPurchaseRepository;
 
     public RazorpayWebhookController(PaymentRepository paymentRepository,
-                                     OrderRepository orderRepository,
-                                     AppointmentRepository appointmentRepository,
-                                     MembershipPurchaseRepository membershipPurchaseRepository,
-                                     WalletService walletService,
+                                     PaymentService paymentService,
                                      MembershipService membershipService,
-                                     RewardService rewardService) {
+                                     MembershipPurchaseRepository membershipPurchaseRepository) {
         this.paymentRepository = paymentRepository;
-        this.orderRepository = orderRepository;
-        this.appointmentRepository = appointmentRepository;
-        this.membershipPurchaseRepository = membershipPurchaseRepository;
-        this.walletService = walletService;
+        this.paymentService = paymentService;
         this.membershipService = membershipService;
-        this.rewardService = rewardService;
+        this.membershipPurchaseRepository = membershipPurchaseRepository;
     }
 
     @PostMapping("/webhook")
@@ -70,26 +62,50 @@ public class RazorpayWebhookController {
 
             JSONObject json = new JSONObject(payload);
             String event = json.getString("event");
-            JSONObject paymentEntity = json.getJSONObject("payload").getJSONObject("payment").getJSONObject("entity");
-            
+            JSONObject paymentEntity = json
+                    .getJSONObject("payload")
+                    .getJSONObject("payment")
+                    .getJSONObject("entity");
+
             String razorpayOrderId = paymentEntity.getString("order_id");
             String razorpayPaymentId = paymentEntity.getString("id");
 
             Payment payment = paymentRepository.findByRazorpayOrderId(razorpayOrderId);
             if (payment == null) {
-                log.warn("Payment not found for orderId: {}", razorpayOrderId);
+                log.warn("No payment record found for Razorpay orderId: {}", razorpayOrderId);
                 return ResponseEntity.ok("OK");
             }
 
             if ("payment.captured".equals(event)) {
                 if ("SUCCESS".equals(payment.getStatus())) {
+                    log.info("Payment {} already processed, skipping.", razorpayOrderId);
                     return ResponseEntity.ok("Already processed");
                 }
+
+                // 1. Mark payment SUCCESS
                 payment.setStatus("SUCCESS");
                 payment.setRazorpayPaymentId(razorpayPaymentId);
                 paymentRepository.save(payment);
 
-                processPaymentCaptured(payment);
+                // 2. Handle side-effects for PRODUCT, SALON_DEPOSIT, WALLET_TOPUP
+                paymentService.processPaymentCaptured(payment);
+
+                // 3. Handle MEMBERSHIP activation separately to avoid circular dependency
+                if ("MEMBERSHIP".equals(payment.getPaymentFor())) {
+                    MembershipPurchase purchase = membershipPurchaseRepository
+                            .findByRazorpayOrderId(razorpayOrderId);
+                    if (purchase != null && "PENDING".equals(purchase.getStatus())) {
+                        membershipService.activateMembership(
+                                payment.getUser(),
+                                purchase.getMembership().getId(),
+                                razorpayPaymentId,
+                                razorpayOrderId,
+                                payment.getRazorpaySignature(),
+                                null,
+                                null
+                        );
+                    }
+                }
 
             } else if ("payment.failed".equals(event)) {
                 if (!"SUCCESS".equals(payment.getStatus())) {
@@ -100,69 +116,10 @@ public class RazorpayWebhookController {
             }
 
             return ResponseEntity.ok("OK");
+
         } catch (Exception e) {
             log.error("Error processing Razorpay Webhook", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing webhook");
-        }
-    }
-
-    private void processPaymentCaptured(Payment payment) {
-        String purpose = payment.getPaymentFor();
-        User user = payment.getUser();
-        String refId = payment.getReferenceId();
-
-        try {
-            if ("PRODUCT".equals(purpose) && refId != null) {
-                Long orderId = Long.parseLong(refId);
-                Order order = orderRepository.findById(orderId).orElse(null);
-                if (order != null && "PENDING".equals(order.getStatus())) {
-                    order.setStatus("SUCCESS");
-                    order.setPaymentId(payment.getRazorpayPaymentId());
-                    orderRepository.save(order);
-                    
-                    // Award Cashback & Points
-                    Optional<com.llbeauty.entity.UserMembership> activeOpt = membershipService.getActiveMembership(user);
-                    if (activeOpt.isPresent()) {
-                        double cashbackAmount = order.getTotalAmount() * activeOpt.get().getMembership().getCashbackPercent();
-                        if (cashbackAmount > 0) {
-                            walletService.credit(user, BigDecimal.valueOf(cashbackAmount), "Cashback for Order #" + order.getId() + " (" + activeOpt.get().getMembership().getName() + ")", "CASHBACK");
-                        }
-                        rewardService.awardPoints(user, BigDecimal.valueOf(order.getTotalAmount()));
-                    }
-                }
-            } else if ("SALON_DEPOSIT".equals(purpose) && refId != null) {
-                Long appointmentId = Long.parseLong(refId);
-                Appointment app = appointmentRepository.findById(appointmentId).orElse(null);
-                if (app != null && !"CONFIRMED".equalsIgnoreCase(app.getStatus())) {
-                    app.setStatus("CONFIRMED");
-                    app.setPaymentStatus("PAID");
-                    app.setToken("LL-SLOT-" + (1000 + new Random().nextInt(9000)));
-                    if (payment.getRazorpayOrderId() != null) {
-                        app.setRazorpayOrderId(payment.getRazorpayOrderId());
-                    }
-                    if (payment.getRazorpayPaymentId() != null) {
-                        app.setRazorpayPaymentId(payment.getRazorpayPaymentId());
-                    }
-                    appointmentRepository.save(app);
-                    rewardService.awardPoints(user, BigDecimal.valueOf(payment.getAmount()));
-                }
-            } else if ("WALLET_TOPUP".equals(purpose)) {
-            	walletService.creditNxl(
-            		    user,
-            		    BigDecimal.valueOf(payment.getAmount()),
-            		    WalletService.SOURCE_PAYMENT,
-            		    "TOPUP_" + payment.getRazorpayOrderId(),
-            		    "Wallet Top-up via Razorpay"
-            		);
-            } else if ("MEMBERSHIP".equals(purpose)) {
-                MembershipPurchase purchase = membershipPurchaseRepository.findByRazorpayOrderId(payment.getRazorpayOrderId());
-                if (purchase != null && "PENDING".equals(purchase.getStatus())) {
-                    // Activate membership via service
-                    membershipService.activateMembership(user, purchase.getMembership().getId(), payment.getRazorpayPaymentId(), payment.getRazorpayOrderId(), payment.getRazorpaySignature(), null, null);
-                }
-            }
-        } catch (Exception e) {
-            log.error("Failed to process payment capture for Payment ID: {}", payment.getId(), e);
         }
     }
 }

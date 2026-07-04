@@ -1,6 +1,9 @@
 package com.llbeauty.entity;
 
 import jakarta.persistence.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "memberships")
@@ -112,5 +115,15 @@ public class Membership {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+    @Transient
+    public List<String> getBenefitsList() {
+        if (benefits == null || benefits.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(benefits.split("\\r?\\n"))
+                .map(String::trim)
+                .filter(line -> !line.isEmpty())
+                .collect(Collectors.toList());
     }
 }

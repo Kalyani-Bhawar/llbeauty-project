@@ -792,6 +792,78 @@
                 </div>
 
             </div>
+
+            <!-- ─── MY ORDERS SECTION ─── -->
+            <div class="row g-4 mt-1">
+                <div class="col-12">
+                    <div class="panel-card">
+                        <div class="panel-card-title" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                            <span>🛍️ My Orders</span>
+                            <a href="/shop" class="btn btn-gold btn-sm px-3" style="font-size:0.78rem;">
+                                <i class="bi bi-bag-plus me-1"></i> Shop Now
+                            </a>
+                        </div>
+
+                        <!-- Orders Table -->
+                        <div th:if="${userOrders != null and !userOrders.isEmpty()}" style="overflow-x:auto;">
+                            <table style="width:100%; border-collapse:collapse; font-size:0.83rem;">
+                                <thead>
+                                <tr style="border-bottom: 1px solid rgba(201,168,76,0.25);">
+                                    <th style="padding:10px 8px; text-align:left; color:rgba(255,255,255,0.5); font-weight:600;">Order ID</th>
+                                    <th style="padding:10px 8px; text-align:left; color:rgba(255,255,255,0.5); font-weight:600;">Date</th>
+                                    <th style="padding:10px 8px; text-align:left; color:rgba(255,255,255,0.5); font-weight:600;">Items</th>
+                                    <th style="padding:10px 8px; text-align:right; color:rgba(255,255,255,0.5); font-weight:600;">Amount</th>
+                                    <th style="padding:10px 8px; text-align:center; color:rgba(255,255,255,0.5); font-weight:600;">Fulfillment</th>
+                                    <th style="padding:10px 8px; text-align:center; color:rgba(255,255,255,0.5); font-weight:600;">Track</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="ord : ${userOrders}" style="border-bottom:1px solid rgba(255,255,255,0.05);" class="order-row">
+                                    <td style="padding:12px 8px; color:var(--gold); font-weight:600;"
+                                        th:text="'#LLB-ORD-' + ${ord.id}">-</td>
+                                    <td style="padding:12px 8px; color:rgba(255,255,255,0.7);"
+                                        th:text="${ord.createdAt != null ? #temporals.format(ord.createdAt, 'dd MMM yyyy') : '-'}">-</td>
+                                    <td style="padding:12px 8px; color:rgba(255,255,255,0.7);">
+                                        <span th:if="${ord.items != null}"
+                                              th:text="${#lists.size(ord.items)} + ' item(s)'">-</span>
+                                    </td>
+                                    <td style="padding:12px 8px; color:#fff; font-weight:700; text-align:right;">
+                                        ₹<span th:text="${#numbers.formatDecimal(ord.totalAmount, 1, 2)}">0.00</span>
+                                    </td>
+                                    <td style="padding:12px 8px; text-align:center;">
+                                        <span th:text="${ord.orderStatus != null ? ord.orderStatus : 'PENDING'}"
+                                              style="font-size:0.72rem; font-weight:700; padding:3px 10px; border-radius:50px; display:inline-block;"
+                                              th:style="${ord.orderStatus == 'DELIVERED'} ? 'background:rgba(46,204,113,0.15); color:#2ecc71; border:1px solid rgba(46,204,113,0.3);' :
+                                                         (${ord.orderStatus == 'SHIPPED' or ord.orderStatus == 'OUT_FOR_DELIVERY'} ? 'background:rgba(52,152,219,0.15); color:#3498db; border:1px solid rgba(52,152,219,0.3);' :
+                                                         (${ord.orderStatus == 'CANCELLED'} ? 'background:rgba(231,76,60,0.15); color:#e74c3c; border:1px solid rgba(231,76,60,0.3);' :
+                                                         'background:rgba(201,168,76,0.15); color:var(--gold); border:1px solid rgba(201,168,76,0.3);'))">PENDING</span>
+                                    </td>
+                                    <td style="padding:12px 8px; text-align:center;">
+                                        <a th:href="@{/checkout/orders/{id}/track(id=${ord.id})}"
+                                           style="color:var(--gold); font-size:0.8rem; text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:4px;">
+                                            <i class="bi bi-geo-alt-fill"></i> Track
+                                        </a>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Empty state -->
+                        <div th:if="${userOrders == null or userOrders.isEmpty()}" class="text-center py-5">
+                            <i class="bi bi-bag-x d-block mb-3" style="font-size: 2.5rem; color: rgba(201,168,76,0.3);"></i>
+                            <p style="color: rgba(255,255,255,0.35); font-size:0.88rem; margin-bottom: 16px;">
+                                No orders yet. Explore our premium products!
+                            </p>
+                            <a href="/shop" class="btn btn-gold btn-sm px-4">
+                                <i class="bi bi-bag-heart me-1"></i> Shop Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- ─── END MY ORDERS ─── -->
+
         </div>
     </main>
 

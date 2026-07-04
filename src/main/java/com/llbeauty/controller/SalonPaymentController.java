@@ -1,17 +1,13 @@
 package com.llbeauty.controller;
 
 import com.llbeauty.entity.Appointment;
-import com.llbeauty.constants.NxlConstants;
-import com.llbeauty.entity.Commission;
-import com.llbeauty.entity.User;
 import com.llbeauty.entity.Payment;
-import com.llbeauty.repository.AgentProfileRepository;
+import com.llbeauty.entity.User;
 import com.llbeauty.repository.AppointmentRepository;
-import com.llbeauty.repository.CommissionRepository;
 import com.llbeauty.repository.UserRepository;
-import com.llbeauty.repository.PaymentRepository;
-import com.llbeauty.service.WalletService;
 import com.llbeauty.service.PaymentService;
+import com.llbeauty.service.SalonPaymentService;
+import com.llbeauty.service.WalletService;
 import com.llbeauty.config.RazorpayConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
 
 @Controller
 public class SalonPaymentController {
@@ -39,26 +33,20 @@ public class SalonPaymentController {
     private final WalletService walletService;
     private final PaymentService paymentService;
     private final RazorpayConfig razorpayConfig;
-    private final com.llbeauty.service.RewardService rewardService;
-    private final AgentProfileRepository agentProfileRepository;
-    private final CommissionRepository commissionRepository;
-    private String referralCode;
+    private final SalonPaymentService salonPaymentService;
 
     public SalonPaymentController(AppointmentRepository appointmentRepository,
                                   UserRepository userRepository,
                                   WalletService walletService,
                                   PaymentService paymentService,
                                   RazorpayConfig razorpayConfig,
-                                  com.llbeauty.service.RewardService rewardService,AgentProfileRepository agentProfileRepository,
-                                  CommissionRepository commissionRepository) {
+                                  SalonPaymentService salonPaymentService) {
         this.appointmentRepository = appointmentRepository;
         this.userRepository = userRepository;
         this.walletService = walletService;
         this.paymentService = paymentService;
         this.razorpayConfig = razorpayConfig;
-        this.rewardService = rewardService;
-        this.agentProfileRepository = agentProfileRepository;
-        this.commissionRepository = commissionRepository;
+        this.salonPaymentService = salonPaymentService;
     }
 
     private User getAuthenticatedUser() {
@@ -74,7 +62,6 @@ public class SalonPaymentController {
         return "rzp_test_dummy".equals(key) || key == null || key.trim().isEmpty();
     }
 
-    // Secure advanced payment page for ₹100
     @GetMapping("/salon/payment")
     public String salonPaymentPage(@RequestParam("appointmentId") Long appointmentId, Model model) {
         User user = getAuthenticatedUser();
@@ -92,8 +79,6 @@ public class SalonPaymentController {
             return "redirect:/salon/success?appointmentId=" + app.getId();
         }
 
-        // No longer pre-creating the Razorpay Order here.
-
         model.addAttribute("appointment", app);
         model.addAttribute("nxlBalance", walletService.getNxlBalance(user));
         model.addAttribute("razorpayKeyId", razorpayConfig.getKeyId());
@@ -101,7 +86,6 @@ public class SalonPaymentController {
         return "salon_payment";
     }
 
-    // Endpoint: POST /salon/create-order → returns { razorpayOrderId, amount }
     @PostMapping("/salon/create-order")
     @ResponseBody
     public ResponseEntity<?> createOrder(@RequestParam("appointmentId") Long appointmentId,
@@ -146,7 +130,6 @@ public class SalonPaymentController {
         return ResponseEntity.ok(response);
     }
 
-    // Process AJAX pay-and-confirm for appointment
     @PostMapping("/salon/confirm-payment")
     @ResponseBody
     public ResponseEntity<?> confirmSalonPayment(@RequestParam("appointmentId") Long appointmentId,
@@ -159,71 +142,20 @@ public class SalonPaymentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Authentication required."));
         }
 
-        Appointment app = appointmentRepository.findById(appointmentId).orElse(null);
-        if (app == null || !app.getUserId().equals(user.getId())) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Appointment not found."));
+        try {
+            Appointment app = salonPaymentService.confirmSalonPayment(user, appointmentId, useNxl, paymentId, razorpayOrderId, razorpaySignature, isDummyCredentials());
+
+            log.info("Salon Appointment secured successfully. ID: {}, Token: {}", app.getId(), app.getToken());
+
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "redirectUrl", "/salon/success?appointmentId=" + app.getId()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
         }
-
-        double total = 100.0;
-        double walletApplied = 0.0;
-        if (useNxl) {
-            BigDecimal walletBal = walletService.getNxlBalance(user);
-            walletApplied = Math.min(walletBal.doubleValue(), total);
-            if (walletApplied > 0) {
-                try {
-                    walletService.debitNxl(
-                            user,
-                            BigDecimal.valueOf(walletApplied),
-                            NxlConstants.SOURCE_LLBEAUTY,
-                            "SALON_" + appointmentId,
-                            "Salon Booking Payment"
-                    );
-                } catch (com.llbeauty.exception.NxlException e) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
-                }
-            }
-        }
-
-        // Verify Razorpay signature if payment is through Razorpay
-        if (razorpayOrderId != null && razorpaySignature != null && !isDummyCredentials()) {
-            try {
-                paymentService.verifyAndProcessPayment(razorpayOrderId, paymentId, razorpaySignature);
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid signature"));
-            }
-        }
-
-        // Generate dynamic booking slot token e.g., LL-SLOT-7294
-        int tokenNum = 1000 + new Random().nextInt(9000);
-        String bookingToken = "LL-SLOT-" + tokenNum;
-
-        double amountToPay = total - walletApplied;
-        app.setStatus("CONFIRMED");
-        app.setPaymentStatus("PAID");
-        app.setToken(bookingToken);
-        app.setNxlUsed(walletApplied);
-        app.setAdvancePaid(total);
-        app.setFinalPaidAmount(total);
-        if (razorpayOrderId != null && !razorpayOrderId.isEmpty()) {
-            app.setRazorpayOrderId(razorpayOrderId);
-        }
-        if (paymentId != null && !paymentId.isEmpty()) {
-            app.setRazorpayPaymentId(paymentId);
-        }
-        appointmentRepository.save(app);
-
-        // Award Reward Points for Salon Deposit!
-        rewardService.awardPoints(user, BigDecimal.valueOf(total));
-
-        log.info("Salon Appointment secured successfully. ID: {}, Token: {}", app.getId(), bookingToken);
-
-        return ResponseEntity.ok(Map.of(
-                "status", "success",
-                "redirectUrl", "/salon/success?appointmentId=" + app.getId()
-        ));
     }
 
-    // Confirmation Success Receipt
     @GetMapping("/salon/success")
     public String salonSuccessPage(@RequestParam("appointmentId") Long appointmentId, Model model) {
         User user = getAuthenticatedUser();

@@ -26,6 +26,27 @@ public class Order extends Auditable {
     @Column(name = "referral_code")
     private String referralCode;
 
+    @Column(name = "shipping_address")
+    private String shippingAddress;
+
+    @Column(name = "billing_name")
+    private String billingName;
+
+    @Column(name = "billing_mobile")
+    private String billingMobile;
+
+    @Column(name = "tracking_number")
+    private String trackingNumber;
+
+    @Column(name = "courier_name")
+    private String courierName;
+
+    @Column(name = "expected_delivery_date")
+    private LocalDateTime expectedDeliveryDate;
+
+    @Column(name = "last_status_updated_at")
+    private LocalDateTime lastStatusUpdatedAt;
+
     public String getReferralCode() {
 		return referralCode;
 	}
@@ -92,6 +113,21 @@ public class Order extends Auditable {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public List<OrderItem> getItems() { return items; }
     public void setItems(List<OrderItem> items) { this.items = items; }
+
+    public String getShippingAddress() { return shippingAddress; }
+    public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
+    public String getBillingName() { return billingName; }
+    public void setBillingName(String billingName) { this.billingName = billingName; }
+    public String getBillingMobile() { return billingMobile; }
+    public void setBillingMobile(String billingMobile) { this.billingMobile = billingMobile; }
+    public String getTrackingNumber() { return trackingNumber; }
+    public void setTrackingNumber(String trackingNumber) { this.trackingNumber = trackingNumber; }
+    public String getCourierName() { return courierName; }
+    public void setCourierName(String courierName) { this.courierName = courierName; }
+    public LocalDateTime getExpectedDeliveryDate() { return expectedDeliveryDate; }
+    public void setExpectedDeliveryDate(LocalDateTime expectedDeliveryDate) { this.expectedDeliveryDate = expectedDeliveryDate; }
+    public LocalDateTime getLastStatusUpdatedAt() { return lastStatusUpdatedAt; }
+    public void setLastStatusUpdatedAt(LocalDateTime lastStatusUpdatedAt) { this.lastStatusUpdatedAt = lastStatusUpdatedAt; }
 
     public Order() {}
 

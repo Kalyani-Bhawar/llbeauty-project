@@ -160,4 +160,50 @@ public class EmailService {
             throw new RuntimeException("Failed to send expiry reminder email: " + e.getMessage());
         }
     }
+    
+    public void sendFranchiseStatusEmail(String email, String name, String status, String remarks) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(email);
+
+            String subject;
+            String statusLine;
+
+            switch (status.toUpperCase()) {
+                case "APPROVED":
+                    subject = "🎉 Your EVA Franchise Application is Approved!";
+                    statusLine = "Congratulations! Your franchise application has been APPROVED.";
+                    break;
+                case "REJECTED":
+                    subject = "EVA Franchise Application Update";
+                    statusLine = "We regret to inform you that your franchise application has been REJECTED.";
+                    break;
+                case "CONTACTED":
+                    subject = "EVA Franchise - Our Team Will Contact You";
+                    statusLine = "Our franchise team has reviewed your application and will contact you shortly.";
+                    break;
+                case "INTERESTED":
+                    subject = "EVA Franchise - Application In Progress";
+                    statusLine = "Great news! We are interested in taking your franchise application forward.";
+                    break;
+                default:
+                    subject = "EVA Franchise Application Status Update";
+                    statusLine = "Your franchise application status has been updated to: " + status;
+            }
+
+            message.setSubject(subject);
+            message.setText(
+                "Dear " + name + ",\n\n" +
+                statusLine + "\n\n" +
+                (remarks != null && !remarks.trim().isEmpty() ? "Remarks from our team: " + remarks + "\n\n" : "") +
+                "For any queries, feel free to reach out to our franchise support team.\n\n" +
+                "Regards,\n" +
+                "EVA Beauty Franchise Team"
+            );
+
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send franchise status email: " + e.getMessage());
+        }
+    }
 }
