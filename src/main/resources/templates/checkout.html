@@ -128,7 +128,7 @@
 					</div>
 					<!-- Wallet Toggle -->
 					<div class="checkout-box">
-						<h5><i class="bi bi-wallet2 me-2" style="color:var(--gold);"></i>Redeem Wallet Credits</h5>
+					
 						<!-- NXL TOKEN REDEMPTION BOX -->
 						<div class="checkout-box" th:if="${nxlBalance != null and #numbers.formatDecimal(nxlBalance,1,2) != '0.00'}">
 						  <h5><i class="bi bi-coin me-2" style="color:var(--gold);"></i>Use NXL Tokens</h5>
@@ -410,7 +410,6 @@
 		<!-- SCRIPTS -->
 		<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 		<script th:inline="javascript">
-			const walletBalance = [[${walletBalance}]];
 			const initialFinalAmount = [[${finalAmount}]];
 			const directProductId = [[${directProductId}]];
 			const nxlBalance = [[${nxlBalance != null ? nxlBalance : 0.0}]];

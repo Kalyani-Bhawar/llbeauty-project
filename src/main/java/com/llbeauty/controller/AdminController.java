@@ -1,6 +1,8 @@
 package com.llbeauty.controller;
 
 import com.llbeauty.entity.*;
+
+
 import com.llbeauty.repository.*;
 import com.llbeauty.service.NotificationService;
 import org.springframework.data.domain.Page;
@@ -32,6 +34,7 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.llbeauty.constants.NxlConstants;
+import org.springframework.data.domain.Sort;
 
 @Controller
 @RequestMapping("/admin")
@@ -277,8 +280,14 @@ public class AdminController {
         model.addAttribute("activeTab", "users");
         Pageable pageable = PageRequest.of(page, size);
         Page<User> usersPage = userRepository.searchUsers(search, blocked, pageable);
-        
+
+        Map<Long, BigDecimal> nxlBalances = new HashMap<>();
+        for (User u : usersPage.getContent()) {
+            nxlBalances.put(u.getId(), walletService.getNxlBalance(u));
+        }
+
         model.addAttribute("users", usersPage.getContent());
+        model.addAttribute("nxlBalances", nxlBalances);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", usersPage.getTotalPages());
         model.addAttribute("totalElements", usersPage.getTotalElements());
@@ -746,9 +755,9 @@ public class AdminController {
                                @RequestParam(value = "page", defaultValue = "0") int page,
                                @RequestParam(value = "size", defaultValue = "10") int size,
                                Model model) {
-        model.addAttribute("activeTab", "products");
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Product> prodPage = productRepository.searchProductsPaged(category, search, status, pageable);
+                                   model.addAttribute("activeTab", "products");
+                                   Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+                                   Page<Product> prodPage = productRepository.searchProductsPaged(category, search, status, pageable);
 
         model.addAttribute("products", prodPage.getContent());
         model.addAttribute("currentPage", page);
@@ -1340,15 +1349,26 @@ public class AdminController {
 
             boolean refundSuccess = false;
             
-            if ("WALLET".equalsIgnoreCase(refundMethod)) {
-                walletService.credit(order.getUser(), BigDecimal.valueOf(order.getTotalAmount()), "Refund for Order #" + order.getId(), "REFUND");
-                refundSuccess = true;
+            if ("NXL".equalsIgnoreCase(refundMethod) || "WALLET".equalsIgnoreCase(refundMethod)) {
+                try {
+                    walletService.creditNxl(
+                            order.getUser(),
+                            BigDecimal.valueOf(order.getTotalAmount()),
+                            NxlConstants.SOURCE_REFUND,
+                            "REFUND_ORDER_" + order.getId(),
+                            "Refund NXL for Order #" + order.getId()
+                    );
+                    refundSuccess = true;
+                } catch (com.llbeauty.exception.NxlException e) {
+                    log.error("NXL refund failed for order #" + order.getId(), e);
+                    redirectAttributes.addFlashAttribute("errorMessage", "NXL refund failed: " + e.getMessage());
+                    return "redirect:/admin/orders";
+                }
                 if (payment != null) {
-                    payment.setStatus("REFUNDED_WALLET");
+                    payment.setStatus("REFUNDED_NXL");
                     paymentRepository.save(payment);
                 }
-            } else if ("RAZORPAY".equalsIgnoreCase(refundMethod)) {
-                if (payment != null && payment.getRazorpayPaymentId() != null) {
+            } else if ("RAZORPAY".equalsIgnoreCase(refundMethod)) {                if (payment != null && payment.getRazorpayPaymentId() != null) {
                     refundSuccess = paymentService.processRefund(payment.getRazorpayOrderId(), "RAZORPAY", null);
                     if (!refundSuccess) {
                         redirectAttributes.addFlashAttribute("errorMessage", "Razorpay API refund failed.");

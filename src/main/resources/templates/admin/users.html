@@ -25,7 +25,7 @@
                             <th>Name</th>
                             <th>Mobile</th>
                             <th>Email</th>
-                            <th>Wallet Balance</th>
+                            <th>NXL Balance</th>
                             <th>Status</th>
                             <th>Joined At</th>
                             <th class="text-center">Action</th>
@@ -37,7 +37,7 @@
                             <td th:text="${user.name}">John Doe</td>
                             <td th:text="${user.mobile}">9876543210</td>
                             <td th:text="${user.email}">john@example.com</td>
-                            <td class="text-success font-weight-bold">₹<span th:text="${#numbers.formatDecimal(user.walletBalance, 1, 0)}">0</span></td>
+							<td class="text-success font-weight-bold"><span th:text="${#numbers.formatDecimal(nxlBalances.get(user.id), 1, 0)}">0</span> NXL</td>
                             <td>
                                 <span class="badge bg-success" th:if="${user.active}">Active</span>
                                 <span class="badge bg-secondary" th:unless="${user.active}">Deleted</span>
@@ -92,7 +92,7 @@
         </div>
 
         <!-- View Modals -->
-        <div th:each="user : ${users}" class="modal fade text-dark" th:id="'viewUserModal' + ${user.id}" tabindex="-1" aria-hidden="true">
+        <div th:each="user : ${users}" class="modal fade " th:id="'viewUserModal' + ${user.id}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -104,7 +104,7 @@
                         <p><strong>Name:</strong> <span th:text="${user.name}"></span></p>
                         <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
                         <p><strong>Mobile:</strong> <span th:text="${user.mobile}"></span></p>
-                        <p><strong>Wallet Balance:</strong> ₹<span th:text="${user.walletBalance}"></span></p>
+						<p><strong>NXL Balance:</strong> <span th:text="${nxlBalances.get(user.id)}"></span> NXL</p>
                         <p><strong>Active:</strong> <span th:text="${user.active}"></span></p>
                         <p><strong>Blocked:</strong> <span th:text="${user.isBlocked}"></span></p>
                         <p><strong>Joined:</strong> <span th:text="${#temporals.format(user.createdAt, 'dd-MM-yyyy HH:mm')}"></span></p>
