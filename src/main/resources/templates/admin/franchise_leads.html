@@ -124,10 +124,10 @@
                 <div class="modal-content">
                     <form th:action="@{/admin/franchise-leads/{id}/update(id=${lead.id})}" method="post">
                         <div class="modal-header">
-                            <h5 class="modal-title text-dark">Update Lead <span th:text="${lead.name}"></span></h5>
+                            <h5 class="modal-title text-light">Update Lead <span th:text="${lead.name}"></span></h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body text-dark">
+                        <div class="modal-body text-light">
                             <div class="mb-3 border-bottom pb-2">
                                 <p class="mb-1"><strong>Preferred Model:</strong> <span th:text="${lead.franchiseType}"></span></p>
                                 <p class="mb-1"><strong>Budget Range:</strong> <span th:text="${lead.budget}"></span></p>

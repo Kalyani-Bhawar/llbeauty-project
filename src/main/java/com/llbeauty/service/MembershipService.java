@@ -291,11 +291,11 @@ public class MembershipService {
         String secureUuid = UUID.randomUUID().toString();
 
         // Generate unique member ID
-        String memberIdPrefix = "LLB-P-";
+        String memberIdPrefix = "EVA-P-";
         if (plan.getName().contains("Gold")) {
-            memberIdPrefix = "LLB-G-";
+            memberIdPrefix = "EVA-G-";
         } else if (plan.getName().contains("Black")) {
-            memberIdPrefix = "LLB-B-";
+            memberIdPrefix = "EVA-B-";
         }
 
         String memberId = isRenewal && existingMemberId != null ? existingMemberId : generateNextMemberId(memberIdPrefix);

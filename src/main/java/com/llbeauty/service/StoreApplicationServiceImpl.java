@@ -222,7 +222,7 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
 
             // Create Agent Profile if not exists
             if (agentProfileRepository.findByUser(user).isEmpty()) {
-                String agentId = "LLB-EXE-" + user.getId();
+                String agentId = "EVA-EXE-" + user.getId();
                 String referralCode;
                 do {
                     referralCode = "REF" + user.getId() + (int) (Math.random() * 900 + 100);
@@ -265,7 +265,7 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
 
             // Create MerchantProfile if not exists
             if (merchantProfileRepository.findByUser(user).isEmpty()) {
-                String merchantId = "LLB-MER-" + user.getId();
+                String merchantId = "EVA-MER-" + user.getId();
                 String ownerName = app.getOwnerName();
                 if (ownerName == null || ownerName.isEmpty()) ownerName = user.getName();
                 
@@ -333,13 +333,6 @@ public class StoreApplicationServiceImpl implements StoreApplicationService {
                 );
 
             }
-            walletService.creditNxl(
-            	    user,
-            	    creditAmount,
-            	    WalletService.SOURCE_MERCHANT,
-            	    "MERCHANT_" + app.getId(),
-            	    "Merchant Security Deposit - " + app.getBusinessName()
-            	);
             // Create Merchant entity (for local scanning QR flow)
             if (merchantRepository.findByName(app.getBusinessName()) == null) {
                 Merchant merchant = new Merchant();

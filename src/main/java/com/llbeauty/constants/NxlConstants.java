@@ -24,6 +24,8 @@ public class NxlConstants {
     public static final String SOURCE_MERCHANT = "MERCHANT_APPROVAL";
     public static final String SOURCE_BOOKING = "BOOKING";
     public static final String SOURCE_PAYMENT = "PAYMENT";
+    
+    public static final String SOURCE_MERCHANT_ORDER = "MERCHANT_ORDER";
 
     // 🔥 FINAL ALLOWED SOURCES LIST
     public static final List<String> ALLOWED_SOURCES = List.of(
@@ -41,6 +43,7 @@ public class NxlConstants {
             SOURCE_REFERRAL,
             SOURCE_MERCHANT,
             SOURCE_BOOKING,
-            SOURCE_PAYMENT
+            SOURCE_PAYMENT,
+            SOURCE_MERCHANT_ORDER 
     );
 }

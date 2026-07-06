@@ -204,7 +204,7 @@ public class MerchantCartController {
         double finalAmount = merchantCartService.calculateGrandTotal(items);
 
         // Wallet balance for initial display
-        BigDecimal walletBal = walletService.getBalance(user);
+        BigDecimal walletBal = walletService.getNxlBalance(user);
         double walletUsed = Math.min(walletBal.doubleValue(), finalAmount);
         double remainingAmount = finalAmount - walletUsed;
 

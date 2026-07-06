@@ -47,6 +47,7 @@ public class AdminController {
     private final MembershipRepository membershipRepository;
     private final UserMembershipRepository userMembershipRepository;
     private final WalletTransactionRepository walletTransactionRepository;
+    private final com.llbeauty.repository.NxlWalletTransactionRepository nxlWalletTransactionRepository;
     private final OrderRepository orderRepository;
     private final com.llbeauty.repository.PaymentRepository paymentRepository;
     private final com.llbeauty.repository.SalonServiceRepository salonServiceRepository;
@@ -75,6 +76,7 @@ public class AdminController {
                            MembershipRepository membershipRepository,
                            UserMembershipRepository userMembershipRepository,
                            WalletTransactionRepository walletTransactionRepository,
+                           com.llbeauty.repository.NxlWalletTransactionRepository nxlWalletTransactionRepository,
                            OrderRepository orderRepository,
                            com.llbeauty.repository.PaymentRepository paymentRepository,
                            com.llbeauty.repository.SalonServiceRepository salonServiceRepository,
@@ -99,6 +101,7 @@ public class AdminController {
         this.membershipRepository = membershipRepository;
         this.userMembershipRepository = userMembershipRepository;
         this.walletTransactionRepository = walletTransactionRepository;
+        this.nxlWalletTransactionRepository = nxlWalletTransactionRepository;
         this.orderRepository = orderRepository;
         this.paymentRepository = paymentRepository;
         this.salonServiceRepository = salonServiceRepository;
@@ -1190,9 +1193,9 @@ public class AdminController {
                                          @RequestParam(value = "page", defaultValue = "0") int page,
                                          @RequestParam(value = "size", defaultValue = "10") int size,
                                          Model model) {
-        model.addAttribute("activeTab", "wallet-transactions");
+    	model.addAttribute("activeTab", "wallet-transactions");
         Pageable pageable = PageRequest.of(page, size);
-        Page<WalletTransaction> txPage = walletTransactionRepository.searchTransactions(search, type, pageable);
+        Page<com.llbeauty.entity.NxlWalletTransaction> txPage = nxlWalletTransactionRepository.searchTransactions(search, type, pageable);
 
         model.addAttribute("transactions", txPage.getContent());
         model.addAttribute("currentPage", page);
@@ -1212,11 +1215,11 @@ public class AdminController {
         PrintWriter writer = response.getWriter();
         writer.println("Transaction ID,Customer Name,Email,Credit,Debit,Description,Reason,Date");
 
-        List<WalletTransaction> txs = walletTransactionRepository.searchTransactionsList(search, type);
-        for (WalletTransaction t : txs) {
+        List<com.llbeauty.entity.NxlWalletTransaction> txs = nxlWalletTransactionRepository.searchTransactionsList(search, type);
+        for (com.llbeauty.entity.NxlWalletTransaction t : txs) {
             double amount = t.getAmount() != null ? t.getAmount().doubleValue() : 0.0;
-            String credit = "CREDIT".equalsIgnoreCase(t.getType()) || "REFUND".equalsIgnoreCase(t.getType()) || "TOPUP".equalsIgnoreCase(t.getType()) ? String.format("%.2f", amount) : "0.00";
-            String debit = "DEBIT".equalsIgnoreCase(t.getType()) || "PURCHASE".equalsIgnoreCase(t.getType()) ? String.format("%.2f", amount) : "0.00";
+            String credit = "CREDIT".equalsIgnoreCase(t.getType()) ? String.format("%.2f", amount) : "0.00";
+            String debit = "DEBIT".equalsIgnoreCase(t.getType()) ? String.format("%.2f", amount) : "0.00";
 
             writer.println(String.format("%d,%s,%s,%s,%s,%s,%s,%s",
                 t.getId(),
@@ -1226,7 +1229,7 @@ public class AdminController {
                 debit,
                 t.getDescription() != null ? t.getDescription().replace(",", " ") : "",
                 t.getSource() != null ? t.getSource() : "",
-                t.getCreatedAt()
+                t.getDateTime()
             ));
         }
     }

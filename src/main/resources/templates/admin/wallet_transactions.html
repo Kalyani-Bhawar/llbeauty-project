@@ -2,8 +2,8 @@
 <html th:replace="~{admin/layout :: layout(~{::div.content})}">
 <body>
     <div class="content">
-        <h1 class="page-title mb-1">Wallet Transactions</h1>
-        <div class="page-subtitle">All user wallet credits and debits</div>
+		<h1 class="page-title mb-1">NXL Wallet Transactions</h1>
+		        <div class="page-subtitle">All user NXL token credits and debits</div>
 
         <div class="data-card mt-4">
             <div class="data-card-header">
@@ -38,17 +38,17 @@
                                 <span class="badge-status badge-completed" th:if="${txn.type == 'CREDIT'}">CREDIT</span>
                                 <span class="badge-status badge-cancelled" th:if="${txn.type == 'DEBIT'}">DEBIT</span>
                             </td>
-                            <td>
-                                <span style="font-weight:700;font-size:0.9rem;" th:classappend="${txn.type == 'CREDIT'} ? 'text-success' : 'text-danger'">
-                                    <span th:text="${txn.type == 'CREDIT'} ? '+₹' + ${#numbers.formatDecimal(txn.amount, 1, 0)} : '-₹' + ${#numbers.formatDecimal(txn.amount, 1, 0)}">₹0</span>
-                                </span>
-                            </td>
-                            <td style="font-size:0.83rem;" th:text="${txn.description}">Description</td>
 							<td>
-							    <span style="color:#555;"
-							          th:text="${#temporals.format(txn.createdAt,'dd MMM yyyy HH:mm')}">
-							    </span>
-							</td>
+							                                <span style="font-weight:700;font-size:0.9rem;" th:classappend="${txn.type == 'CREDIT'} ? 'text-success' : 'text-danger'">
+							                                    <span th:text="${txn.type == 'CREDIT'} ? '+' + ${#numbers.formatDecimal(txn.amount, 1, 2)} + ' NXL' : '-' + ${#numbers.formatDecimal(txn.amount, 1, 2)} + ' NXL'">0 NXL</span>
+							                                </span>
+							                            </td>
+							                            <td style="font-size:0.83rem;" th:text="${txn.description}">Description</td>
+														<td>
+														    <span style="color:#555;"
+														          th:text="${#temporals.format(txn.dateTime,'dd MMM yyyy HH:mm')}">
+														    </span>
+														</td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(transactions)}">
                             <td colspan="7" class="empty-state">

@@ -65,7 +65,7 @@ public class MerchantDashboardController {
         if (!"ACTIVE".equals(user.getMerchantStatus())) {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN, "Access Denied: Requires ACTIVE Merchant status");
         }
-        model.addAttribute("walletBalance", walletService.getBalance(user));
+        model.addAttribute("walletBalance", walletService.getNxlBalance(user));
         
         MerchantProfile profile = merchantProfileRepository.findByUser(user).orElse(null);
         model.addAttribute("profile", profile);
@@ -93,7 +93,7 @@ public class MerchantDashboardController {
         if (user == null) {
             return "redirect:/auth/login?redirect=/merchant/wallet";
         }
-        model.addAttribute("walletBalance", walletService.getBalance(user));
+        model.addAttribute("walletBalance", walletService.getNxlBalance(user));
         model.addAttribute("transactions", walletService.getTransactionHistory(user));
         return "merchant/wallet";
     }

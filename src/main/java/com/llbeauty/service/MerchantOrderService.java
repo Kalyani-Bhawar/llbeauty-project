@@ -150,18 +150,18 @@ public class MerchantOrderService {
         // ── Step 4: Wallet deduction (reserve credits up-front) ──
         double walletAmountUsed = 0.0;
         if (useWallet) {
-            double walletBalance = walletService.getBalance(user).doubleValue();
-            double toDeduct = Math.min(walletBalance, finalAmount);
-            if (toDeduct > 0) {
-                boolean debited = walletService.debit(
-                        user,
-                        BigDecimal.valueOf(toDeduct),
-                        "Reserved NXL Credits for Merchant Order #" + order.getId(),
-                        "MERCHANT_ORDER");
-                if (debited) {
-                    walletAmountUsed = toDeduct;
-                }
-            }
+        	double walletBalance = walletService.getNxlBalance(user).doubleValue();
+        	double toDeduct = Math.min(walletBalance, finalAmount);
+        	if (toDeduct > 0) {
+        	    try {
+        	        walletService.debitNxl(user, BigDecimal.valueOf(toDeduct),
+        	                "MERCHANT_ORDER", "MERCHANT_ORDER_" + order.getId(), 
+        	                "Reserved NXL Credits for Merchant Order #" + order.getId());
+        	        walletAmountUsed = toDeduct;
+        	    } catch (Exception e) {
+        	        // insufficient funds / duplicate — walletAmountUsed राहील 0
+        	    }
+        	}
         }
 
         order.setWalletAmountUsed(walletAmountUsed);
@@ -253,11 +253,9 @@ public class MerchantOrderService {
 
         // Restore wallet credits if any were deducted
         if (order.getWalletAmountUsed() != null && order.getWalletAmountUsed() > 0) {
-            walletService.credit(
-                    order.getUser(),
-                    BigDecimal.valueOf(order.getWalletAmountUsed()),
-                    "Restored NXL Credits — Merchant Order #" + order.getId() + " payment failed",
-                    "MERCHANT_ORDER_ROLLBACK");
+        	walletService.creditNxl(order.getUser(), BigDecimal.valueOf(order.getWalletAmountUsed()),
+        	        "MERCHANT_ORDER", "MERCHANT_ORDER_ROLLBACK_" + order.getId(),
+        	        "Restored NXL Credits — Merchant Order #" + order.getId() + " payment failed");
         }
 
         auditLogRepository.save(new AuditLog(

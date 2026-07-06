@@ -266,7 +266,7 @@
                             <a th:if="${merchantStatus == 'NOT_APPLIED'}" href="/store/merchant/apply" class="btn-opportunity stretched-link">BECOME MERCHANT</a>
                             <a th:if="${merchantStatus == 'PENDING'}" href="/store/merchant/application-status" class="btn-opportunity stretched-link">TRACK APPLICATION</a>
                             <a th:if="${merchantStatus == 'REJECTED'}" href="/store/merchant/apply" class="btn-opportunity stretched-link">REAPPLY AS MERCHANT</a>
-                            <a th:if="${merchantStatus == 'ACTIVE'}" href="/store/merchant/dashboard" class="btn-opportunity active-btn stretched-link">OPEN MERCHANT DASHBOARD</a>
+							<a th:if="${merchantStatus == 'ACTIVE'}" href="/merchant/dashboard" class="btn-opportunity active-btn stretched-link">OPEN MERCHANT DASHBOARD</a>
                         </div>
                     </div>
                 </div>

@@ -39,6 +39,7 @@ public class StoreMvcController {
     private final UserMembershipRepository userMembershipRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
+    private final MerchantOrderRepository merchantOrderRepository;
     private final WalletService walletService;
     private final PaymentService paymentService;
     private final RazorpayService razorpayService;
@@ -57,6 +58,7 @@ public class StoreMvcController {
                               UserMembershipRepository userMembershipRepository,
                               ProductRepository productRepository,
                               OrderRepository orderRepository,
+                              MerchantOrderRepository merchantOrderRepository,
                               WalletService walletService,
                               PaymentService paymentService,
                               RazorpayService razorpayService,
@@ -71,6 +73,7 @@ public class StoreMvcController {
         this.userMembershipRepository = userMembershipRepository;
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
+        this.merchantOrderRepository = merchantOrderRepository;
         this.walletService = walletService;
         this.paymentService = paymentService;
         this.razorpayService = razorpayService;
@@ -462,23 +465,12 @@ public class StoreMvcController {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN, "Access Denied: Requires ACTIVE Merchant status");
         }
 
-        MerchantProfile profile = merchantProfileRepository.findByUser(user)
-            .orElseThrow(() -> new IllegalStateException("Merchant profile not found"));
-
-        StoreCredit storeCredit = storeCreditRepository.findByUser(user)
-            .orElseGet(() -> storeCreditRepository.save(new StoreCredit(user, java.math.BigDecimal.ZERO)));
-
-        List<Product> products = productRepository.findAll();
-        List<Order> orders = orderRepository.findByUserOrderByCreatedAtDesc(user);
-
-        model.addAttribute("user", user);
-        model.addAttribute("profile", profile);
-        model.addAttribute("storeCredit", storeCredit);
-        model.addAttribute("products", products);
-        model.addAttribute("orders", orders);
-        model.addAttribute("walletBalance", walletService.getBalance(user));
-        model.addAttribute("transactions", walletService.getTransactionHistory(user));
-
-        return "merchant_dashboard";
+        // PERMANENT FIX: This used to duplicate all of MerchantDashboardController's
+        // logic (wallet balance, total orders, purchase value, savings) with its own
+        // separate, out-of-sync copy — causing the SAME merchant to see different
+        // numbers depending on which URL they landed on.
+        // Now there is a single source of truth: MerchantDashboardController's
+        // "/merchant/dashboard" route. This route just forwards there.
+        return "redirect:/merchant/dashboard";
     }
 }
