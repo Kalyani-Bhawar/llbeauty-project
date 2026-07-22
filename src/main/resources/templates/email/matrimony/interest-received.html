@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>New Interest Received</title>
+    <style>
+        body {font-family: 'Inter', sans-serif; background: #fdf8f0; color: #333; margin:0; padding:0;}
+        .container {max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; overflow:hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);}
+        .header {background: linear-gradient(135deg, #d4af37, #c5a880); color:#fff; padding: 30px; text-align:center;}
+        .header h1 {margin:0; font-size:28px;}
+        .content {padding:30px; line-height:1.6;}
+        .cta {display:inline-block; margin-top:20px; padding:12px 24px; background:#d4af37; color:#fff; text-decoration:none; border-radius:6px;}
+        .footer {background:#fafafa; text-align:center; font-size:12px; color:#777; padding:20px;}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Hi <span th:text="${receiver.name}">User</span>, you have a new interest!</h1>
+    </div>
+    <div class="content">
+        <p><strong th:text="${sender.name}">Sender</strong> has expressed interest in your profile.</p>
+        <p>Log in to view their profile and respond.</p>
+        <p><a class="cta" th:href="${baseUrl} + '/matrimony'" href="http://localhost:8080/matrimony">Go to Matrimony</a></p>
+    </div>
+    <div class="footer">
+        &copy; 2026 EVA Beauty. All rights reserved.
+    </div>
+</div>
+</body>
+</html>

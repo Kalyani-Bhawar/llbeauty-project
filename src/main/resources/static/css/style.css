@@ -1544,3 +1544,240 @@ main, .dashboard-content, .dashboard-page, .topup-page, .auth-page { flex: 1; }
 @media print {
     .navbar, footer, .footer { display: none !important; }
 }
+
+/* ====================================================
+   EVA MATRIMONY LUXURY THEME
+   ==================================================== */
+body.eva-matrimony,
+.eva-matrimony {
+    background-color: #0b0b0b !important;
+    color: #ffffff !important;
+}
+
+.eva-matrimony h1,
+.eva-matrimony h2,
+.eva-matrimony h3,
+.eva-matrimony h4,
+.eva-matrimony h5,
+.eva-matrimony h6,
+.eva-matrimony .brand-font {
+    color: #c9a227 !important;
+    background: linear-gradient(135deg, #c9a227 0%, #f7d070 50%, #a8831a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.eva-matrimony p,
+.eva-matrimony span,
+.eva-matrimony label,
+.eva-matrimony div:not(.brand-font) {
+    color: #d4d4d4;
+}
+
+.eva-matrimony .text-white-50 {
+    color: #aaaaaa !important;
+}
+
+/* Matrimony Cards */
+.eva-matrimony .mat-card,
+.eva-matrimony .wizard-card,
+.eva-matrimony .profile-card,
+.eva-matrimony .filter-panel,
+.eva-matrimony .info-panel,
+.eva-matrimony .profile-grid-card,
+.eva-matrimony .quick-nav-card {
+    background: #151515 !important;
+    border: 1px solid #c9a227 !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7) !important;
+}
+
+.eva-matrimony .quick-nav-card:hover,
+.eva-matrimony .profile-grid-card:hover {
+    border-color: #f7d070 !important;
+    box-shadow: 0 15px 35px rgba(201, 162, 39, 0.25) !important;
+    transform: translateY(-4px);
+}
+
+.eva-matrimony .info-panel {
+    background: #1c1c1c !important;
+    border: 1px solid rgba(201, 162, 39, 0.15) !important;
+    border-radius: 16px !important;
+}
+
+/* Stepper Node Styling */
+.eva-matrimony .stepper::before {
+    background: rgba(201, 162, 39, 0.2) !important;
+}
+
+.eva-matrimony .step-node {
+    background: #1c1c1c !important;
+    border: 2px solid rgba(201, 162, 39, 0.3) !important;
+    color: #aaaaaa !important;
+}
+
+.eva-matrimony .step-node.active {
+    background: #c9a227 !important;
+    border-color: #c9a227 !important;
+    color: #0b0b0b !important;
+    font-weight: bold;
+    box-shadow: 0 0 15px rgba(201, 162, 39, 0.5) !important;
+}
+
+.eva-matrimony .step-node.completed {
+    background: #c9a227 !important;
+    border-color: #c9a227 !important;
+    color: transparent !important;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.eva-matrimony .step-node.completed::before {
+    content: "✓" !important;
+    color: #0b0b0b !important;
+    font-size: 1.1rem;
+    font-weight: bold;
+    position: absolute;
+}
+
+.eva-matrimony .step-label {
+    color: #aaaaaa !important;
+}
+
+.eva-matrimony .step-node.active .step-label {
+    color: #c9a227 !important;
+    font-weight: 600;
+}
+
+/* Form Design */
+.eva-matrimony .form-control,
+.eva-matrimony select,
+.eva-matrimony textarea,
+.eva-matrimony .form-select {
+    background: #1c1c1c !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(201, 162, 39, 0.5) !important;
+    border-radius: 12px !important;
+}
+
+.eva-matrimony .form-control:focus,
+.eva-matrimony select:focus,
+.eva-matrimony textarea:focus,
+.eva-matrimony .form-select:focus {
+    background: #252525 !important;
+    color: #ffffff !important;
+    border-color: #c9a227 !important;
+    box-shadow: 0 0 10px rgba(201, 162, 39, 0.4) !important;
+    outline: none;
+}
+
+.eva-matrimony input::placeholder,
+.eva-matrimony textarea::placeholder {
+    color: #aaaaaa !important;
+    opacity: 1 !important;
+}
+
+.eva-matrimony select option {
+    background: #1c1c1c !important;
+    color: #ffffff !important;
+}
+
+.eva-matrimony input[type="date"] {
+    color: #ffffff !important;
+}
+
+.eva-matrimony input[type="date"]::-webkit-datetime-edit {
+    color: #ffffff !important;
+}
+
+.eva-matrimony input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* Form Labels */
+.eva-matrimony .form-label {
+    color: #ffffff !important;
+    font-weight: 500;
+}
+
+/* Buttons */
+.eva-matrimony .btn-gold {
+    background: linear-gradient(135deg, #c9a227 0%, #a8831a 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(201, 162, 39, 0.3) !important;
+    transition: all 0.3s ease !important;
+}
+
+.eva-matrimony .btn-gold:hover {
+    background: linear-gradient(135deg, #f7d070 0%, #c9a227 100%) !important;
+    box-shadow: 0 6px 20px rgba(201, 162, 39, 0.5) !important;
+    transform: translateY(-2px);
+}
+
+.eva-matrimony .btn-outline-gold {
+    border: 1.5px solid #c9a227 !important;
+    color: #c9a227 !important;
+    background: transparent !important;
+    transition: all 0.3s ease !important;
+}
+
+.eva-matrimony .btn-outline-gold:hover {
+    background: #c9a227 !important;
+    color: #0b0b0b !important;
+}
+
+.eva-matrimony .btn-outline-light {
+    border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+    background: transparent !important;
+}
+
+.eva-matrimony .btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: #ffffff !important;
+}
+
+/* EVA Matrimony Field Visibility Fix */
+
+.matrimony-form input,
+.matrimony-form select,
+.matrimony-form textarea {
+    background-color: #ffffff !important;
+    color: #222222 !important;
+    border: 1px solid #c9a227;
+}
+
+.matrimony-form input::placeholder,
+.matrimony-form textarea::placeholder {
+    color: #777777 !important;
+}
+
+.matrimony-form select {
+    color: #222222 !important;
+}
+
+.matrimony-form select option {
+    color: #222222 !important;
+    background-color: #ffffff !important;
+}
+
+.matrimony-form input[type="date"] {
+    color: #222222 !important;
+}
+
+.matrimony-form input[type="date"]::-webkit-datetime-edit {
+    color: #222222 !important;
+}
+
+/* Focus overrides */
+.matrimony-form input:focus,
+.matrimony-form select:focus,
+.matrimony-form textarea:focus {
+    color: #222222 !important;
+    background-color: #ffffff !important;
+}

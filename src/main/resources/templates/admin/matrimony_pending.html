@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::div})}">
+<head>
+    <title>Pending Matrimony Profiles</title>
+</head>
+<body>
+    <div>
+        <h3 class="page-title">Pending Matrimony Profiles</h3>
+        <p class="page-subtitle">Verify user details and photos before approving matrimonial profiles.</p>
+
+        <!-- Alert boxes -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="data-card">
+            <div class="data-card-header d-flex justify-content-between align-items-center">
+                <h6>Pending Verifications</h6>
+                <a href="/admin/matrimony/approved" class="btn btn-sm btn-outline-gold rounded-pill">
+                    <i class="bi bi-check-circle-fill me-1"></i> View Approved
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Full Name</th>
+                            <th>DOB / Age</th>
+                            <th>Gender</th>
+                            <th>City / State</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${pendingProfiles}">
+                            <td th:text="${p.user.id}">123</td>
+                            <td>
+                                <span class="fw-bold" th:text="${p.fullName}">Name</span><br>
+                                <small style="color:#aaa;" th:text="${p.user.email}"></small>
+                            </td>
+                            <td>
+                                <span th:text="${p.dateOfBirth}">DOB</span><br>
+                                <small style="color:#aaa;" th:text="${T(java.time.Period).between(p.dateOfBirth, T(java.time.LocalDate).now()).getYears()} + ' yrs'"></small>
+                            </td>
+                            <td th:text="${p.gender}">Gender</td>
+                            <td th:text="${p.city} + ', ' + ${p.state}">City, State</td>
+                            <td>
+                                <span class="badge bg-warning text-dark">PENDING</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a th:href="@{/admin/matrimony/profile-view/{id}(id=${p.user.id})}" class="btn btn-sm btn-info" title="Inspect Profile">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                    <form th:action="@{/admin/matrimony/approve/{id}(id=${p.id})}" method="post">
+                                        <button type="submit" class="btn btn-sm btn-success" title="Approve Profile" onclick="return confirm('Approve this profile?');">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/admin/matrimony/reject/{id}(id=${p.id})}" method="post">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Reject Profile" onclick="return confirm('Reject this profile?');">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(pendingProfiles)}">
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <i class="bi bi-inbox"></i>
+                                    No pending matrimony profiles found.
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -28,6 +28,11 @@ public interface NotificationService {
     void markAllAsRead(User user);
 
     void deleteNotification(Long notificationId);
+    // ─── Event specific notifications ───────────────────────────────────────
+    void notifyProfileApproved(Long userId);
+    void notifyInterestReceived(Long receiverId, Long senderId);
+    void notifyInterestAccepted(Long senderId, Long receiverId);
+    void notifyMatchCreated(Long userId, Long partnerId);
 
     // ─── Admin Notifications ──────────────────────────────────────────────────
 

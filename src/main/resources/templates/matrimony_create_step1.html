@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrimony Profile - Step 1 – EVA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="/css/matrimony.css" rel="stylesheet">
+    <!-- Styles moved to /css/matrimony.css -->
+</head>
+<body class="eva-matrimony wizard-page">
+
+    <!-- NAVBAR -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="container flex-grow-1 d-flex align-items-center">
+        <div class="wizard-card animate-fade-up">
+            
+            <!-- Stepper Header -->
+            <div class="stepper">
+                <div class="step-node active">1<span class="step-label">Basic</span></div>
+                <div class="step-node">2<span class="step-label">Religion</span></div>
+                <div class="step-node">3<span class="step-label">Career</span></div>
+                <div class="step-node">4<span class="step-label">Family</span></div>
+                <div class="step-node">5<span class="step-label">About</span></div>
+                <div class="step-node">6<span class="step-label">Photo</span></div>
+            </div>
+
+            <h3 class="brand-font mb-4 text-center" style="color: #c9a84c;">Step 1: Basic Information</h3>
+            
+            <form th:action="@{/matrimony/profile/step1}" method="post" class="needs-validation" novalidate>
+                <div class="row g-4">
+                    <!-- Full Name -->
+                    <div class="col-md-6">
+                        <label for="fullName" class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" id="fullName" name="fullName" th:value="${profile != null ? profile.fullName : ''}" required>
+                    </div>
+
+                    <!-- Date of Birth -->
+                    <div class="col-md-6">
+                        <label for="dateOfBirth" class="form-label">Date of Birth *</label>
+                        <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" th:value="${profile != null ? profile.dateOfBirth : ''}" required>
+                    </div>
+
+                    <!-- Gender -->
+                    <div class="col-md-6">
+                        <label for="gender" class="form-label">Gender *</label>
+                        <select class="form-select" id="gender" name="gender" required>
+                            <option value="">Select Gender</option>
+                            <option value="Male" th:selected="${profile != null && profile.gender == 'Male'}">Male</option>
+                            <option value="Female" th:selected="${profile != null && profile.gender == 'Female'}">Female</option>
+                            <option value="Other" th:selected="${profile != null && profile.gender == 'Other'}">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Height -->
+                    <div class="col-md-6">
+                        <label for="height" class="form-label">Height (in cms) *</label>
+                        <input type="number" step="0.1" class="form-control" id="height" name="height" th:value="${profile != null ? profile.height : ''}" placeholder="e.g. 175.5" required>
+                    </div>
+
+                    <!-- Mother Tongue -->
+                    <div class="col-md-6">
+                        <label for="motherTongue" class="form-label">Mother Tongue *</label>
+                        <input type="text" class="form-control" id="motherTongue" name="motherTongue" th:value="${profile != null ? profile.motherTongue : ''}" placeholder="e.g. Hindi, English" required>
+                    </div>
+
+                    <!-- City -->
+                    <div class="col-md-6">
+                        <label for="city" class="form-label">City *</label>
+                        <input type="text" class="form-control" id="city" name="city" th:value="${profile != null ? profile.city : ''}" required>
+                    </div>
+
+                    <!-- State -->
+                    <div class="col-md-6">
+                        <label for="state" class="form-label">State *</label>
+                        <input type="text" class="form-control" id="state" name="state" th:value="${profile != null ? profile.state : ''}" required>
+                    </div>
+
+                    <!-- Country -->
+                    <div class="col-md-6">
+                        <label for="country" class="form-label">Country *</label>
+                        <input type="text" class="form-control" id="country" name="country" th:value="${profile != null ? profile.country : ''}" required>
+                    </div>
+
+                    <!-- Navigation buttons -->
+                    <div class="col-12 mt-5 d-flex justify-content-between">
+                        <a href="/matrimony" class="btn btn-outline-light px-4 rounded-pill">Cancel</a>
+                        <button type="submit" class="btn-gold rounded-pill px-5 py-2.5">Save &amp; Continue</button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

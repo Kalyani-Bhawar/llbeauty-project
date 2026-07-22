@@ -64,7 +64,9 @@ public class SecurityConfig {
                         "/salon",
                         "/wallet/**",
                         "/razorpay/**",
-                        "/api/nxl/**"
+                        "/api/nxl/**",
+                        "/checkout/**",
+                        "/matrimony/**"
                 ).permitAll()
 
                 // 🔴 ADMIN ONLY

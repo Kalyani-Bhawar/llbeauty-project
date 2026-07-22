@@ -3,8 +3,13 @@ package com.llbeauty.service;
 import com.llbeauty.entity.AdminNotification;
 import com.llbeauty.entity.Notification;
 import com.llbeauty.entity.User;
+import com.llbeauty.repository.UserRepository;
 import com.llbeauty.repository.AdminNotificationRepository;
 import com.llbeauty.repository.NotificationRepository;
+import com.llbeauty.service.EmailService;
+import java.util.HashMap;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,12 +28,21 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final EmailService emailService;
     private final AdminNotificationRepository adminNotificationRepository;
+    private final UserRepository userRepository;
+
+    @Value("${app.base-url}")
+    private String baseUrl;
 
     public NotificationServiceImpl(NotificationRepository notificationRepository,
-                                   AdminNotificationRepository adminNotificationRepository) {
+                                   AdminNotificationRepository adminNotificationRepository,
+                                   UserRepository userRepository,
+                                   EmailService emailService) {
         this.notificationRepository = notificationRepository;
         this.adminNotificationRepository = adminNotificationRepository;
+        this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
     // ─── User Notifications ───────────────────────────────────────────────────
@@ -87,6 +101,78 @@ public class NotificationServiceImpl implements NotificationService {
     public void deleteNotification(Long notificationId) {
         if (notificationRepository.existsById(notificationId)) {
             notificationRepository.deleteById(notificationId);
+        }
+    }
+
+    // ─── Event specific notifications ───────────────────────────────────────
+    @Override
+    public void notifyProfileApproved(Long userId) {
+        userRepository.findById(userId).ifPresent(user -> {
+            createNotification(user, "Profile Approved", "Your profile has been approved.", Notification.NotificationType.INFO);
+            // Send HTML email
+            Map<String, Object> model = new HashMap<>();
+            model.put("user", user);
+            model.put("baseUrl", baseUrl);
+            emailService.sendHtmlMail(user.getEmail(), "Your EVA Matrimony Profile Has Been Approved ❤️", "email/matrimony/profile-approved", model);
+        });
+    }
+
+    @Override
+    public void notifyInterestReceived(Long receiverId, Long senderId) {
+        User receiver = userRepository.findById(receiverId).orElse(null);
+        User sender = userRepository.findById(senderId).orElse(null);
+        if (receiver != null && sender != null) {
+            createNotification(receiver, "Interest Received",
+                    "You have received a new interest from " + sender.getName() + ".",
+                    Notification.NotificationType.INFO);
+            // Send HTML email
+            Map<String, Object> model = new HashMap<>();
+            model.put("receiver", receiver);
+            model.put("sender", sender);
+            model.put("baseUrl", baseUrl);
+            emailService.sendHtmlMail(receiver.getEmail(), "You Have Received a New EVA Matrimony Interest", "email/matrimony/interest-received", model);
+        }
+    }
+
+    @Override
+    public void notifyInterestAccepted(Long senderId, Long receiverId) {
+        User sender = userRepository.findById(senderId).orElse(null);
+        User receiver = userRepository.findById(receiverId).orElse(null);
+        if (sender != null && receiver != null) {
+            createNotification(sender, "Interest Accepted",
+                    receiver.getName() + " accepted your interest.",
+                    Notification.NotificationType.INFO);
+            // Send HTML email
+            Map<String, Object> model = new HashMap<>();
+            model.put("sender", sender);
+            model.put("receiver", receiver);
+            model.put("baseUrl", baseUrl);
+            emailService.sendHtmlMail(sender.getEmail(), "Your Interest Has Been Accepted", "email/matrimony/interest-accepted", model);
+        }
+    }
+
+    @Override
+    public void notifyMatchCreated(Long userId, Long partnerId) {
+        User user = userRepository.findById(userId).orElse(null);
+        User partner = userRepository.findById(partnerId).orElse(null);
+        if (user != null && partner != null) {
+            createNotification(user, "New Match Created",
+                    "You are now matched with " + partner.getName() + ".",
+                    Notification.NotificationType.INFO);
+            createNotification(partner, "New Match Created",
+                    "You are now matched with " + user.getName() + ".",
+                    Notification.NotificationType.INFO);
+            // Send HTML emails to both parties
+            Map<String, Object> modelUser = new HashMap<>();
+            modelUser.put("user", user);
+            modelUser.put("partner", partner);
+            modelUser.put("baseUrl", baseUrl);
+            emailService.sendHtmlMail(user.getEmail(), "Congratulations! You Have a New EVA Matrimony Match ❤️", "email/matrimony/match-created", modelUser);
+            Map<String, Object> modelPartner = new HashMap<>();
+            modelPartner.put("user", partner);
+            modelPartner.put("partner", user);
+            modelPartner.put("baseUrl", baseUrl);
+            emailService.sendHtmlMail(partner.getEmail(), "New Match Created", "email/matrimony/match-created", modelPartner);
         }
     }
 

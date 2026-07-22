@@ -1,0 +1,177 @@
+/* src/main/resources/static/css/matrimony.css */
+.eva-matrimony {
+    --color-body: #f8f3eb;
+    --color-card: #ffffff;
+    --color-gold: #c9a227;
+    --color-text-primary: #2b2b2b;
+    --color-text-secondary: #666666;
+    background-color: var(--color-body);
+    color: var(--color-text-primary);
+    font-family: 'Inter', sans-serif;
+}
+
+/* Card styles – support both .card and .mat-card */
+.eva-matrimony .card, .eva-matrimony .mat-card {
+    background-color: var(--color-card);
+    border: 1px solid rgba(201,162,39,0.15);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    color: var(--color-text-primary);
+    padding: 20px;
+}
+
+.eva-matrimony .btn-gold {
+    background-color: var(--color-gold);
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(201,162,39,0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.eva-matrimony .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(201,162,39,0.4);
+}
+
+.eva-matrimony .hero-banner {
+    background:
+        linear-gradient(
+            180deg,
+            rgba(20,15,5,0.55) 0%,
+            rgba(20,15,5,0.65) 100%
+        ),
+        url('/images/matrimony_hero.jpg') no-repeat center center;
+
+    background-size: cover;
+    background-position: center;
+
+    padding: 120px 0 80px;
+    min-height: 500px;
+
+    border-bottom: 1px solid rgba(201,162,39,0.25);
+    color: #ffffff;
+
+    position: relative;
+}
+
+.eva-matrimony .quick-nav-card {
+    background-color: var(--color-card);
+    border: 1px solid rgba(201,162,39,0.2);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    color: var(--color-text-primary);
+    transition: box-shadow 0.2s;
+}
+.eva-matrimony .quick-nav-card:hover {
+    box-shadow: 0 4px 12px rgba(201,162,39,0.2);
+}
+
+/* Wizard pages (profile creation steps) */
+.eva-matrimony .wizard-page {
+    background-color: var(--color-body);
+    color: var(--color-text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+.eva-matrimony .wizard-card {
+    background-color: var(--color-card);
+    border: 1px solid rgba(201,162,39,0.2);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    margin: 60px auto;
+    max-width: 800px;
+}
+.eva-matrimony .form-control, .eva-matrimony .form-select {
+    background-color: #1c1c1c !important;
+    border: 1px solid rgba(201,162,39,0.5);
+    color: #ffffff !important;
+}
+.eva-matrimony .form-control:focus, .eva-matrimony .form-select:focus {
+    background-color: #252525 !important;
+    color: #ffffff !important;
+    border-color: var(--color-gold);
+    box-shadow: 0 0 8px rgba(201,162,39,0.25);
+}
+
+/* Search page cards */
+.eva-matrimony .filter-panel {
+    background-color: var(--color-card);
+    border: 1px solid rgba(201,162,39,0.2);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 30px;
+}
+.eva-matrimony .profile-grid-card {
+    background-color: var(--color-card);
+    border: 1px solid rgba(201,162,39,0.15);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.eva-matrimony .profile-grid-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(201,162,39,0.15);
+    border-color: var(--color-gold);
+}
+.eva-matrimony .grid-card-img {
+    height: 240px;
+    object-fit: cover;
+    border-bottom: 1px solid rgba(201,162,39,0.1);
+}
+
+.eva-matrimony .hero-banner h1,
+.eva-matrimony .hero-banner h2 {
+    color: #e8c766;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    font-weight: 700;
+}
+
+.eva-matrimony .hero-banner p {
+    color: #f2f2f2;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.4);
+    font-size: 20px;
+}
+
+.eva-matrimony .hero-banner .btn-gold {
+    position: relative;
+    z-index: 2;
+}
+.eva-matrimony .hero-banner .tagline {
+    color: #e8c766;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.4);
+}
+/* Fix: exclude navbar from dark matrimony theme text override */
+.eva-matrimony .navbar,
+.eva-matrimony .navbar span:not(.eva-logo-crown),
+.eva-matrimony .navbar p,
+.eva-matrimony .navbar div,
+.eva-matrimony .navbar a,
+.eva-matrimony .navbar .nav-link {
+    color: var(--dark) !important;
+}
+
+/* Fix: don't let the navbar text-color override hide the crown icon on the logo */
+.eva-matrimony .navbar .eva-logo-crown {
+    color: initial !important;
+    -webkit-text-fill-color: initial !important;
+}
+
+.eva-matrimony .profile-dropdown-btn,
+.eva-matrimony .profile-dropdown-btn span,
+.eva-matrimony .profile-dropdown-btn i {
+    color: var(--gold-dark) !important;
+}
+
+.eva-matrimony .navbar .dropdown-menu,
+.eva-matrimony .navbar .dropdown-item {
+    color: var(--dark) !important;
+}
+.eva-matrimony .navbar {
+    transform: translateZ(0);
+    will-change: transform;
+}
