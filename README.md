@@ -4,7 +4,6 @@ EVA Beauty is a full-stack Java Spring Boot web application that brings multiple
 
 The platform includes online product shopping, salon appointment booking, franchise applications, EVA membership, Agent and Merchant store modules, matrimony, wallet/NXL token functionality, referral commissions, cashback/rewards, payments, email OTP authentication, and a complete admin management system.
 
-Note: The Events module is not included in this project overview.
 
 ✨ Project Highlights
 
